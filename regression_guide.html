@@ -1,0 +1,2418 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Regression: Mathematical, From-Scratch Python, Libraries, and Research Guide</title>
+  <style>
+    :root {
+      --ink: #1c232b;
+      --muted: #5b6673;
+      --line: #d9dee5;
+      --paper: #ffffff;
+      --soft: #f5f7fa;
+      --accent: #0f766e;
+      --accent2: #8b3a3a;
+      --code: #111827;
+      --codebg: #f0f3f6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.62;
+    }
+    header {
+      padding: 42px max(24px, calc((100vw - 1120px) / 2)) 28px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #f7fbfb 0%, #fff 100%);
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 28px 24px 80px;
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      gap: 34px;
+    }
+    nav {
+      position: sticky;
+      top: 0;
+      align-self: start;
+      max-height: 100vh;
+      overflow: auto;
+      padding: 18px 0;
+      border-right: 1px solid var(--line);
+    }
+    nav a {
+      display: block;
+      color: var(--ink);
+      text-decoration: none;
+      padding: 5px 16px 5px 0;
+      font-size: 14px;
+    }
+    nav a:hover { color: var(--accent); }
+    h1 {
+      font-size: clamp(32px, 4vw, 54px);
+      line-height: 1.05;
+      margin: 0 0 12px;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 44px 0 12px;
+      padding-top: 10px;
+      border-top: 2px solid var(--line);
+      font-size: 30px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 28px 0 8px;
+      font-size: 21px;
+      letter-spacing: 0;
+    }
+    h4 { margin: 20px 0 6px; font-size: 17px; }
+    p, li { max-width: 78ch; }
+    .lede { max-width: 86ch; color: var(--muted); font-size: 18px; }
+    .box {
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px 18px;
+      margin: 16px 0;
+    }
+    .warn { border-left: 5px solid var(--accent2); }
+    .key { border-left: 5px solid var(--accent); }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; }
+    code { background: var(--codebg); padding: 1px 4px; border-radius: 4px; }
+    pre {
+      overflow: auto;
+      background: var(--code);
+      color: #f8fafc;
+      padding: 16px;
+      border-radius: 8px;
+      line-height: 1.45;
+      font-size: 13px;
+    }
+    pre code { background: transparent; padding: 0; color: inherit; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 16px 0 22px;
+      font-size: 14px;
+    }
+    th, td { border: 1px solid var(--line); padding: 9px 10px; vertical-align: top; }
+    th { background: var(--soft); text-align: left; }
+    .formula {
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      background: #fbfbfd;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 14px;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+    .exercise {
+      border-left: 4px solid var(--accent);
+      padding: 9px 14px;
+      background: #f6fbfa;
+      margin: 12px 0 20px;
+    }
+    .term {
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+      margin-top: 18px;
+    }
+    .notes-panel {
+      background: #fbfcfd;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      margin: 20px 0 28px;
+      max-width: 850px;
+    }
+    .notes-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 14px;
+    }
+    .notes-panel label {
+      display: block;
+      font-weight: 650;
+      margin-bottom: 5px;
+    }
+    .notes-panel input,
+    .notes-panel select,
+    .notes-panel textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 9px 10px;
+      font: inherit;
+      background: #fff;
+      color: var(--ink);
+    }
+    .notes-panel textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+    .notes-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .notes-actions button {
+      border: 1px solid #94a3b8;
+      border-radius: 6px;
+      padding: 8px 11px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      cursor: pointer;
+    }
+    .notes-actions button.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+    .notes-status {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    .notes-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .topic-note-button {
+      margin-left: 8px;
+      border: 1px solid var(--accent);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--accent);
+      font: 12px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      padding: 3px 8px;
+      vertical-align: middle;
+      cursor: pointer;
+    }
+    .floating-note-button {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 20;
+      border: 1px solid var(--accent);
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      font: 700 15px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      padding: 12px 16px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.22);
+      cursor: pointer;
+    }
+    .floating-note-panel {
+      position: fixed;
+      right: 22px;
+      bottom: 78px;
+      z-index: 21;
+      width: min(430px, calc(100vw - 44px));
+      max-height: calc(100vh - 110px);
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 18px 50px rgba(15, 23, 42, 0.24);
+      padding: 16px;
+    }
+    .floating-note-panel[hidden] {
+      display: none;
+    }
+    .floating-note-panel header {
+      padding: 0 0 10px;
+      border: 0;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .floating-note-panel h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .floating-note-panel label {
+      display: block;
+      margin: 10px 0 5px;
+      font-weight: 650;
+    }
+    .floating-note-panel input,
+    .floating-note-panel select,
+    .floating-note-panel textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 9px 10px;
+      font: inherit;
+    }
+    .floating-note-panel textarea {
+      min-height: 170px;
+      resize: vertical;
+    }
+    .floating-topic-context {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0 0 6px;
+    }
+    .close-note-panel {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      font: inherit;
+      padding: 4px 8px;
+    }
+    .note-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+    }
+    .note-card header {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+    }
+    .note-card h4 {
+      margin: 0;
+      font-size: 16px;
+    }
+    .note-card .meta {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .note-card p {
+      margin: 8px 0 0;
+      white-space: pre-wrap;
+    }
+    @media (max-width: 720px) {
+      .notes-grid { grid-template-columns: 1fr; }
+    }
+    .diagram {
+      margin: 20px 0 28px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfd;
+      max-width: 850px;
+    }
+    .diagram svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .diagram figcaption {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .svg-label { font: 13px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill: var(--ink); }
+    .svg-small { font: 11px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill: var(--muted); }
+    .svg-title { font: 16px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-weight: 700; fill: var(--ink); }
+    .svg-line { stroke: #334155; stroke-width: 2; fill: none; }
+    .svg-accent { stroke: var(--accent); stroke-width: 3; fill: none; }
+    .svg-warn { stroke: var(--accent2); stroke-width: 3; fill: none; }
+    .svg-soft { fill: #e8f4f2; stroke: var(--accent); stroke-width: 1.5; }
+    .svg-node { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.5; }
+    a { color: #0b5cad; }
+    @media (max-width: 880px) {
+      main { display: block; }
+      nav { position: static; max-height: none; border-right: 0; border-bottom: 1px solid var(--line); }
+    }
+    @media print {
+      nav { display: none; }
+      main { display: block; max-width: none; }
+      pre { white-space: pre-wrap; }
+      a::after { content: " (" attr(href) ")"; font-size: 80%; color: var(--muted); }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Regression: Mathematical, From-Scratch Python, Libraries, and Research Guide</h1>
+  <p class="lede">A beginner-friendly, self-study source designed for NotebookLM: intuition first, math and statistics from first principles, pure Python implementations, professional library workflows, diagnostics, research methods, papers, and a detailed glossary with exercises.</p>
+</header>
+<main>
+<nav aria-label="Table of contents">
+  <a href="#notes">Notes</a>
+  <a href="#how-to-use">How to Use This Guide</a>
+  <a href="#beginner-primer">Beginner Primer</a>
+  <a href="#orientation">Orientation</a>
+  <a href="#math">Mathematical Foundation</a>
+  <a href="#scratch">From Scratch: Pure Python</a>
+  <a href="#models">Core Regression Models</a>
+  <a href="#diagnostics">Diagnostics and Inference</a>
+  <a href="#libraries">Python Libraries</a>
+  <a href="#workflow">Research-Grade Workflow</a>
+  <a href="#common-mistakes">Common Mistakes</a>
+  <a href="#learning-sequence">Learning Sequence</a>
+  <a href="#ai-prompts">NotebookLM Prompts</a>
+  <a href="#reading">How to Read Papers</a>
+  <a href="#further">Further Research</a>
+  <a href="#papers">Suggested Papers</a>
+  <a href="#glossary">Glossary and Exercises</a>
+  <a href="#sources">Sources</a>
+</nav>
+<article>
+
+<section id="notes">
+  <h2>Offline Notes</h2>
+  <p>Use this panel when the guide is opened through the local notes server. Notes are stored in <code>regression_notes.sqlite3</code> in the same folder as this HTML file, not in browser storage.</p>
+  <div class="notes-panel" data-notes-app>
+    <div class="notes-grid">
+      <div>
+        <label for="note-section">Section</label>
+        <select id="note-section">
+          <option>General</option>
+          <option>How to Use This Guide</option>
+          <option>Beginner Primer</option>
+          <option>Orientation</option>
+          <option>Mathematical Foundation</option>
+          <option>From Scratch Python</option>
+          <option>Core Regression Models</option>
+          <option>Diagnostics and Inference</option>
+          <option>Python Libraries</option>
+          <option>Research-Grade Workflow</option>
+          <option>Common Mistakes</option>
+          <option>Learning Sequence</option>
+          <option>NotebookLM Prompts</option>
+          <option>How to Read Papers</option>
+          <option>Further Research</option>
+          <option>Glossary</option>
+        </select>
+      </div>
+      <div>
+        <label for="note-title">Title</label>
+        <input id="note-title" type="text" placeholder="Example: Why ridge helps collinearity">
+      </div>
+    </div>
+    <label for="note-body" style="margin-top: 12px;">Note</label>
+    <textarea id="note-body" placeholder="Write your note, question, derivation, or teaching prompt here."></textarea>
+    <div class="notes-actions">
+      <button class="primary" type="button" id="save-note">Save note</button>
+      <button type="button" id="refresh-notes">Refresh</button>
+      <button type="button" id="export-notes">Export JSON</button>
+      <button type="button" id="clear-note-form">Clear form</button>
+    </div>
+    <div class="notes-status" id="notes-status">Start <code>notes_server.py</code> and open the local server URL to enable SQLite notes.</div>
+    <div class="notes-list" id="notes-list" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="how-to-use">
+  <h2>How to Use This Guide</h2>
+  <p>This guide is meant for a learner who may be new to mathematics, statistics, and Python. Do not read it as a list of formulas to memorize. Read it as a sequence of questions: What are we trying to predict or understand? What assumptions are we making? What calculation is being performed? How do we know whether the result is reliable?</p>
+  <div class="box key">
+    <strong>Source update:</strong> this browser guide has been updated using the companion document <code>Regression_Mathematical_and_Python_Guide.docx</code>. The DOCX emphasizes first principles, beginner explanations, pure-Python transparency, library workflows, common mistakes, and a staged teaching sequence.
+  </div>
+  <h3>Recommended Study Order</h3>
+  <ol>
+    <li><strong>Read the beginner primer.</strong> Make sure words like mean, variance, function, slope, variable, list, loop, and function are clear.</li>
+    <li><strong>Read the orientation.</strong> Learn what regression is trying to do before touching formulas.</li>
+    <li><strong>Work simple linear regression by hand.</strong> Use five data points and compute the slope, intercept, predictions, and residuals.</li>
+    <li><strong>Run the pure-Python code.</strong> The goal is to see every calculation, not to build production software.</li>
+    <li><strong>Use libraries after the scratch version makes sense.</strong> NumPy, pandas, statsmodels, and scikit-learn automate work you should already be able to describe.</li>
+    <li><strong>Add your own notes per topic.</strong> Open this guide through <code>notes_server.py</code>, click a topic's <code>Add note</code> button, and write your understanding in your own words.</li>
+  </ol>
+  <h3>Four Layers to Keep Connected</h3>
+  <table>
+    <tr><th>Layer</th><th>Beginner Question</th><th>Regression Example</th></tr>
+    <tr><td>Substantive</td><td>What real-world question matters?</td><td>Does more rainfall predict higher crop yield?</td></tr>
+    <tr><td>Mathematical</td><td>What relationship are we assuming?</td><td><code>yield = intercept + slope * rainfall + error</code></td></tr>
+    <tr><td>Statistical</td><td>How uncertain is the answer?</td><td>Standard errors, confidence intervals, prediction intervals.</td></tr>
+    <tr><td>Computational</td><td>How is the calculation implemented safely?</td><td>Clean data, split correctly, fit model, check residuals, avoid leakage.</td></tr>
+  </table>
+  <div class="exercise">
+    <strong>Exercises:</strong> Write one sentence for each layer for a regression problem you care about. Then add a topic note explaining which layer is least clear to you.
+  </div>
+</section>
+
+<section id="beginner-primer">
+  <h2>Beginner Primer: Math, Statistics, and Python</h2>
+  <p>This primer supplies the minimum vocabulary needed before regression. You do not need advanced mathematics to begin, but you do need careful meanings for basic terms.</p>
+
+  <h3>1.1 Math Primer</h3>
+  <table>
+    <tr><th>Idea</th><th>Plain Meaning</th><th>Regression Use</th></tr>
+    <tr><td>Variable</td><td>A named quantity that can change.</td><td><code>x</code> may be rainfall; <code>y</code> may be crop yield.</td></tr>
+    <tr><td>Function</td><td>A rule that maps an input to an output.</td><td><code>f(x)</code> maps predictors to a prediction.</td></tr>
+    <tr><td>Slope</td><td>Change in vertical value per one-unit horizontal change.</td><td>A slope of 2 means predicted <code>y</code> rises by 2 when <code>x</code> rises by 1.</td></tr>
+    <tr><td>Intercept</td><td>The predicted value when predictors equal zero.</td><td>Useful algebraically even when zero is not meaningful in the data.</td></tr>
+    <tr><td>Summation</td><td>Adding many similar quantities.</td><td><code>Σ residual²</code> means add all squared residuals.</td></tr>
+    <tr><td>Derivative</td><td>A rate of change. At a minimum, know that setting a derivative to zero can locate a minimum.</td><td>OLS formulas come from minimizing squared error.</td></tr>
+    <tr><td>Vector</td><td>A list of numbers treated as one mathematical object.</td><td>All outcomes can be stored as vector <code>y</code>.</td></tr>
+    <tr><td>Matrix</td><td>A rectangular table of numbers.</td><td>The design matrix <code>X</code> stores all predictors.</td></tr>
+  </table>
+  <div class="formula">Line: y = b0 + b1*x
+Prediction: y_hat = b0 + b1*x
+Residual: residual = observed_y - predicted_y</div>
+  <p>For a beginner, the most important habit is to read every formula aloud. For example, <code>y_hat = b0 + b1*x</code> means: predicted outcome equals baseline plus slope times predictor.</p>
+
+  <h3>1.2 Statistics Primer</h3>
+  <table>
+    <tr><th>Term</th><th>Beginner Explanation</th><th>Why It Matters</th></tr>
+    <tr><td>Population</td><td>The full group you want to learn about.</td><td>All future customers, all farms in a region, all possible patients.</td></tr>
+    <tr><td>Sample</td><td>The observed cases you actually have.</td><td>Your regression is fitted on the sample, not the whole population.</td></tr>
+    <tr><td>Mean</td><td>The average: add values and divide by count.</td><td>OLS predictions target conditional means under squared loss.</td></tr>
+    <tr><td>Variance</td><td>How spread out values are around their mean.</td><td>Regression separates explained and unexplained variation.</td></tr>
+    <tr><td>Covariance</td><td>Whether two variables move together.</td><td>The simple regression slope is covariance divided by variance.</td></tr>
+    <tr><td>Correlation</td><td>Scaled covariance between -1 and 1.</td><td>Correlation is unit-free; slope depends on units.</td></tr>
+    <tr><td>Noise</td><td>Variation not explained by the model.</td><td>Noise limits prediction accuracy even with the right model.</td></tr>
+    <tr><td>Uncertainty</td><td>The fact that another sample would give different estimates.</td><td>Standard errors and intervals quantify this instability.</td></tr>
+  </table>
+  <div class="box warn">
+    <strong>Beginner warning:</strong> a fitted regression line is not a law of nature. It is a summary of a relationship under assumptions, data limitations, and modelling choices.
+  </div>
+
+  <h3>1.3 Python Primer</h3>
+  <p>The pure-Python section uses lists, loops, functions, classes, and simple arithmetic. The examples below are enough to read the implementation code.</p>
+  <pre><code class="language-python"># A list stores multiple values.
+x = [1, 2, 3, 4, 5]
+y = [2, 4, 5, 4, 5]
+
+# A loop repeats work.
+total = 0
+for value in x:
+    total = total + value
+
+# A function names reusable logic.
+def mean(values):
+    return sum(values) / len(values)
+
+# zip pairs values from two lists.
+for xi, yi in zip(x, y):
+    print(xi, yi)
+
+# A list comprehension creates a new list.
+centered_x = [xi - mean(x) for xi in x]</code></pre>
+  <h3>1.4 A Tiny Regression Dataset by Hand</h3>
+  <p>Suppose <code>x = [1, 2, 3, 4, 5]</code> and <code>y = [2, 4, 5, 4, 5]</code>. The average of <code>x</code> is 3. The average of <code>y</code> is 4. The simple regression slope is:</p>
+  <div class="formula">slope = Σ(x_i - x_bar)(y_i - y_bar) / Σ(x_i - x_bar)^2
+      = 6 / 10
+      = 0.6
+
+intercept = y_bar - slope*x_bar
+          = 4 - 0.6*3
+          = 2.2
+
+fitted line: y_hat = 2.2 + 0.6*x</div>
+  <p>At <code>x = 4</code>, the prediction is <code>2.2 + 0.6*4 = 4.6</code>. If the observed value is <code>4</code>, the residual is <code>4 - 4.6 = -0.6</code>. This one example contains the core vocabulary of regression: data, average, slope, intercept, prediction, and residual.</p>
+  <h3>1.5 Same Simple Regression with Raw Sums</h3>
+  <p>The PDF <code>regression_analysis.pdf</code> presents a beginner-friendly calculation table using raw sums. This is useful because it shows that a fitted line can be computed from columns you can make by hand: <code>x</code>, <code>y</code>, <code>x*y</code>, and <code>x²</code>.</p>
+  <div class="formula">For a simple line y_hat = a + b*x:
+
+b = [n*Σ(xy) - Σx*Σy] / [n*Σ(x²) - (Σx)²]
+a = [Σy*Σ(x²) - Σx*Σ(xy)] / [n*Σ(x²) - (Σx)²]</div>
+  <p>Using the PDF's small dataset <code>x = [1, 2, 1, 4, 3]</code> and <code>y = [3, 4, 2, 7, 5]</code>:</p>
+  <table>
+    <tr><th>Quantity</th><th>Value</th></tr>
+    <tr><td><code>n</code></td><td>5</td></tr>
+    <tr><td><code>Σx</code></td><td>11</td></tr>
+    <tr><td><code>Σy</code></td><td>21</td></tr>
+    <tr><td><code>Σxy</code></td><td>56</td></tr>
+    <tr><td><code>Σx²</code></td><td>31</td></tr>
+  </table>
+  <div class="formula">b = [5*56 - 11*21] / [5*31 - 11²] = 49 / 34 = 1.441...
+a = [21*31 - 11*56] / [5*31 - 11²] = 35 / 34 = 1.029...
+
+fitted line: y_hat = 1.029 + 1.441*x</div>
+  <p>This raw-sum formula and the centered formula in the math section produce the same line. The centered formula is usually easier to interpret; the raw-sum formula is often easier for a first manual spreadsheet calculation.</p>
+  <div class="exercise">
+    <strong>Exercises:</strong> Recompute the fitted value and residual for every point in the tiny dataset. Then implement both the centered formula and the raw-sum formula in plain Python and verify that they return the same slope and intercept.
+  </div>
+</section>
+
+<section id="orientation">
+  <h2>Orientation</h2>
+  <p>Regression is the study of conditional prediction and conditional structure. Given inputs <code>x</code> and a numeric response <code>y</code>, regression asks: what part of <code>y</code> is systematically explained by <code>x</code>, what uncertainty remains, and how well will the learned relationship generalize to new cases?</p>
+  <div class="box key">
+    <strong>Central object:</strong> the conditional expectation function <code>m(x) = E[Y | X = x]</code>. Linear regression assumes this function can be approximated by a linear combination of features; modern regression relaxes the feature map, the loss, the distribution, or the estimation procedure.
+  </div>
+  <div class="box">
+    <strong>Offline note:</strong> this document is self-contained for browser viewing. Styling is embedded in this file, diagrams are inline SVG, and no JavaScript or remote-hosted library is required to read it offline. The sources section uses textual citations only.
+  </div>
+  <h3>Regression Has Four Different Goals</h3>
+  <p>A beginner mistake is to say “I ran a regression” without saying why. The same equation can be used for very different purposes, and each purpose needs different evidence.</p>
+  <table>
+    <tr><th>Goal</th><th>Question</th><th>What Counts as Good Evidence?</th></tr>
+    <tr><td>Description</td><td>What pattern is visible in the data I observed?</td><td>Clear summaries, plots, residual checks, honest limits.</td></tr>
+    <tr><td>Prediction</td><td>How accurately can I estimate new outcomes?</td><td>Validation data, cross-validation, leakage control, deployment realism.</td></tr>
+    <tr><td>Explanation</td><td>Which variables are conditionally associated with the outcome?</td><td>Thoughtful controls, uncertainty intervals, sensitivity checks.</td></tr>
+    <tr><td>Causal inference</td><td>What would happen if we intervened and changed a variable?</td><td>Research design: randomization, natural experiment, instruments, discontinuity, panel methods, or strong assumptions.</td></tr>
+  </table>
+  <div class="box warn">
+    <strong>Important:</strong> good prediction does not prove causality. A causal coefficient may come from a model that is not optimized for prediction. A descriptive association may be useful even when neither prediction nor causality is justified.
+  </div>
+  <h3>Linear Regression Does Not Always Mean a Straight Raw-Line Relationship</h3>
+  <p>In regression, “linear” means linear in the unknown coefficients. The predictors can be transformed or combined. These are still linear regression models in their coefficients:</p>
+  <div class="formula">Y = beta_0 + beta_1*X + error
+Y = beta_0 + beta_1*X + beta_2*X^2 + error
+log(Y) = beta_0 + beta_1*X + error
+Y = beta_0 + beta_1*log(X) + error
+Y = beta_0 + beta_1*X + beta_2*Z + beta_3*X*Z + error</div>
+  <p>The model can bend or include interactions while still being fitted by ordinary least squares, because the coefficients enter additively.</p>
+  <h3>Before Fitting: Read the Scatterplot</h3>
+  <p>The PDF starts with a Bitcoin price example and uses a scatterplot before any formula. That is the right beginner habit. Put the predictor on the x-axis and the outcome on the y-axis, then ask what shape you see.</p>
+  <table>
+    <tr><th>Scatterplot Pattern</th><th>What It Suggests</th><th>Beginner Response</th></tr>
+    <tr><td>Points rise roughly left to right.</td><td>Positive association.</td><td>A positive slope may summarize the relationship.</td></tr>
+    <tr><td>Points fall roughly left to right.</td><td>Negative association.</td><td>A negative slope may summarize the relationship.</td></tr>
+    <tr><td>Points curve upward or downward.</td><td>A straight line may be too simple.</td><td>Consider transformations, polynomial terms, splines, or a nonlinear model.</td></tr>
+    <tr><td>One point sits far away from the pattern.</td><td>Possible outlier or new regime.</td><td>Check for data error, real event, leverage, and influence.</td></tr>
+    <tr><td>Vertical spread grows with x.</td><td>Nonconstant error variance.</td><td>Use residual diagnostics and consider robust standard errors or transformations.</td></tr>
+  </table>
+  <p>A scatterplot does not prove a model is correct, but it often tells you which model is obviously wrong.</p>
+  <h3>Population, Sample, Signal, and Noise</h3>
+  <p>A useful beginner model is:</p>
+  <div class="formula">observed outcome = systematic component + unexplained component
+Y_i = f(X_i) + epsilon_i</div>
+  <p>The sample is the data you have. The population is the larger group or process you want to learn about. The systematic component is the signal the model tries to learn. The unexplained component is noise, omitted causes, measurement error, or randomness. A residual is computed after fitting the sample model; it is not exactly the same as the unobservable population error.</p>
+  <figure class="diagram" id="diagram-regression-map">
+    <svg viewBox="0 0 820 310" role="img" aria-labelledby="regmap-title regmap-desc">
+      <title id="regmap-title">Regression learning map</title>
+      <desc id="regmap-desc">A flow diagram from question and data through model, diagnostics, validation, interpretation, and research.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#334155"></path>
+        </marker>
+      </defs>
+      <text x="24" y="30" class="svg-title">Regression as a research workflow</text>
+      <rect x="24" y="62" width="132" height="54" rx="8" class="svg-node"></rect>
+      <text x="47" y="84" class="svg-label">Question</text>
+      <text x="43" y="102" class="svg-small">prediction or effect</text>
+      <rect x="198" y="62" width="132" height="54" rx="8" class="svg-node"></rect>
+      <text x="235" y="84" class="svg-label">Data</text>
+      <text x="220" y="102" class="svg-small">sampling, features</text>
+      <rect x="372" y="62" width="132" height="54" rx="8" class="svg-node"></rect>
+      <text x="411" y="84" class="svg-label">Model</text>
+      <text x="397" y="102" class="svg-small">loss + assumptions</text>
+      <rect x="546" y="62" width="132" height="54" rx="8" class="svg-node"></rect>
+      <text x="581" y="84" class="svg-label">Estimate</text>
+      <text x="572" y="102" class="svg-small">fit parameters</text>
+      <line x1="156" y1="89" x2="195" y2="89" class="svg-line" marker-end="url(#arrow)"></line>
+      <line x1="330" y1="89" x2="369" y2="89" class="svg-line" marker-end="url(#arrow)"></line>
+      <line x1="504" y1="89" x2="543" y2="89" class="svg-line" marker-end="url(#arrow)"></line>
+      <rect x="111" y="178" width="132" height="58" rx="8" class="svg-soft"></rect>
+      <text x="140" y="201" class="svg-label">Validate</text>
+      <text x="128" y="220" class="svg-small">holdout, CV, shift</text>
+      <rect x="344" y="178" width="132" height="58" rx="8" class="svg-soft"></rect>
+      <text x="372" y="201" class="svg-label">Diagnose</text>
+      <text x="363" y="220" class="svg-small">residuals, leverage</text>
+      <rect x="577" y="178" width="132" height="58" rx="8" class="svg-soft"></rect>
+      <text x="602" y="201" class="svg-label">Interpret</text>
+      <text x="594" y="220" class="svg-small">uncertainty, limits</text>
+      <path d="M612 116 C612 145, 410 144, 410 175" class="svg-line" marker-end="url(#arrow)"></path>
+      <line x1="344" y1="207" x2="246" y2="207" class="svg-line" marker-end="url(#arrow)"></line>
+      <line x1="476" y1="207" x2="574" y2="207" class="svg-line" marker-end="url(#arrow)"></line>
+      <path d="M177 178 C150 136, 384 137, 438 116" class="svg-accent" marker-end="url(#arrow)"></path>
+      <text x="262" y="154" class="svg-small">revise features, assumptions, or model</text>
+      <text x="248" y="286" class="svg-small">A research-grade regression model is not only fitted; it is questioned, tested, and revised.</text>
+    </svg>
+    <figcaption>Diagram 1. The practical regression loop: specify the question, construct data, fit a model, validate it, diagnose it, and interpret it with uncertainty.</figcaption>
+  </figure>
+  <h3>Learning Path</h3>
+  <ol>
+    <li>Understand loss minimization, probability assumptions, and matrix notation.</li>
+    <li>Derive ordinary least squares by calculus and geometry.</li>
+    <li>Implement scalar and matrix-like algorithms in pure Python.</li>
+    <li>Study bias, variance, regularization, diagnostics, and uncertainty.</li>
+    <li>Use libraries for scale, statistical inference, model selection, and reproducibility.</li>
+    <li>Read research papers by separating problem, assumptions, estimator, algorithm, theorem, empirical evidence, and limitations.</li>
+  </ol>
+  <h3>Notation</h3>
+  <table>
+    <tr><th>Symbol</th><th>Meaning</th></tr>
+    <tr><td><code>n</code></td><td>Number of observations.</td></tr>
+    <tr><td><code>p</code></td><td>Number of predictors or columns excluding the intercept.</td></tr>
+    <tr><td><code>X</code></td><td>Design matrix with shape <code>n x (p+1)</code> when an intercept column is included.</td></tr>
+    <tr><td><code>y</code></td><td>Response vector with length <code>n</code>.</td></tr>
+    <tr><td><code>β</code></td><td>Coefficient vector.</td></tr>
+    <tr><td><code>ε</code></td><td>Error term: random part of the response not explained by the model.</td></tr>
+    <tr><td><code>ŷ</code></td><td>Prediction: <code>Xβ</code>.</td></tr>
+    <tr><td><code>r</code></td><td>Residual: <code>y - ŷ</code>.</td></tr>
+  </table>
+  <div class="exercise">
+    <strong>Exercises:</strong> Write a one-paragraph distinction between prediction and explanation. Give one example where a regression model predicts well but is scientifically misleading.
+  </div>
+</section>
+
+<section id="math">
+  <h2>Mathematical Foundation</h2>
+  <h3>2.1 Regression as Risk Minimization</h3>
+  <p>A regression estimator chooses a function <code>f</code> from a model class <code>F</code> by minimizing expected loss. The theoretical target is risk:</p>
+  <div class="formula">R(f) = E[L(Y, f(X))]</div>
+  <p>For squared error loss <code>L(y, f(x)) = (y - f(x))²</code>, the risk-minimizing function over all measurable functions is <code>E[Y | X = x]</code>. Since the data-generating distribution is unknown, empirical risk is minimized instead:</p>
+  <div class="formula">R_n(f) = (1/n) Σᵢ (yᵢ - f(xᵢ))²</div>
+
+  <h3>2.2 Simple Linear Regression</h3>
+  <p>The simple model is <code>yᵢ = β₀ + β₁xᵢ + εᵢ</code>. Ordinary least squares minimizes:</p>
+  <div class="formula">S(β₀, β₁) = Σᵢ (yᵢ - β₀ - β₁xᵢ)²</div>
+  <figure class="diagram" id="diagram-ols-residuals">
+    <svg viewBox="0 0 820 360" role="img" aria-labelledby="ols-title ols-desc">
+      <title id="ols-title">OLS line and residuals</title>
+      <desc id="ols-desc">A scatterplot with a fitted line and vertical residual distances from observed points to the fitted line.</desc>
+      <line x1="70" y1="300" x2="760" y2="300" class="svg-line"></line>
+      <line x1="70" y1="300" x2="70" y2="50" class="svg-line"></line>
+      <text x="742" y="326" class="svg-label">x</text>
+      <text x="42" y="58" class="svg-label">y</text>
+      <line x1="98" y1="268" x2="735" y2="86" class="svg-accent"></line>
+      <text x="540" y="92" class="svg-label">fitted line: y-hat = beta0 + beta1 x</text>
+      <g fill="#0f766e">
+        <circle cx="130" cy="250" r="5"></circle>
+        <circle cx="220" cy="200" r="5"></circle>
+        <circle cx="315" cy="225" r="5"></circle>
+        <circle cx="410" cy="165" r="5"></circle>
+        <circle cx="520" cy="130" r="5"></circle>
+        <circle cx="650" cy="95" r="5"></circle>
+      </g>
+      <g stroke="#8b3a3a" stroke-width="2" stroke-dasharray="5 4">
+        <line x1="130" y1="250" x2="130" y2="258"></line>
+        <line x1="220" y1="200" x2="220" y2="233"></line>
+        <line x1="315" y1="225" x2="315" y2="206"></line>
+        <line x1="410" y1="165" x2="410" y2="179"></line>
+        <line x1="520" y1="130" x2="520" y2="148"></line>
+        <line x1="650" y1="95" x2="650" y2="111"></line>
+      </g>
+      <text x="180" y="228" class="svg-small">vertical residuals: r_i = y_i - y-hat_i</text>
+      <path d="M178 222 C163 228, 145 239, 133 251" class="svg-warn"></path>
+      <rect x="486" y="244" width="238" height="58" rx="8" class="svg-node"></rect>
+      <text x="506" y="267" class="svg-label">OLS chooses the line that minimizes</text>
+      <text x="506" y="287" class="svg-small">sum of squared vertical residuals.</text>
+    </svg>
+    <figcaption>Diagram 2. Ordinary least squares minimizes the sum of squared vertical residuals between observations and the fitted line.</figcaption>
+  </figure>
+  <p>Setting partial derivatives to zero yields:</p>
+  <div class="formula">β̂₁ = Σᵢ(xᵢ - x̄)(yᵢ - ȳ) / Σᵢ(xᵢ - x̄)²
+β̂₀ = ȳ - β̂₁x̄</div>
+  <p>The slope is covariance divided by variance. The intercept anchors the fitted line at the point <code>(x̄, ȳ)</code>.</p>
+
+  <h3>2.3 Multiple Linear Regression</h3>
+  <p>With several predictors, the model becomes:</p>
+  <div class="formula">y = Xβ + ε</div>
+  <p>The ordinary least squares objective is:</p>
+  <div class="formula">S(β) = ||y - Xβ||² = (y - Xβ)'(y - Xβ)</div>
+  <p>Differentiating gives the normal equations:</p>
+  <div class="formula">X'X β̂ = X'y</div>
+  <p>If <code>X'X</code> is invertible:</p>
+  <div class="formula">β̂ = (X'X)⁻¹X'y</div>
+  <p>In numerical software, this inverse is usually not computed directly. QR decomposition, singular value decomposition, or iterative solvers are more stable.</p>
+
+  <h3>2.4 Geometry of OLS</h3>
+  <p>The fitted values <code>ŷ = Xβ̂</code> are the orthogonal projection of <code>y</code> onto the column space of <code>X</code>. The residual vector is orthogonal to every column of <code>X</code>:</p>
+  <div class="formula">X'(y - Xβ̂) = 0</div>
+  <figure class="diagram" id="diagram-projection">
+    <svg viewBox="0 0 820 350" role="img" aria-labelledby="proj-title proj-desc">
+      <title id="proj-title">Projection geometry of OLS</title>
+      <desc id="proj-desc">A plane representing the column space of X, with y projected onto it as y-hat and the residual perpendicular to the plane.</desc>
+      <polygon points="130,260 520,260 700,160 310,160" fill="#e8f4f2" stroke="#0f766e" stroke-width="2"></polygon>
+      <text x="522" y="249" class="svg-label">Column space of X</text>
+      <line x1="245" y1="235" x2="430" y2="190" class="svg-accent"></line>
+      <circle cx="430" cy="190" r="5" fill="#0f766e"></circle>
+      <text x="440" y="190" class="svg-label">y-hat = X beta-hat</text>
+      <line x1="430" y1="190" x2="430" y2="70" class="svg-warn" stroke-dasharray="6 5"></line>
+      <circle cx="430" cy="70" r="5" fill="#8b3a3a"></circle>
+      <text x="442" y="74" class="svg-label">observed y</text>
+      <text x="446" y="134" class="svg-small">residual r = y - y-hat</text>
+      <path d="M430 190 L466 180 L466 158" fill="none" stroke="#334155" stroke-width="1.5"></path>
+      <text x="474" y="169" class="svg-small">orthogonal</text>
+      <line x1="245" y1="235" x2="320" y2="217" stroke="#64748b" stroke-width="2"></line>
+      <line x1="245" y1="235" x2="305" y2="202" stroke="#64748b" stroke-width="2"></line>
+      <text x="190" y="238" class="svg-small">basis directions from predictors</text>
+    </svg>
+    <figcaption>Diagram 3. OLS projects the response vector onto the space spanned by the predictors. The residual is perpendicular to that space.</figcaption>
+  </figure>
+  <p>This is why OLS residuals sum to zero when an intercept is included, and why fitted values and residuals are uncorrelated in the training sample.</p>
+
+  <h3>2.5 Probabilistic Assumptions</h3>
+  <table>
+    <tr><th>Assumption</th><th>Role</th><th>Consequence if Broken</th></tr>
+    <tr><td>Linearity in parameters</td><td>Makes <code>Xβ</code> the model mean.</td><td>Biased structure if the true conditional mean is outside the feature space.</td></tr>
+    <tr><td>Exogeneity: <code>E[ε | X] = 0</code></td><td>Identifies coefficients as conditional effects under the model.</td><td>Omitted-variable bias, simultaneity bias, measurement error bias.</td></tr>
+    <tr><td>No perfect multicollinearity</td><td>Ensures a unique OLS solution.</td><td>Coefficients are unidentified or unstable.</td></tr>
+    <tr><td>Homoskedasticity</td><td>Constant error variance supports classical standard errors.</td><td>Inference needs robust standard errors or a better variance model.</td></tr>
+    <tr><td>No autocorrelation</td><td>Important for time series and clustered data.</td><td>Standard errors are often too small.</td></tr>
+    <tr><td>Normal errors</td><td>Exact small-sample t and F tests.</td><td>Large-sample inference may still work; small-sample inference may not.</td></tr>
+  </table>
+  <h3>What Each Assumption Is Needed For</h3>
+  <p>The DOCX emphasizes that assumptions should not be memorized as a single ritual list. Each one supports a different conclusion.</p>
+  <table>
+    <tr><th>Conclusion You Want</th><th>Key Requirements</th><th>Beginner Interpretation</th></tr>
+    <tr><td>Unique coefficients</td><td>No perfect multicollinearity.</td><td>The model cannot estimate two columns that contain the same information exactly.</td></tr>
+    <tr><td>Unbiased coefficients</td><td>Zero conditional mean: <code>E[epsilon | X] = 0</code>.</td><td>After controlling for included predictors, omitted influences should not systematically move with the predictors.</td></tr>
+    <tr><td>Classical standard errors</td><td>Homoskedastic, uncorrelated errors.</td><td>The usual uncertainty formulas assume equal error variance and no dependence.</td></tr>
+    <tr><td>Exact small-sample t and F tests</td><td>Normal errors in addition to classical assumptions.</td><td>Normality matters most when samples are small.</td></tr>
+    <tr><td>Good prediction on future data</td><td>Stable relationship and matching validation design.</td><td>A model tested randomly may fail if deployment is temporal, grouped, or shifted.</td></tr>
+    <tr><td>Causal interpretation</td><td>A credible identification strategy.</td><td>Regression alone does not remove hidden confounding.</td></tr>
+  </table>
+
+  <h3>2.6 Sampling Distribution and Inference</h3>
+  <p>Under classical assumptions with error variance <code>σ²</code>:</p>
+  <div class="formula">E[β̂ | X] = β
+Var(β̂ | X) = σ²(X'X)⁻¹
+σ̂² = RSS / (n - p - 1)</div>
+  <p>A coefficient standard error is the square root of the corresponding diagonal element of <code>σ̂²(X'X)⁻¹</code>. The familiar t-statistic is:</p>
+  <div class="formula">tⱼ = (β̂ⱼ - βⱼ,0) / SE(β̂ⱼ)</div>
+  <h3>2.6.1 Confidence Intervals, Prediction Intervals, and p-values</h3>
+  <p>A confidence interval for a coefficient is a range produced by a method that would cover the true coefficient in a stated percentage of repeated samples, if the assumptions hold. It is not a guarantee that the specific interval contains the truth.</p>
+  <div class="formula">95% coefficient interval:
+beta_hat_j +/- t_critical * SE(beta_hat_j)</div>
+  <p>For a new row of predictors <code>x0</code>, there are two different uncertainty questions:</p>
+  <table>
+    <tr><th>Question</th><th>Interval</th><th>Why It Differs</th></tr>
+    <tr><td>What is the average outcome for cases like this?</td><td>Confidence interval for the mean response.</td><td>Includes uncertainty about the fitted mean.</td></tr>
+    <tr><td>What might one new individual outcome be?</td><td>Prediction interval.</td><td>Includes fitted-mean uncertainty plus new observation noise, so it is wider.</td></tr>
+  </table>
+  <p>A p-value is the probability, under a null hypothesis and assumptions, of seeing a test statistic as extreme as the one observed. It is not the probability that the null hypothesis is true, and it is not a measure of practical importance.</p>
+
+  <h3>2.7 Bias-Variance Decomposition</h3>
+  <p>For a point <code>x</code>, expected prediction error under squared loss decomposes as:</p>
+  <div class="formula">E[(Y - f̂(x))²] = irreducible noise + Bias[f̂(x)]² + Var[f̂(x)]</div>
+  <figure class="diagram" id="diagram-bias-variance">
+    <svg viewBox="0 0 820 360" role="img" aria-labelledby="bv-title bv-desc">
+      <title id="bv-title">Bias variance tradeoff</title>
+      <desc id="bv-desc">A line chart showing bias decreasing, variance increasing, and test error U-shaped as model complexity grows.</desc>
+      <line x1="70" y1="300" x2="760" y2="300" class="svg-line"></line>
+      <line x1="70" y1="300" x2="70" y2="48" class="svg-line"></line>
+      <text x="620" y="328" class="svg-label">model complexity</text>
+      <text x="24" y="55" class="svg-label">error</text>
+      <path d="M95 80 C220 110, 360 175, 725 272" stroke="#0f766e" stroke-width="3" fill="none"></path>
+      <text x="118" y="92" class="svg-label">bias squared</text>
+      <path d="M95 276 C250 262, 415 210, 725 76" stroke="#8b3a3a" stroke-width="3" fill="none"></path>
+      <text x="612" y="78" class="svg-label">variance</text>
+      <path d="M95 132 C235 92, 430 92, 725 238" stroke="#334155" stroke-width="3" fill="none"></path>
+      <text x="385" y="86" class="svg-label">test error</text>
+      <line x1="385" y1="300" x2="385" y2="93" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5 5"></line>
+      <text x="324" y="324" class="svg-small">use validation to find this region</text>
+      <text x="96" y="326" class="svg-small">underfit</text>
+      <text x="700" y="326" class="svg-small">overfit</text>
+    </svg>
+    <figcaption>Diagram 4. As model complexity rises, bias usually falls and variance rises. Good validation targets the low test-error region, not the most complex model.</figcaption>
+  </figure>
+  <h3>Bias and Variance as a Target Analogy</h3>
+  <p>The PDF uses a target analogy that is useful for beginners. Imagine repeated model fits as shots at a bullseye, where the bullseye is the true relationship.</p>
+  <table>
+    <tr><th>Pattern</th><th>Meaning</th><th>Model Behavior</th></tr>
+    <tr><td>Shots tightly centered.</td><td>Low bias, low variance.</td><td>Accurate and stable.</td></tr>
+    <tr><td>Shots scattered around the center.</td><td>Low bias, high variance.</td><td>Correct on average, but unstable across samples.</td></tr>
+    <tr><td>Shots tightly grouped away from center.</td><td>High bias, low variance.</td><td>Consistently wrong, often underfit.</td></tr>
+    <tr><td>Shots scattered away from center.</td><td>High bias, high variance.</td><td>Wrong and unstable.</td></tr>
+  </table>
+  <p>Regularization, cross-validation, more appropriate features, and better validation design are practical tools for managing this tradeoff.</p>
+  <p>Flexible models reduce bias but often increase variance. Regularization accepts some bias to reduce variance.</p>
+
+  <h3>2.8 Regularized Regression</h3>
+  <p>Ridge regression penalizes large coefficients:</p>
+  <div class="formula">minβ ||y - Xβ||² + λΣⱼβⱼ²</div>
+  <p>The ridge solution, usually leaving the intercept unpenalized after centering, is:</p>
+  <div class="formula">β̂_ridge = (X'X + λI)⁻¹X'y</div>
+  <p>Lasso uses an absolute-value penalty:</p>
+  <div class="formula">minβ ||y - Xβ||² + λΣⱼ|βⱼ|</div>
+  <p>Lasso can set coefficients exactly to zero, performing embedded feature selection. Elastic net combines both:</p>
+  <div class="formula">minβ ||y - Xβ||² + λ[αΣⱼ|βⱼ| + (1-α)Σⱼβⱼ²/2]</div>
+  <figure class="diagram" id="diagram-regularization-geometry">
+    <svg viewBox="0 0 820 330" role="img" aria-labelledby="reggeo-title reggeo-desc">
+      <title id="reggeo-title">Regularization geometry</title>
+      <desc id="reggeo-desc">A comparison of ridge circular constraint and lasso diamond constraint, showing why lasso can hit an axis and set coefficients to zero.</desc>
+      <text x="160" y="34" class="svg-title">Ridge L2</text>
+      <line x1="70" y1="170" x2="340" y2="170" class="svg-line"></line>
+      <line x1="205" y1="300" x2="205" y2="55" class="svg-line"></line>
+      <circle cx="205" cy="170" r="86" fill="#e8f4f2" stroke="#0f766e" stroke-width="2"></circle>
+      <ellipse cx="250" cy="120" rx="95" ry="48" transform="rotate(-35 250 120)" fill="none" stroke="#8b3a3a" stroke-width="2"></ellipse>
+      <circle cx="250" cy="115" r="5" fill="#8b3a3a"></circle>
+      <text x="82" y="292" class="svg-small">smooth boundary shrinks coefficients</text>
+      <text x="218" y="66" class="svg-small">beta2</text>
+      <text x="315" y="161" class="svg-small">beta1</text>
+      <text x="562" y="34" class="svg-title">Lasso L1</text>
+      <line x1="470" y1="170" x2="740" y2="170" class="svg-line"></line>
+      <line x1="605" y1="300" x2="605" y2="55" class="svg-line"></line>
+      <polygon points="605,78 697,170 605,262 513,170" fill="#e8f4f2" stroke="#0f766e" stroke-width="2"></polygon>
+      <ellipse cx="680" cy="112" rx="105" ry="52" transform="rotate(-35 680 112)" fill="none" stroke="#8b3a3a" stroke-width="2"></ellipse>
+      <circle cx="697" cy="170" r="5" fill="#8b3a3a"></circle>
+      <text x="486" y="292" class="svg-small">corners often force one coefficient to zero</text>
+      <text x="618" y="66" class="svg-small">beta2</text>
+      <text x="715" y="161" class="svg-small">beta1</text>
+    </svg>
+    <figcaption>Diagram 5. Ridge has a smooth circular constraint; lasso has corners. The lasso solution often lands on an axis, producing exact zero coefficients.</figcaption>
+  </figure>
+
+  <h3>2.9 Generalized Linear Models</h3>
+  <p>Generalized linear models separate three ideas: a response distribution from the exponential family, a linear predictor <code>η = Xβ</code>, and a link function <code>g</code> such that <code>g(E[Y|X]) = η</code>. Logistic regression is a GLM for binary outcomes, and Poisson regression is a GLM for counts. They are regression models even when the response is not continuous.</p>
+
+  <h3>2.10 Causal Warning</h3>
+  <p>A regression coefficient is not automatically a causal effect. Causal interpretation requires a research design: randomized treatment, valid controls, natural experiment, instrumental variable, discontinuity, panel identification, or a defensible structural model.</p>
+  <div class="exercise">
+    <strong>Exercises:</strong> Derive the simple regression slope from the two normal equations. Then explain geometrically why residuals are orthogonal to the fitted values. Finally, describe why high <code>R²</code> does not prove causality.
+  </div>
+</section>
+
+<section id="scratch">
+  <h2>From Scratch: Pure Python, No Third-Party Libraries</h2>
+  <p>This section uses only the Python standard library. The goal is to understand estimators, not to outperform NumPy or scikit-learn.</p>
+  <h3>Why Implement Regression Yourself?</h3>
+  <p>The DOCX uses pure Python to expose the calculation. A library call can hide important ideas: centering, dot products, matrix multiplication, solving equations, residuals, standard errors, convergence, and validation. From-scratch code helps you answer “what is the computer actually doing?”</p>
+  <div class="box warn">
+    <strong>Numerical caution:</strong> from-scratch code is for learning. Serious numerical computing should use tested libraries because real datasets can have scaling problems, near-singular matrices, missing data, and unstable floating-point behavior.
+  </div>
+  <h3>Beginner Reading Strategy for Code</h3>
+  <ol>
+    <li>Read function names first: <code>mean</code>, <code>dot</code>, <code>transpose</code>, <code>matmul</code>.</li>
+    <li>Check inputs and outputs: list in, number out; matrix in, matrix out.</li>
+    <li>Run the function on tiny data where you can verify the answer by hand.</li>
+    <li>Only then read the full class or workflow.</li>
+  </ol>
+
+  <h3>3.1 Basic Utilities</h3>
+  <pre><code class="language-python">def mean(xs):
+    return sum(xs) / len(xs)
+
+def dot(a, b):
+    return sum(x * y for x, y in zip(a, b))
+
+def transpose(A):
+    return [list(row) for row in zip(*A)]
+
+def matmul(A, B):
+    Bt = transpose(B)
+    return [[dot(row, col) for col in Bt] for row in A]
+
+def matvec(A, v):
+    return [dot(row, v) for row in A]
+
+def add_intercept(X):
+    return [[1.0] + list(row) for row in X]
+
+def residuals(y, yhat):
+    return [yi - pi for yi, pi in zip(y, yhat)]
+
+def mse(y, yhat):
+    r = residuals(y, yhat)
+    return sum(e * e for e in r) / len(r)
+
+def mae(y, yhat):
+    return sum(abs(yi - pi) for yi, pi in zip(y, yhat)) / len(y)
+
+def r2_score(y, yhat):
+    ybar = mean(y)
+    ss_res = sum((yi - pi) ** 2 for yi, pi in zip(y, yhat))
+    ss_tot = sum((yi - ybar) ** 2 for yi in y)
+    return 1.0 - ss_res / ss_tot</code></pre>
+
+  <h3>3.2 Simple Linear Regression Closed Form</h3>
+  <pre><code class="language-python">class SimpleLinearRegression:
+    def fit(self, x, y):
+        xbar, ybar = mean(x), mean(y)
+        sxx = sum((xi - xbar) ** 2 for xi in x)
+        sxy = sum((xi - xbar) * (yi - ybar) for xi, yi in zip(x, y))
+        if sxx == 0:
+            raise ValueError("x has zero variance")
+        self.slope = sxy / sxx
+        self.intercept = ybar - self.slope * xbar
+        return self
+
+    def predict_one(self, x):
+        return self.intercept + self.slope * x
+
+    def predict(self, x):
+        return [self.predict_one(xi) for xi in x]
+
+x = [1, 2, 3, 4, 5]
+y = [2.1, 2.9, 4.2, 5.1, 5.8]
+model = SimpleLinearRegression().fit(x, y)
+pred = model.predict(x)
+print(model.intercept, model.slope, mse(y, pred), r2_score(y, pred))</code></pre>
+
+  <h3>3.3 Solving Linear Systems by Gaussian Elimination</h3>
+  <p>To fit multiple regression from the normal equations, solve <code>(X'X)β = X'y</code>. The function below uses partial pivoting.</p>
+  <pre><code class="language-python">def solve_linear_system(A, b):
+    n = len(A)
+    M = [row[:] + [rhs] for row, rhs in zip(A, b)]
+
+    for col in range(n):
+        pivot = max(range(col, n), key=lambda r: abs(M[r][col]))
+        if abs(M[pivot][col]) &lt; 1e-12:
+            raise ValueError("matrix is singular or nearly singular")
+        M[col], M[pivot] = M[pivot], M[col]
+
+        pivot_value = M[col][col]
+        M[col] = [v / pivot_value for v in M[col]]
+
+        for row in range(n):
+            if row == col:
+                continue
+            factor = M[row][col]
+            M[row] = [rv - factor * cv for rv, cv in zip(M[row], M[col])]
+
+    return [M[i][-1] for i in range(n)]</code></pre>
+
+  <h3>3.4 Multiple Linear Regression Closed Form</h3>
+  <figure class="diagram" id="diagram-normal-equations">
+    <svg viewBox="0 0 820 260" role="img" aria-labelledby="normal-title normal-desc">
+      <title id="normal-title">Normal equation computation path</title>
+      <desc id="normal-desc">A flow diagram showing X and y transformed into X transpose X and X transpose y, then solved for beta, then used for predictions.</desc>
+      <defs>
+        <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#334155"></path>
+        </marker>
+      </defs>
+      <rect x="30" y="78" width="120" height="64" rx="8" class="svg-node"></rect>
+      <text x="70" y="104" class="svg-label">X, y</text>
+      <text x="48" y="124" class="svg-small">training data</text>
+      <rect x="200" y="42" width="150" height="64" rx="8" class="svg-soft"></rect>
+      <text x="232" y="68" class="svg-label">X'X</text>
+      <text x="223" y="88" class="svg-small">feature geometry</text>
+      <rect x="200" y="142" width="150" height="64" rx="8" class="svg-soft"></rect>
+      <text x="232" y="168" class="svg-label">X'y</text>
+      <text x="219" y="188" class="svg-small">feature-response link</text>
+      <rect x="420" y="78" width="150" height="64" rx="8" class="svg-node"></rect>
+      <text x="452" y="104" class="svg-label">solve</text>
+      <text x="442" y="124" class="svg-small">(X'X) beta = X'y</text>
+      <rect x="640" y="78" width="140" height="64" rx="8" class="svg-node"></rect>
+      <text x="686" y="104" class="svg-label">beta</text>
+      <text x="667" y="124" class="svg-small">coefficients</text>
+      <line x1="150" y1="100" x2="197" y2="75" class="svg-line" marker-end="url(#arrow2)"></line>
+      <line x1="150" y1="122" x2="197" y2="170" class="svg-line" marker-end="url(#arrow2)"></line>
+      <line x1="350" y1="74" x2="417" y2="100" class="svg-line" marker-end="url(#arrow2)"></line>
+      <line x1="350" y1="174" x2="417" y2="122" class="svg-line" marker-end="url(#arrow2)"></line>
+      <line x1="570" y1="110" x2="637" y2="110" class="svg-line" marker-end="url(#arrow2)"></line>
+      <text x="248" y="236" class="svg-small">In production numerical code, prefer stable solvers over explicitly forming an inverse.</text>
+    </svg>
+    <figcaption>Diagram 6. The from-scratch closed-form path: build the normal equations and solve the resulting linear system for coefficients.</figcaption>
+  </figure>
+  <pre><code class="language-python">class LinearRegressionScratch:
+    def __init__(self, fit_intercept=True):
+        self.fit_intercept = fit_intercept
+
+    def fit(self, X, y):
+        Xd = add_intercept(X) if self.fit_intercept else [list(row) for row in X]
+        Xt = transpose(Xd)
+        XtX = matmul(Xt, Xd)
+        Xty = matvec(Xt, y)
+        self.coef_ = solve_linear_system(XtX, Xty)
+        return self
+
+    def predict(self, X):
+        Xd = add_intercept(X) if self.fit_intercept else [list(row) for row in X]
+        return matvec(Xd, self.coef_)
+
+X = [[1, 10], [2, 9], [3, 7], [4, 4], [5, 3]]
+y = [12, 13, 14, 13, 15]
+lr = LinearRegressionScratch().fit(X, y)
+print(lr.coef_)
+print(lr.predict([[6, 2]]))</code></pre>
+
+  <h3>3.5 Gradient Descent for Linear Regression</h3>
+  <p>Gradient descent is useful when the closed form is too expensive or when the loss is not solved by linear equations.</p>
+  <pre><code class="language-python">class LinearRegressionGD:
+    def __init__(self, lr=0.01, epochs=2000, fit_intercept=True):
+        self.lr = lr
+        self.epochs = epochs
+        self.fit_intercept = fit_intercept
+
+    def fit(self, X, y):
+        Xd = add_intercept(X) if self.fit_intercept else [list(row) for row in X]
+        n, p = len(Xd), len(Xd[0])
+        beta = [0.0] * p
+        for _ in range(self.epochs):
+            yhat = matvec(Xd, beta)
+            err = [yh - yi for yh, yi in zip(yhat, y)]
+            grad = [(2.0 / n) * sum(err[i] * Xd[i][j] for i in range(n)) for j in range(p)]
+            beta = [bj - self.lr * gj for bj, gj in zip(beta, grad)]
+        self.coef_ = beta
+        return self
+
+    def predict(self, X):
+        Xd = add_intercept(X) if self.fit_intercept else [list(row) for row in X]
+        return matvec(Xd, self.coef_)</code></pre>
+
+  <h3>3.6 Standardization</h3>
+  <p>Gradient descent and regularized models are sensitive to feature scale. Standardize predictors using training-set means and standard deviations only.</p>
+  <pre><code class="language-python">class StandardScalerScratch:
+    def fit(self, X):
+        cols = transpose(X)
+        self.means_ = [mean(c) for c in cols]
+        self.stds_ = []
+        for c, m in zip(cols, self.means_):
+            var = sum((v - m) ** 2 for v in c) / len(c)
+            self.stds_.append(var ** 0.5 if var &gt; 0 else 1.0)
+        return self
+
+    def transform(self, X):
+        return [[(v - m) / s for v, m, s in zip(row, self.means_, self.stds_)] for row in X]
+
+    def fit_transform(self, X):
+        return self.fit(X).transform(X)</code></pre>
+
+  <h3>3.7 Ridge Regression by Modified Normal Equations</h3>
+  <pre><code class="language-python">class RidgeRegressionScratch:
+    def __init__(self, alpha=1.0, fit_intercept=True):
+        self.alpha = alpha
+        self.fit_intercept = fit_intercept
+
+    def fit(self, X, y):
+        Xd = add_intercept(X) if self.fit_intercept else [list(row) for row in X]
+        Xt = transpose(Xd)
+        XtX = matmul(Xt, Xd)
+        for j in range(len(XtX)):
+            if not (self.fit_intercept and j == 0):
+                XtX[j][j] += self.alpha
+        Xty = matvec(Xt, y)
+        self.coef_ = solve_linear_system(XtX, Xty)
+        return self
+
+    def predict(self, X):
+        Xd = add_intercept(X) if self.fit_intercept else [list(row) for row in X]
+        return matvec(Xd, self.coef_)</code></pre>
+
+  <h3>3.8 Lasso by Coordinate Descent</h3>
+  <p>This simple lasso implementation assumes standardized features and a centered response, so no intercept is included in the optimization.</p>
+  <pre><code class="language-python">def soft_threshold(z, gamma):
+    if z &gt; gamma:
+        return z - gamma
+    if z &lt; -gamma:
+        return z + gamma
+    return 0.0
+
+class LassoScratch:
+    def __init__(self, alpha=0.1, epochs=100):
+        self.alpha = alpha
+        self.epochs = epochs
+
+    def fit(self, X, y):
+        n, p = len(X), len(X[0])
+        beta = [0.0] * p
+        col_norms = [sum(X[i][j] ** 2 for i in range(n)) for j in range(p)]
+        for _ in range(self.epochs):
+            for j in range(p):
+                residual_without_j = []
+                for i in range(n):
+                    pred_except_j = sum(X[i][k] * beta[k] for k in range(p) if k != j)
+                    residual_without_j.append(y[i] - pred_except_j)
+                rho = sum(X[i][j] * residual_without_j[i] for i in range(n))
+                beta[j] = soft_threshold(rho, self.alpha) / col_norms[j]
+        self.coef_ = beta
+        return self
+
+    def predict(self, X):
+        return matvec(X, self.coef_)</code></pre>
+
+  <h3>3.9 Train/Test Split and K-Fold Cross-Validation</h3>
+  <figure class="diagram" id="diagram-cross-validation">
+    <svg viewBox="0 0 820 300" role="img" aria-labelledby="cv-title cv-desc">
+      <title id="cv-title">Five-fold cross-validation</title>
+      <desc id="cv-desc">Rows of five folds where one fold is validation and the rest are training, rotating through each fold.</desc>
+      <text x="28" y="32" class="svg-title">5-fold cross-validation</text>
+      <g class="svg-small">
+        <text x="33" y="72">round 1</text>
+        <text x="33" y="112">round 2</text>
+        <text x="33" y="152">round 3</text>
+        <text x="33" y="192">round 4</text>
+        <text x="33" y="232">round 5</text>
+      </g>
+      <g>
+        <rect x="120" y="54" width="110" height="26" fill="#f3d7d7" stroke="#8b3a3a"></rect>
+        <rect x="230" y="54" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="340" y="54" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="450" y="54" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="560" y="54" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="120" y="94" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="230" y="94" width="110" height="26" fill="#f3d7d7" stroke="#8b3a3a"></rect>
+        <rect x="340" y="94" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="450" y="94" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="560" y="94" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="120" y="134" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="230" y="134" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="340" y="134" width="110" height="26" fill="#f3d7d7" stroke="#8b3a3a"></rect>
+        <rect x="450" y="134" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="560" y="134" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="120" y="174" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="230" y="174" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="340" y="174" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="450" y="174" width="110" height="26" fill="#f3d7d7" stroke="#8b3a3a"></rect>
+        <rect x="560" y="174" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="120" y="214" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="230" y="214" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="340" y="214" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="450" y="214" width="110" height="26" fill="#e8f4f2" stroke="#0f766e"></rect>
+        <rect x="560" y="214" width="110" height="26" fill="#f3d7d7" stroke="#8b3a3a"></rect>
+      </g>
+      <text x="700" y="78" class="svg-small">red = validation</text>
+      <text x="700" y="100" class="svg-small">green = training</text>
+      <text x="226" y="274" class="svg-small">Average validation errors across rounds to estimate generalization.</text>
+    </svg>
+    <figcaption>Diagram 7. K-fold cross-validation rotates the validation fold so each observation is evaluated out of sample once.</figcaption>
+  </figure>
+  <pre><code class="language-python">import random
+
+def train_test_split(X, y, test_size=0.2, seed=42):
+    rng = random.Random(seed)
+    idx = list(range(len(X)))
+    rng.shuffle(idx)
+    cut = int(len(X) * (1 - test_size))
+    train_idx, test_idx = idx[:cut], idx[cut:]
+    return ([X[i] for i in train_idx], [X[i] for i in test_idx],
+            [y[i] for i in train_idx], [y[i] for i in test_idx])
+
+def kfold_indices(n, k=5, seed=42):
+    rng = random.Random(seed)
+    idx = list(range(n))
+    rng.shuffle(idx)
+    folds = [idx[i::k] for i in range(k)]
+    for i in range(k):
+        valid = folds[i]
+        train = [j for m, fold in enumerate(folds) if m != i for j in fold]
+        yield train, valid
+
+def cross_val_mse(model_factory, X, y, k=5):
+    scores = []
+    for train_idx, valid_idx in kfold_indices(len(X), k=k):
+        model = model_factory()
+        model.fit([X[i] for i in train_idx], [y[i] for i in train_idx])
+        pred = model.predict([X[i] for i in valid_idx])
+        scores.append(mse([y[i] for i in valid_idx], pred))
+    return mean(scores)</code></pre>
+
+  <h3>3.10 Bootstrap Confidence Intervals</h3>
+  <pre><code class="language-python">def bootstrap_slope_ci(x, y, B=1000, seed=123, alpha=0.05):
+    rng = random.Random(seed)
+    slopes = []
+    n = len(x)
+    for _ in range(B):
+        sample = [rng.randrange(n) for _ in range(n)]
+        xb = [x[i] for i in sample]
+        yb = [y[i] for i in sample]
+        slopes.append(SimpleLinearRegression().fit(xb, yb).slope)
+    slopes.sort()
+    lo = slopes[int((alpha / 2) * B)]
+    hi = slopes[int((1 - alpha / 2) * B)]
+    return lo, hi</code></pre>
+
+  <div class="exercise">
+    <strong>Exercises:</strong> Add adjusted <code>R²</code> to the metric utilities. Modify gradient descent to stop when the improvement in MSE is less than <code>1e-8</code>. Implement polynomial features for one variable without importing any library.
+  </div>
+</section>
+
+<section id="models">
+  <h2>Core Regression Models</h2>
+  <h3>Ordinary Least Squares</h3>
+  <p>Use OLS when the target is continuous, the conditional mean can be approximated by a linear function of features, and interpretability matters. OLS is a baseline even when it is not the final model.</p>
+  <h3>Polynomial and Spline Regression</h3>
+  <p>These are still linear models in transformed features. A quadratic model <code>y = β₀ + β₁x + β₂x² + ε</code> is linear in coefficients but nonlinear in the original input. Splines use piecewise polynomial bases to model smooth nonlinear structure.</p>
+  <h3>Ridge</h3>
+  <p>Use ridge when many predictors are correlated and prediction stability matters. It usually keeps all features but shrinks them toward zero.</p>
+  <h3>Lasso</h3>
+  <p>Use lasso when sparse feature selection is useful. Interpret selected variables cautiously: correlated predictors may compete, and small changes in data can change selection.</p>
+  <h3>Elastic Net</h3>
+  <p>Use elastic net when predictors are correlated and you want a compromise between ridge stability and lasso sparsity.</p>
+  <h3>Robust Regression</h3>
+  <p>Huber loss, quantile regression, and RANSAC reduce sensitivity to outliers or model conditional quantiles instead of means.</p>
+  <h3>Generalized Linear Models</h3>
+  <p>Use GLMs when the response is binary, count, positive continuous, or otherwise not well represented by constant-variance Gaussian errors.</p>
+  <h3>Tree-Based Regression</h3>
+  <p>Regression trees, random forests, and gradient boosting capture interactions and nonlinearities without manual feature construction. They are often strong predictive models but need extra tools for inference and interpretation.</p>
+  <h3>Bayesian Regression</h3>
+  <p>Bayesian regression treats parameters as uncertain quantities and returns posterior distributions. Priors can encode regularization, domain knowledge, or hierarchical structure.</p>
+  <h3>Transformations, Categories, Interactions, and Nonlinear Terms</h3>
+  <p>Many useful regressions are created by changing the feature columns before fitting. This is still regression; you are changing what goes into the design matrix.</p>
+  <table>
+    <tr><th>Technique</th><th>Beginner Meaning</th><th>Example</th></tr>
+    <tr><td>Centering</td><td>Subtract the mean from a predictor.</td><td>Makes the intercept easier to interpret and can reduce interaction collinearity.</td></tr>
+    <tr><td>Scaling</td><td>Divide by a standard deviation or range.</td><td>Important for gradient descent, ridge, lasso, and distance-based methods.</td></tr>
+    <tr><td>Log transform</td><td>Model multiplicative or percentage-like changes.</td><td><code>log(income)</code> or <code>log(population)</code>.</td></tr>
+    <tr><td>Categorical variables</td><td>Represent group labels with indicator columns.</td><td>Region: North, Central, South.</td></tr>
+    <tr><td>Interaction</td><td>Let the effect of one variable depend on another.</td><td>Training may matter more for experienced workers.</td></tr>
+    <tr><td>Polynomial term</td><td>Add powers of a predictor.</td><td><code>x</code> and <code>x²</code> allow curvature.</td></tr>
+    <tr><td>Spline</td><td>Use flexible piecewise curves.</td><td>Temperature may affect demand differently below and above a threshold.</td></tr>
+  </table>
+  <h3>Logistic Regression as a Key Extension</h3>
+  <p>Logistic regression is used when the outcome is binary: yes/no, default/no default, purchased/not purchased. It predicts a probability between 0 and 1 rather than an unrestricted numeric value.</p>
+  <div class="formula">probability = 1 / (1 + exp(-(beta_0 + beta_1*x_1 + ... + beta_p*x_p)))</div>
+  <p>A positive coefficient increases the log-odds of the outcome. Beginners should first interpret logistic regression through predicted probabilities: compare the predicted probability before and after changing one predictor while holding others fixed.</p>
+  <h3>Regression, Classification, and Clustering: Do Not Mix the Tasks</h3>
+  <p>The PDF also discusses SVM, k-nearest neighbors, and k-means clustering. These are useful machine-learning methods, but they answer different questions from ordinary regression.</p>
+  <table>
+    <tr><th>Task</th><th>Question</th><th>Common Methods</th><th>Output</th></tr>
+    <tr><td>Regression</td><td>What numeric value should I predict?</td><td>OLS, ridge, lasso, regression trees, random forest regression.</td><td>A number, such as price, demand, income, or risk score.</td></tr>
+    <tr><td>Classification</td><td>Which class does this case belong to?</td><td>Logistic regression, SVM, k-NN classifier, classification trees.</td><td>A label or class probability.</td></tr>
+    <tr><td>Clustering</td><td>What groups appear in unlabeled data?</td><td>k-means, hierarchical clustering, DBSCAN.</td><td>Cluster assignments, not supervised predictions.</td></tr>
+  </table>
+  <p>Logistic regression has “regression” in its name because it models a transformed probability using a linear predictor. Practically, it is often used for classification by applying a threshold such as 0.5. SVM focuses on a separating boundary and margin. k-NN predicts from nearby examples. k-means finds clusters without an outcome label. These methods belong in the broader machine-learning map, but they should not replace the regression workflow unless the problem statement changes.</p>
+  <div class="exercise">
+    <strong>Exercises:</strong> For a dataset with 10,000 sparse predictors and 200 observations, compare OLS, ridge, and lasso conceptually. Which model is identifiable? Which is most stable? Which is most interpretable?
+  </div>
+</section>
+
+<section id="diagnostics">
+  <h2>Diagnostics and Inference</h2>
+  <h3>Residual Diagnostics</h3>
+  <ul>
+    <li><strong>Residuals vs fitted:</strong> detects nonlinearity and nonconstant variance.</li>
+    <li><strong>Q-Q plot:</strong> checks whether residual distribution is close to normal.</li>
+    <li><strong>Scale-location plot:</strong> checks spread of residuals across fitted values.</li>
+    <li><strong>Residuals over time:</strong> checks autocorrelation and structural breaks.</li>
+  </ul>
+  <figure class="diagram" id="diagram-diagnostics">
+    <svg viewBox="0 0 820 430" role="img" aria-labelledby="diag-title diag-desc">
+      <title id="diag-title">Common residual diagnostic patterns</title>
+      <desc id="diag-desc">Four miniature residual plots: random cloud, curved residuals, funnel variance, and autocorrelation over time.</desc>
+      <text x="28" y="30" class="svg-title">Residual patterns and what they suggest</text>
+      <g transform="translate(45,60)">
+        <rect x="0" y="0" width="310" height="140" fill="#fff" stroke="#d9dee5"></rect>
+        <line x1="25" y1="70" x2="285" y2="70" stroke="#64748b" stroke-dasharray="5 5"></line>
+        <g fill="#0f766e">
+          <circle cx="42" cy="58" r="3"></circle><circle cx="75" cy="85" r="3"></circle><circle cx="105" cy="62" r="3"></circle>
+          <circle cx="132" cy="74" r="3"></circle><circle cx="166" cy="55" r="3"></circle><circle cx="195" cy="82" r="3"></circle>
+          <circle cx="225" cy="66" r="3"></circle><circle cx="260" cy="77" r="3"></circle>
+        </g>
+        <text x="16" y="165" class="svg-label">random cloud</text>
+        <text x="16" y="184" class="svg-small">linear mean and constant variance look plausible</text>
+      </g>
+      <g transform="translate(465,60)">
+        <rect x="0" y="0" width="310" height="140" fill="#fff" stroke="#d9dee5"></rect>
+        <line x1="25" y1="70" x2="285" y2="70" stroke="#64748b" stroke-dasharray="5 5"></line>
+        <path d="M35 38 C95 112, 190 112, 275 38" class="svg-warn"></path>
+        <g fill="#0f766e">
+          <circle cx="40" cy="42" r="3"></circle><circle cx="78" cy="78" r="3"></circle><circle cx="118" cy="99" r="3"></circle>
+          <circle cx="156" cy="110" r="3"></circle><circle cx="198" cy="92" r="3"></circle><circle cx="236" cy="66" r="3"></circle>
+          <circle cx="274" cy="39" r="3"></circle>
+        </g>
+        <text x="16" y="165" class="svg-label">curved pattern</text>
+        <text x="16" y="184" class="svg-small">add nonlinear terms, splines, or new features</text>
+      </g>
+      <g transform="translate(45,255)">
+        <rect x="0" y="0" width="310" height="140" fill="#fff" stroke="#d9dee5"></rect>
+        <line x1="25" y1="70" x2="285" y2="70" stroke="#64748b" stroke-dasharray="5 5"></line>
+        <path d="M35 62 L280 20 M35 78 L280 120" stroke="#8b3a3a" stroke-width="2" fill="none" stroke-dasharray="5 5"></path>
+        <g fill="#0f766e">
+          <circle cx="48" cy="66" r="3"></circle><circle cx="85" cy="74" r="3"></circle><circle cx="120" cy="54" r="3"></circle>
+          <circle cx="160" cy="94" r="3"></circle><circle cx="200" cy="39" r="3"></circle><circle cx="238" cy="112" r="3"></circle>
+          <circle cx="275" cy="28" r="3"></circle>
+        </g>
+        <text x="16" y="165" class="svg-label">funnel shape</text>
+        <text x="16" y="184" class="svg-small">heteroskedasticity; use robust SE or variance model</text>
+      </g>
+      <g transform="translate(465,255)">
+        <rect x="0" y="0" width="310" height="140" fill="#fff" stroke="#d9dee5"></rect>
+        <line x1="25" y1="70" x2="285" y2="70" stroke="#64748b" stroke-dasharray="5 5"></line>
+        <path d="M30 105 C70 20, 120 20, 156 92 S250 118, 285 35" class="svg-warn"></path>
+        <text x="16" y="165" class="svg-label">runs over time</text>
+        <text x="16" y="184" class="svg-small">autocorrelation or missing temporal structure</text>
+      </g>
+    </svg>
+    <figcaption>Diagram 8. Residual plots turn assumptions into visible patterns. Random scatter is reassuring; curves, funnels, and runs point to specific model failures.</figcaption>
+  </figure>
+  <h3>Leverage and Influence</h3>
+  <p>High-leverage points have unusual predictor values. Influential points materially change the fitted model. Cook's distance combines leverage and residual size to flag observations worth investigating.</p>
+  <h3>Deviation, Residuals, and Outliers: Beginner Intuition</h3>
+  <p>The PDF describes the vertical distance from a point to the fitted line as deviation from the trendline. In regression language, this is the residual for a training point. Small residuals mean the line is close to the observed point. Large residuals mean the model misses that point badly.</p>
+  <table>
+    <tr><th>Case</th><th>Meaning</th><th>What To Do</th></tr>
+    <tr><td>Small residual near the center of the data.</td><td>The model predicts that case well.</td><td>No special action.</td></tr>
+    <tr><td>Large residual but ordinary x-value.</td><td>The outcome is surprising given the predictors.</td><td>Check missing variables, data quality, or a special event.</td></tr>
+    <tr><td>Extreme x-value but small residual.</td><td>High leverage, not necessarily bad.</td><td>Be cautious about extrapolation and coefficient dependence.</td></tr>
+    <tr><td>Extreme x-value and large residual.</td><td>Potentially influential outlier.</td><td>Investigate carefully; compare fits with and without it, but do not delete it automatically.</td></tr>
+  </table>
+  <div class="box warn">
+    <strong>Outlier warning:</strong> an outlier may be a data error, but it may also be the most important observation in the dataset. Treat outlier handling as an analysis decision, not a cleaning reflex.
+  </div>
+  <h3>Multicollinearity</h3>
+  <p>Multicollinearity inflates standard errors and makes coefficient signs unstable. It does not necessarily damage prediction if future data have the same correlation structure. Variance inflation factors, condition numbers, and coefficient sensitivity checks help diagnose the issue.</p>
+  <h3>Out-of-Sample Validation</h3>
+  <p>In-sample fit measures explanation of training data. Out-of-sample validation estimates generalization. Use holdout sets, cross-validation, nested cross-validation for tuning, and temporal splits for time-ordered data.</p>
+  <h3>Common Metrics</h3>
+  <table>
+    <tr><th>Metric</th><th>Formula</th><th>Use</th></tr>
+    <tr><td>MSE</td><td><code>mean((y - ŷ)²)</code></td><td>Penalizes large errors strongly.</td></tr>
+    <tr><td>RMSE</td><td><code>sqrt(MSE)</code></td><td>Same unit as target.</td></tr>
+    <tr><td>MAE</td><td><code>mean(|y - ŷ|)</code></td><td>More robust to outliers.</td></tr>
+    <tr><td>R²</td><td><code>1 - RSS/TSS</code></td><td>Fraction of training variation explained relative to intercept-only model.</td></tr>
+    <tr><td>Adjusted R²</td><td><code>1 - (1-R²)(n-1)/(n-p-1)</code></td><td>Penalizes extra predictors in linear models.</td></tr>
+  </table>
+  <div class="exercise">
+    <strong>Exercises:</strong> Construct three residual patterns: curved, funnel-shaped, and autocorrelated. For each, name the violated assumption and one remedy.
+  </div>
+</section>
+
+<section id="libraries">
+  <h2>Python Libraries Section</h2>
+  <p>Use libraries after you understand the estimator. Library code should be wrapped in reproducible pipelines and evaluated with data leakage in mind.</p>
+  <h3>Which Library Should Do What?</h3>
+  <table>
+    <tr><th>Library</th><th>Beginner Mental Model</th><th>Typical Regression Job</th></tr>
+    <tr><td>NumPy</td><td>Fast arrays and linear algebra.</td><td>Matrix calculations, least squares, simulation.</td></tr>
+    <tr><td>pandas</td><td>Spreadsheet-like tables in Python.</td><td>Load data, clean columns, handle categories, check missing values.</td></tr>
+    <tr><td>statsmodels</td><td>Statistical modelling and inference.</td><td>Coefficient tables, p-values, confidence intervals, robust standard errors, diagnostic tests.</td></tr>
+    <tr><td>scikit-learn</td><td>Predictive modelling pipelines.</td><td>Preprocessing, train/test split, cross-validation, regularization, prediction metrics.</td></tr>
+    <tr><td>matplotlib</td><td>Plotting.</td><td>Residual plots, fitted-versus-observed plots, Q-Q plots, learning curves.</td></tr>
+  </table>
+  <div class="box key">
+    <strong>Beginner rule:</strong> use <code>statsmodels</code> when your main output is an inference table. Use <code>scikit-learn</code> when your main output is a predictive workflow. Use <code>pandas</code> before both to make the data honest.
+  </div>
+
+  <h3>6.1 NumPy-Style Linear Algebra</h3>
+  <pre><code class="language-python">import numpy as np
+
+X = np.array([[1, 10], [2, 9], [3, 7], [4, 4], [5, 3]], dtype=float)
+y = np.array([12, 13, 14, 13, 15], dtype=float)
+X_design = np.c_[np.ones(len(X)), X]
+
+# Prefer solve over explicit inverse when possible.
+beta = np.linalg.solve(X_design.T @ X_design, X_design.T @ y)
+pred = X_design @ beta
+print(beta)
+print(np.mean((y - pred) ** 2))</code></pre>
+
+  <h3>6.2 pandas for Preparing Regression Data</h3>
+  <p>Most regression mistakes begin before model fitting. Use pandas to make feature construction explicit: choose columns, inspect missing values, encode categories deliberately, and avoid using future information.</p>
+  <pre><code class="language-python">import pandas as pd
+
+df = pd.DataFrame({
+    "income": [30, 45, 52, 61],
+    "experience": [1, 5, 8, 10],
+    "education": [12, 14, 16, 16],
+    "region": ["North", "South", "North", "Central"]
+})
+
+print(df.isna().sum())
+print(df["region"].value_counts())
+
+# Explicit feature construction.
+df["experience_squared"] = df["experience"] ** 2
+df["education_experience"] = df["education"] * df["experience"]
+
+X = df[["experience", "education", "experience_squared", "region"]]
+y = df["income"]</code></pre>
+
+  <h3>6.3 scikit-learn for Prediction Pipelines</h3>
+  <p>scikit-learn's <code>LinearRegression</code> fits ordinary least squares and exposes a familiar estimator API. The official documentation describes it as ordinary least squares linear regression. Ridge, lasso, elastic net, polynomial features, model selection, and preprocessing share the same pipeline style.</p>
+  <figure class="diagram" id="diagram-library-pipeline">
+    <svg viewBox="0 0 820 260" role="img" aria-labelledby="pipe-title pipe-desc">
+      <title id="pipe-title">Regression library pipeline</title>
+      <desc id="pipe-desc">A flow from raw data through split, preprocessing, model fitting, validation, and final reporting.</desc>
+      <defs>
+        <marker id="arrow3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#334155"></path>
+        </marker>
+      </defs>
+      <rect x="24" y="82" width="105" height="58" rx="8" class="svg-node"></rect>
+      <text x="46" y="106" class="svg-label">raw data</text>
+      <text x="42" y="126" class="svg-small">table + target</text>
+      <rect x="160" y="82" width="105" height="58" rx="8" class="svg-node"></rect>
+      <text x="190" y="106" class="svg-label">split</text>
+      <text x="176" y="126" class="svg-small">train/test</text>
+      <rect x="296" y="52" width="132" height="58" rx="8" class="svg-soft"></rect>
+      <text x="328" y="76" class="svg-label">preprocess</text>
+      <text x="316" y="96" class="svg-small">impute, scale, encode</text>
+      <rect x="296" y="142" width="132" height="58" rx="8" class="svg-soft"></rect>
+      <text x="321" y="166" class="svg-label">fit model</text>
+      <text x="316" y="186" class="svg-small">ridge, lasso, OLS</text>
+      <rect x="470" y="82" width="132" height="58" rx="8" class="svg-node"></rect>
+      <text x="505" y="106" class="svg-label">validate</text>
+      <text x="492" y="126" class="svg-small">CV + test metrics</text>
+      <rect x="644" y="82" width="132" height="58" rx="8" class="svg-node"></rect>
+      <text x="682" y="106" class="svg-label">report</text>
+      <text x="665" y="126" class="svg-small">effects, limits, code</text>
+      <line x1="129" y1="111" x2="157" y2="111" class="svg-line" marker-end="url(#arrow3)"></line>
+      <line x1="265" y1="111" x2="293" y2="82" class="svg-line" marker-end="url(#arrow3)"></line>
+      <line x1="362" y1="110" x2="362" y2="139" class="svg-line" marker-end="url(#arrow3)"></line>
+      <line x1="428" y1="171" x2="467" y2="124" class="svg-line" marker-end="url(#arrow3)"></line>
+      <line x1="602" y1="111" x2="641" y2="111" class="svg-line" marker-end="url(#arrow3)"></line>
+      <path d="M536 82 C510 32, 342 22, 332 50" class="svg-accent" marker-end="url(#arrow3)"></path>
+      <text x="355" y="34" class="svg-small">cross-validation repeats preprocessing inside each fold</text>
+    </svg>
+    <figcaption>Diagram 9. A library pipeline keeps preprocessing and model fitting together, which prevents leakage during cross-validation.</figcaption>
+  </figure>
+  <pre><code class="language-python">from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import ElasticNetCV, LinearRegression, RidgeCV, LassoCV
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, PolynomialFeatures, StandardScaler
+
+numeric_features = ["age", "income", "debt"]
+categorical_features = ["region", "segment"]
+
+numeric_pipe = Pipeline([
+    ("impute", SimpleImputer(strategy="median")),
+    ("scale", StandardScaler())
+])
+
+categorical_pipe = Pipeline([
+    ("impute", SimpleImputer(strategy="most_frequent")),
+    ("onehot", OneHotEncoder(handle_unknown="ignore"))
+])
+
+preprocess = ColumnTransformer([
+    ("num", numeric_pipe, numeric_features),
+    ("cat", categorical_pipe, categorical_features)
+])
+
+model = Pipeline([
+    ("preprocess", preprocess),
+    ("regressor", RidgeCV(alphas=[0.01, 0.1, 1.0, 10.0, 100.0]))
+])
+
+# X is a pandas DataFrame in this example.
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+model.fit(X_train, y_train)
+pred = model.predict(X_test)
+print("RMSE", mean_squared_error(y_test, pred, squared=False))
+print("MAE", mean_absolute_error(y_test, pred))
+print("R2", r2_score(y_test, pred))</code></pre>
+
+  <h3>6.4 Polynomial Regression in scikit-learn</h3>
+  <pre><code class="language-python">from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import Ridge
+
+poly_ridge = make_pipeline(
+    PolynomialFeatures(degree=3, include_bias=False),
+    StandardScaler(),
+    Ridge(alpha=1.0)
+)
+poly_ridge.fit(X_train, y_train)</code></pre>
+
+  <h3>6.5 statsmodels for Inference</h3>
+  <p>statsmodels is usually the better choice when you need coefficient tables, standard errors, hypothesis tests, confidence intervals, and robust covariance estimators.</p>
+  <pre><code class="language-python">import statsmodels.api as sm
+
+X_design = sm.add_constant(X)  # add intercept
+ols = sm.OLS(y, X_design).fit()
+print(ols.summary())
+
+# Heteroskedasticity-robust covariance:
+robust = sm.OLS(y, X_design).fit(cov_type="HC3")
+print(robust.summary())</code></pre>
+
+  <h3>6.6 Formula API</h3>
+  <pre><code class="language-python">import statsmodels.formula.api as smf
+
+fit = smf.ols("price ~ size + bedrooms + C(neighborhood)", data=df).fit(cov_type="HC3")
+print(fit.summary())
+print(fit.conf_int())</code></pre>
+
+  <h3>6.7 Diagnostic Plots with matplotlib</h3>
+  <p>Plots let beginners see assumptions. Start with observed versus fitted values and residuals versus fitted values. A random residual cloud is reassuring; a curve, funnel, clusters, or time pattern suggests missing structure.</p>
+  <pre><code class="language-python">import matplotlib.pyplot as plt
+
+fitted = ols.fittedvalues
+resid = ols.resid
+
+plt.scatter(fitted, resid)
+plt.axhline(0, color="black", linewidth=1)
+plt.xlabel("Fitted values")
+plt.ylabel("Residuals")
+plt.title("Residuals versus fitted values")
+plt.show()
+
+plt.scatter(y, fitted)
+plt.xlabel("Observed y")
+plt.ylabel("Predicted y")
+plt.title("Observed versus predicted")
+plt.show()</code></pre>
+
+  <h3>6.8 Library Choice</h3>
+  <table>
+    <tr><th>Goal</th><th>Recommended Tool</th><th>Reason</th></tr>
+    <tr><td>Matrix experimentation</td><td>NumPy / SciPy</td><td>Direct access to linear algebra.</td></tr>
+    <tr><td>Prediction pipeline</td><td>scikit-learn</td><td>Consistent estimators, preprocessing, cross-validation.</td></tr>
+    <tr><td>Statistical inference</td><td>statsmodels</td><td>Regression summaries, tests, robust covariance.</td></tr>
+    <tr><td>Data preparation</td><td>pandas</td><td>Tabular cleaning and joins.</td></tr>
+    <tr><td>Bayesian regression</td><td>PyMC / Stan</td><td>Posterior inference and hierarchical modeling.</td></tr>
+  </table>
+  <div class="exercise">
+    <strong>Exercises:</strong> Recreate your from-scratch ridge model with scikit-learn's <code>Ridge</code>. Compare coefficients. Then fit the same data with statsmodels OLS and interpret one confidence interval.
+  </div>
+</section>
+
+<section id="workflow">
+  <h2>Research-Grade Workflow</h2>
+  <ol>
+    <li><strong>Define the estimand:</strong> prediction target, conditional mean, causal effect, treatment effect, dose-response curve, or uncertainty interval.</li>
+    <li><strong>Map the data-generating process:</strong> sampling, measurement, missingness, time order, clustering, interventions, and selection effects.</li>
+    <li><strong>Create a baseline:</strong> mean predictor, simple OLS, or domain rule.</li>
+    <li><strong>Split correctly:</strong> random split for exchangeable data, grouped split for repeated subjects, temporal split for forecasting.</li>
+    <li><strong>Prevent leakage:</strong> fit preprocessing only on training folds; keep future information out of features.</li>
+    <li><strong>Fit interpretable and predictive models:</strong> compare OLS, regularized models, nonlinear bases, robust methods, and tree ensembles.</li>
+    <li><strong>Diagnose:</strong> residuals, influence, collinearity, calibration, subgroup performance, stability under resampling.</li>
+    <li><strong>Quantify uncertainty:</strong> standard errors, bootstrap intervals, conformal prediction, Bayesian posterior intervals, or sensitivity analysis.</li>
+    <li><strong>Stress test:</strong> perturb features, remove influential observations, vary hyperparameters, and test across subpopulations.</li>
+    <li><strong>Report honestly:</strong> state assumptions, limitations, data exclusions, tuning process, and reproducibility details.</li>
+  </ol>
+  <h3>Beginner End-to-End Checklist</h3>
+  <table>
+    <tr><th>Step</th><th>Action</th><th>Question to Answer Before Continuing</th></tr>
+    <tr><td>1</td><td>State the question.</td><td>Am I describing, predicting, explaining, or making a causal claim?</td></tr>
+    <tr><td>2</td><td>Understand how data were generated.</td><td>Who or what is missing from the data?</td></tr>
+    <tr><td>3</td><td>Audit the data.</td><td>Are units, missing values, categories, and impossible values clear?</td></tr>
+    <tr><td>4</td><td>Explore without overfitting.</td><td>Am I using plots to understand data rather than tune endlessly?</td></tr>
+    <tr><td>5</td><td>Define a baseline.</td><td>What simple model must my regression beat?</td></tr>
+    <tr><td>6</td><td>Choose validation structure.</td><td>Should the split be random, temporal, grouped, or clustered?</td></tr>
+    <tr><td>7</td><td>Put preprocessing in a pipeline.</td><td>Can test information leak into scaling, imputation, encoding, or feature selection?</td></tr>
+    <tr><td>8</td><td>Fit and diagnose.</td><td>What do residuals, leverage, influence, and collinearity show?</td></tr>
+    <tr><td>9</td><td>Evaluate with multiple metrics.</td><td>Do MAE, RMSE, <code>R²</code>, and domain costs agree?</td></tr>
+    <tr><td>10</td><td>Test sensitivity.</td><td>Do conclusions change with transformations, outliers, or model choices?</td></tr>
+    <tr><td>11</td><td>Interpret within the data range.</td><td>Am I extrapolating beyond observed support?</td></tr>
+    <tr><td>12</td><td>Preserve reproducibility.</td><td>Can someone rerun the same data, code, package versions, and random seed?</td></tr>
+  </table>
+  <h3>Minimum Reproducible Regression Report</h3>
+  <ul>
+    <li>Question and estimand.</li>
+    <li>Data source, inclusion criteria, missing-data strategy.</li>
+    <li>Feature definitions and transformations.</li>
+    <li>Model equations and hyperparameter search space.</li>
+    <li>Validation design and metrics.</li>
+    <li>Coefficient or feature-effect interpretation.</li>
+    <li>Diagnostics and sensitivity checks.</li>
+    <li>Reproducible environment and random seeds.</li>
+  </ul>
+  <div class="exercise">
+    <strong>Exercises:</strong> Design a regression study for estimating the effect of class size on test scores. Identify at least three confounders and one source of selection bias.
+  </div>
+</section>
+
+<section id="common-mistakes">
+  <h2>Common Mistakes and Corrections</h2>
+  <table>
+    <tr><th>Mistake</th><th>Why It Is Wrong</th><th>Correction</th></tr>
+    <tr><td>Treating correlation as causation.</td><td>Hidden variables, reverse causality, or selection can create associations.</td><td>State whether the goal is descriptive, predictive, explanatory, or causal; use a research design for causal claims.</td></tr>
+    <tr><td>Judging a model only by training <code>R²</code>.</td><td>Training fit improves when adding variables, even useless ones.</td><td>Use validation data, cross-validation, residual diagnostics, and practical interpretation.</td></tr>
+    <tr><td>Preprocessing before train/test split.</td><td>Information from test data leaks into training transformations.</td><td>Fit scalers, imputers, encoders, and feature selectors inside the training fold or pipeline.</td></tr>
+    <tr><td>Ignoring units.</td><td>A coefficient is meaningless without the measurement scale.</td><td>Report the coefficient with units: “dollars per year of experience,” “kg per mm rainfall.”</td></tr>
+    <tr><td>Reading the intercept literally when zero is outside the data.</td><td>The model can calculate at zero even if zero is impossible or irrelevant.</td><td>Center predictors or explain that the intercept is mainly algebraic.</td></tr>
+    <tr><td>Assuming robust standard errors fix everything.</td><td>They change uncertainty estimates, not biased coefficients or bad feature design.</td><td>Use robust SE for heteroskedasticity, but still address endogeneity, functional form, and dependence.</td></tr>
+    <tr><td>Using random splits for time series or grouped data.</td><td>Future or related observations can leak into training.</td><td>Use temporal, grouped, clustered, or blocked validation designs.</td></tr>
+    <tr><td>Trusting lasso-selected variables as scientific truth.</td><td>Selection can be unstable with correlated features.</td><td>Check stability, use domain knowledge, and separate prediction from explanation.</td></tr>
+  </table>
+  <div class="exercise">
+    <strong>Exercises:</strong> Choose three mistakes from the table. For each, write a one-paragraph example and a corrected workflow.
+  </div>
+</section>
+
+<section id="learning-sequence">
+  <h2>Suggested Learning Sequence</h2>
+  <p>The DOCX recommends learning regression in stages. Each stage has a different skill target.</p>
+  <table>
+    <tr><th>Stage</th><th>Goal</th><th>What to Produce</th></tr>
+    <tr><td>1. Intuition</td><td>Understand prediction, residuals, slope, and intercept visually.</td><td>A hand-worked five-point regression example.</td></tr>
+    <tr><td>2. Derivation</td><td>Derive simple OLS and understand the normal equations.</td><td>A page explaining why residuals sum to zero with an intercept.</td></tr>
+    <tr><td>3. Uncertainty</td><td>Learn standard errors, t tests, confidence intervals, and prediction intervals.</td><td>A coefficient interpretation with uncertainty and units.</td></tr>
+    <tr><td>4. From-scratch coding</td><td>Implement the calculations in pure Python.</td><td>A script that fits OLS, computes predictions, residuals, MSE, and <code>R²</code>.</td></tr>
+    <tr><td>5. Practical libraries</td><td>Use pandas, statsmodels, and scikit-learn correctly.</td><td>A reproducible notebook or script with cleaning, fitting, diagnostics, and validation.</td></tr>
+    <tr><td>6. Extensions</td><td>Study regularization, logistic regression, robust methods, and nonlinear terms.</td><td>A comparison of OLS, ridge, lasso, and logistic regression where appropriate.</td></tr>
+    <tr><td>7. Independent project</td><td>Apply the complete workflow to a real question.</td><td>A short report with assumptions, results, limitations, and next steps.</td></tr>
+  </table>
+  <div class="exercise">
+    <strong>Exercises:</strong> Create a note for each stage and mark it “not started,” “in progress,” or “understood.” Use the floating note panel to track your learning.
+  </div>
+</section>
+
+<section id="ai-prompts">
+  <h2>Prompts for NotebookLM or an AI Tutor</h2>
+  <p>Use these prompts after uploading or referencing this guide. Ask the tutor to quiz you, not just summarize.</p>
+  <h3>Concept Teaching</h3>
+  <pre><code>Explain regression to me as a beginner. Use one tiny dataset and ask me questions after each step. Do not move on until I explain prediction, residual, slope, and intercept in my own words.</code></pre>
+  <h3>Mathematical Practice</h3>
+  <pre><code>Give me a five-point simple linear regression problem. Ask me to compute x_bar, y_bar, slope, intercept, fitted values, residuals, SSE, and R-squared by hand. Check each answer.</code></pre>
+  <h3>Code Teaching</h3>
+  <pre><code>Walk me through the pure-Python OLS implementation line by line. For every function, explain the input, output, and why it is needed.</code></pre>
+  <h3>Interpretation Practice</h3>
+  <pre><code>Give me a regression output table and ask me to interpret coefficients, standard errors, confidence intervals, p-values, R-squared, and limitations without overstating causality.</code></pre>
+  <h3>Project Supervision</h3>
+  <pre><code>Act as my regression research supervisor. Ask me to state my question, estimand, data source, variables, assumptions, validation plan, diagnostics, and limitations before I fit a model.</code></pre>
+  <div class="exercise">
+    <strong>Exercises:</strong> Paste one prompt into NotebookLM, then save your answer as a topic note attached to the relevant section.
+  </div>
+</section>
+
+<section id="reading">
+  <h2>How a Research Paper Should Be Read</h2>
+  <h3>First Pass: Triage</h3>
+  <p>Read the title, abstract, introduction, figures, conclusion, and experiment tables. Answer: what problem is solved, why existing methods are insufficient, and what claim is being made?</p>
+  <figure class="diagram" id="diagram-paper-reading">
+    <svg viewBox="0 0 820 260" role="img" aria-labelledby="paper-title paper-desc">
+      <title id="paper-title">Research paper reading passes</title>
+      <desc id="paper-desc">Four passes for reading a regression research paper: triage, technical skeleton, verification, and research positioning.</desc>
+      <defs>
+        <marker id="arrow4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#334155"></path>
+        </marker>
+      </defs>
+      <rect x="35" y="78" width="150" height="72" rx="8" class="svg-node"></rect>
+      <text x="74" y="105" class="svg-label">1. Triage</text>
+      <text x="54" y="126" class="svg-small">claim, figures, results</text>
+      <rect x="235" y="78" width="150" height="72" rx="8" class="svg-node"></rect>
+      <text x="259" y="105" class="svg-label">2. Skeleton</text>
+      <text x="254" y="126" class="svg-small">notation, objective</text>
+      <rect x="435" y="78" width="150" height="72" rx="8" class="svg-node"></rect>
+      <text x="462" y="105" class="svg-label">3. Verify</text>
+      <text x="454" y="126" class="svg-small">derive, reproduce</text>
+      <rect x="635" y="78" width="150" height="72" rx="8" class="svg-node"></rect>
+      <text x="655" y="105" class="svg-label">4. Position</text>
+      <text x="655" y="126" class="svg-small">limits, extensions</text>
+      <line x1="185" y1="114" x2="232" y2="114" class="svg-line" marker-end="url(#arrow4)"></line>
+      <line x1="385" y1="114" x2="432" y2="114" class="svg-line" marker-end="url(#arrow4)"></line>
+      <line x1="585" y1="114" x2="632" y2="114" class="svg-line" marker-end="url(#arrow4)"></line>
+      <path d="M710 150 C650 214, 200 214, 110 151" class="svg-accent" marker-end="url(#arrow4)"></path>
+      <text x="292" y="222" class="svg-small">hard papers require repeated passes, not one linear read</text>
+    </svg>
+    <figcaption>Diagram 10. Read research papers in passes: first understand the claim, then the machinery, then the evidence, then the research opportunity.</figcaption>
+  </figure>
+  <h3>Second Pass: Technical Skeleton</h3>
+  <p>Extract the notation, assumptions, estimator, objective function, algorithm, theorem statements, and evaluation design. Do not try to understand every proof line yet.</p>
+  <h3>Third Pass: Verification</h3>
+  <p>Re-derive the main equations, check dimensions, reproduce a toy example, and identify where assumptions enter. For empirical papers, check whether validation matches the scientific claim.</p>
+  <h3>Fourth Pass: Research Positioning</h3>
+  <p>Ask what the paper does not solve. Look for restrictive assumptions, fragile benchmarks, missing baselines, computational scaling problems, and settings where the method should fail.</p>
+  <h3>Paper Reading Template</h3>
+  <table>
+    <tr><th>Field</th><th>Questions</th></tr>
+    <tr><td>Problem</td><td>What is the estimand or prediction task?</td></tr>
+    <tr><td>Assumptions</td><td>Which distributional, structural, sparsity, smoothness, or sampling assumptions are required?</td></tr>
+    <tr><td>Estimator</td><td>What objective is optimized? Is it convex? Is the solution unique?</td></tr>
+    <tr><td>Algorithm</td><td>How is the estimator computed? What is the complexity?</td></tr>
+    <tr><td>Theory</td><td>What is proved: consistency, oracle property, risk bound, asymptotic normality, minimax rate?</td></tr>
+    <tr><td>Evidence</td><td>Are simulations realistic? Are baselines strong? Are uncertainty intervals calibrated?</td></tr>
+    <tr><td>Limitations</td><td>What assumptions are least plausible in your application?</td></tr>
+    <tr><td>Next step</td><td>What experiment, derivation, or implementation would test your understanding?</td></tr>
+  </table>
+  <div class="exercise">
+    <strong>Exercises:</strong> Pick one paper from the suggested list. Fill the reading template before reading the full proofs. Then implement the smallest toy example that demonstrates the paper's main idea.
+  </div>
+</section>
+
+<section id="further">
+  <h2>Further Research Section</h2>
+  <h3>Theoretical Directions</h3>
+  <ul>
+    <li><strong>High-dimensional regression:</strong> behavior when <code>p &gt;&gt; n</code>, sparsity, restricted eigenvalue conditions, debiased lasso.</li>
+    <li><strong>Semiparametric regression:</strong> models that combine finite-dimensional parameters with infinite-dimensional nuisance functions.</li>
+    <li><strong>Nonparametric regression:</strong> kernels, local polynomial estimators, splines, Gaussian processes, minimax rates.</li>
+    <li><strong>Causal regression:</strong> double machine learning, instrumental variables, regression discontinuity, panel methods.</li>
+    <li><strong>Distributional regression:</strong> quantile regression, expectile regression, generalized additive models for location, scale, and shape.</li>
+    <li><strong>Conformal prediction:</strong> finite-sample predictive intervals under exchangeability.</li>
+    <li><strong>Robust statistics:</strong> breakdown points, influence functions, M-estimators, adversarial contamination.</li>
+  </ul>
+  <h3>Applied Directions</h3>
+  <ul>
+    <li>Forecasting with autocorrelation and nonstationarity.</li>
+    <li>Spatial regression and geostatistics.</li>
+    <li>Survival regression and Cox models.</li>
+    <li>Mixed-effects models for grouped data.</li>
+    <li>Fairness and subgroup reliability in predictive regression.</li>
+    <li>Interpretability: partial dependence, accumulated local effects, SHAP, counterfactual explanations.</li>
+  </ul>
+  <div class="exercise">
+    <strong>Exercises:</strong> Choose one theoretical and one applied direction. Write a one-page research plan with the estimand, data type, model family, validation strategy, and expected failure modes.
+  </div>
+</section>
+
+<section id="papers">
+  <h2>Suggested Research Papers and Books</h2>
+  <table>
+    <tr><th>Topic</th><th>Reference</th><th>Why Read It</th></tr>
+    <tr><td>Least squares origins</td><td>Legendre, <em>Nouvelles méthodes pour la détermination des orbites des comètes</em>, 1805; Gauss, <em>Theoria Motus</em>, 1809.</td><td>Historical roots of least squares and normal equations.</td></tr>
+    <tr><td>Ridge regression</td><td>Hoerl and Kennard, "Ridge Regression: Biased Estimation for Nonorthogonal Problems", <em>Technometrics</em>, 1970.</td><td>Introduces ridge as bias-for-variance tradeoff under multicollinearity.</td></tr>
+    <tr><td>Lasso</td><td>Tibshirani, "Regression Shrinkage and Selection via the Lasso", <em>JRSS Series B</em>, 1996.</td><td>Core paper for sparse regression and coefficient shrinkage.</td></tr>
+    <tr><td>Least angle regression</td><td>Efron, Hastie, Johnstone, Tibshirani, "Least Angle Regression", <em>Annals of Statistics</em>, 2004.</td><td>Connects forward selection, lasso paths, and efficient computation.</td></tr>
+    <tr><td>Coordinate descent</td><td>Friedman, Hastie, Tibshirani, "Regularization Paths for Generalized Linear Models via Coordinate Descent", <em>Journal of Statistical Software</em>, 2010.</td><td>Practical computational foundation for lasso and elastic net GLMs.</td></tr>
+    <tr><td>Quantile regression</td><td>Koenker and Bassett, "Regression Quantiles", <em>Econometrica</em>, 1978.</td><td>Models conditional quantiles rather than only conditional means.</td></tr>
+    <tr><td>Robust regression</td><td>Huber, "Robust Estimation of a Location Parameter", <em>Annals of Mathematical Statistics</em>, 1964.</td><td>Foundation for robust loss and M-estimation.</td></tr>
+    <tr><td>CART</td><td>Breiman, Friedman, Olshen, Stone, <em>Classification and Regression Trees</em>, 1984.</td><td>Classic tree-based regression framework.</td></tr>
+    <tr><td>Random forests</td><td>Breiman, "Random Forests", <em>Machine Learning</em>, 2001.</td><td>Foundational ensemble method for nonlinear regression and classification.</td></tr>
+    <tr><td>Statistical learning</td><td>Hastie, Tibshirani, Friedman, <em>The Elements of Statistical Learning</em>, 2nd ed., 2009.</td><td>Broad research-level treatment of regression, regularization, splines, trees, and ensembles.</td></tr>
+    <tr><td>Modern introduction</td><td>James, Witten, Hastie, Tibshirani, <em>An Introduction to Statistical Learning</em>.</td><td>More accessible bridge into statistical learning practice.</td></tr>
+    <tr><td>Sparsity theory</td><td>Hastie, Tibshirani, Wainwright, <em>Statistical Learning with Sparsity</em>, 2015.</td><td>Research-level lasso theory and extensions.</td></tr>
+    <tr><td>Double machine learning</td><td>Chernozhukov et al., "Double/Debiased Machine Learning for Treatment and Structural Parameters", <em>Econometrics Journal</em>, 2018.</td><td>Regression plus modern machine learning for causal/structural parameters.</td></tr>
+    <tr><td>Conformal prediction</td><td>Vovk, Gammerman, Shafer, <em>Algorithmic Learning in a Random World</em>, 2005; Romano, Patterson, Candes, "Conformalized Quantile Regression", 2019.</td><td>Prediction intervals with finite-sample validity ideas.</td></tr>
+  </table>
+</section>
+
+<section id="glossary">
+  <h2>Glossary with Exercises</h2>
+
+  <div class="term">
+    <h3>Adjusted R²</h3>
+    <p>A modification of <code>R²</code> that penalizes adding predictors. It is useful for comparing nested linear models but not a substitute for out-of-sample validation. It can decrease when a new variable adds little explanatory value.</p>
+    <div class="exercise"><strong>Exercise:</strong> Compute adjusted <code>R²</code> for <code>n=100</code>, <code>p=5</code>, and <code>R²=0.72</code>. What happens when <code>p</code> increases to 20 with the same <code>R²</code>?</div>
+  </div>
+
+  <div class="term">
+    <h3>Bias</h3>
+    <p>Bias is systematic error. For an estimator, bias is <code>E[β̂] - β</code>. For prediction, bias is the difference between the average fitted function and the true regression function. Bias may be introduced intentionally through regularization to reduce variance.</p>
+    <div class="exercise"><strong>Exercise:</strong> Explain why ridge regression is biased but can still predict better than OLS.</div>
+  </div>
+
+  <div class="term">
+    <h3>Bootstrap</h3>
+    <p>The bootstrap approximates a sampling distribution by repeatedly resampling the observed data with replacement and refitting the estimator. It is useful when analytic standard errors are hard to derive, but it must respect data dependence such as clusters or time order.</p>
+    <div class="exercise"><strong>Exercise:</strong> Modify the bootstrap code to return a confidence interval for RMSE rather than slope.</div>
+  </div>
+
+  <div class="term">
+    <h3>Categorical Predictor</h3>
+    <p>A variable representing group membership rather than numeric magnitude, such as region or treatment arm. It is expanded into indicator (dummy) columns via one-hot or reference-level encoding rather than entered as a single arbitrary numeric code.</p>
+    <div class="exercise"><strong>Exercise:</strong> Write out the one-hot encoded columns for a 4-level region variable using a reference category.</div>
+  </div>
+
+  <div class="term">
+    <h3>Coefficient</h3>
+    <p>A coefficient is a parameter multiplying a feature in the model. In a linear model with an intercept and fixed controls, a slope coefficient is the expected change in the response for a one-unit increase in that feature, holding other included predictors constant. This is not automatically causal.</p>
+    <div class="exercise"><strong>Exercise:</strong> Give an example where a coefficient changes sign after adding a confounder.</div>
+  </div>
+
+  <div class="term">
+    <h3>Collinearity</h3>
+    <p>Collinearity means predictors are linearly related. Perfect collinearity prevents unique OLS estimation; high but imperfect collinearity increases coefficient variance and reduces interpretability. Ridge can stabilize estimates by adding positive values to the diagonal of <code>X'X</code>.</p>
+    <div class="exercise"><strong>Exercise:</strong> Create two nearly identical features and fit OLS. Observe how coefficients change when you add small noise.</div>
+  </div>
+
+  <div class="term">
+    <h3>Conditional Expectation</h3>
+    <p>The conditional expectation <code>E[Y|X=x]</code> is the average response among units with predictors equal to <code>x</code>, in the population. Under squared error loss, it is the optimal prediction function.</p>
+    <div class="exercise"><strong>Exercise:</strong> Prove that the constant minimizing <code>E[(Y-c)²]</code> is <code>E[Y]</code>. Then extend the argument conditionally.</div>
+  </div>
+
+  <div class="term">
+    <h3>Cook&rsquo;s Distance</h3>
+    <p>A single-observation influence measure combining residual size and leverage to summarize how much the fitted coefficients would change if that observation were dropped. Large values (roughly above 4/n) flag points worth inspecting, though a large value alone does not justify automatic removal.</p>
+    <div class="exercise"><strong>Exercise:</strong> Compute Cook's distance for a synthetic dataset with one deliberately extreme point and compare it to that point's leverage alone.</div>
+  </div>
+
+  <div class="term">
+    <h3>Cross-Validation</h3>
+    <p>Cross-validation estimates out-of-sample performance by repeatedly fitting on part of the data and validating on held-out folds. It is especially important for hyperparameter tuning. All preprocessing must happen inside the training fold to avoid leakage.</p>
+    <div class="exercise"><strong>Exercise:</strong> Why is standardizing the full dataset before cross-validation a form of leakage?</div>
+  </div>
+
+  <div class="term">
+    <h3>Design Matrix</h3>
+    <p>The design matrix <code>X</code> stores predictor values after encoding and transformations. Its columns define the feature space onto which OLS projects the response vector. The intercept is usually represented by a column of ones.</p>
+    <div class="exercise"><strong>Exercise:</strong> Write the design matrix for a model with intercept, age, income, and a three-level region variable encoded with one reference category.</div>
+  </div>
+
+  <div class="term">
+    <h3>Disturbance</h3>
+    <p>The unobserved population-level error term, distinct from the residual, which is its observable in-sample analogue computed after fitting. The disturbance is a property of the population model; the residual is a property of one fitted sample.</p>
+    <div class="exercise"><strong>Exercise:</strong> Explain in your own words why residuals can be correlated with each other even when the true disturbances are independent.</div>
+  </div>
+
+  <div class="term">
+    <h3>Elastic Net</h3>
+    <p>A regularized regression method mixing an L1 (lasso) penalty and an L2 (ridge) penalty. It keeps lasso's ability to zero out coefficients while handling groups of correlated predictors more stably than lasso alone.</p>
+    <div class="exercise"><strong>Exercise:</strong> Fit elastic net with l1_ratio values of 0, 0.5, and 1 on correlated predictors and compare which coefficients survive.</div>
+  </div>
+
+  <div class="term">
+    <h3>Endogeneity</h3>
+    <p>Endogeneity occurs when a predictor is correlated with the error term. Common causes are omitted variables, simultaneity, selection bias, and measurement error. Endogeneity breaks causal interpretation and can bias coefficient estimates.</p>
+    <div class="exercise"><strong>Exercise:</strong> Describe why estimating wage on education may suffer from omitted-variable bias.</div>
+  </div>
+
+  <div class="term">
+    <h3>Extrapolation</h3>
+    <p>Using a fitted model to predict outside the range of predictor values seen in training. The fitted functional form is not guaranteed to hold there, so extrapolated predictions carry risk beyond what a standard prediction interval accounts for.</p>
+    <div class="exercise"><strong>Exercise:</strong> Fit a line on x in [0, 10] and predict at x = 100. Discuss why the prediction interval understates the real risk.</div>
+  </div>
+
+  <div class="term">
+    <h3>Feature Engineering</h3>
+    <p>Feature engineering creates predictors from raw data: transformations, interactions, encodings, lags, aggregations, and domain-specific summaries. In regression, feature engineering often matters more than the choice between nearby estimators.</p>
+    <div class="exercise"><strong>Exercise:</strong> Propose five features for predicting house price and label each as raw, transformed, interaction, or aggregate.</div>
+  </div>
+
+  <div class="term">
+    <h3>Fitted Value</h3>
+    <p>The model's predicted outcome for an observation in the estimation sample, obtained by plugging that observation's predictors into the estimated model. Fitted values are used to compute residuals and in-sample fit statistics such as R².</p>
+    <div class="exercise"><strong>Exercise:</strong> Show that the average fitted value equals the average observed outcome when the model includes an intercept.</div>
+  </div>
+
+  <div class="term">
+    <h3>Generalization</h3>
+    <p>Generalization is performance on new data drawn from the target deployment distribution. A model can fit training data well but generalize poorly due to overfitting, leakage, distribution shift, or unstable features.</p>
+    <div class="exercise"><strong>Exercise:</strong> Give two reasons test performance might be optimistic compared with real deployment performance.</div>
+  </div>
+
+  <div class="term">
+    <h3>Gradient Descent</h3>
+    <p>Gradient descent is an iterative optimization method that updates parameters opposite the gradient of the loss. Learning rate, scaling, convergence criteria, and convexity determine its behavior. For OLS it is educational; for large models it can be practical.</p>
+    <div class="exercise"><strong>Exercise:</strong> Run gradient descent with three learning rates and record divergence, slow convergence, and stable convergence.</div>
+  </div>
+
+  <div class="term">
+    <h3>Heteroskedasticity</h3>
+    <p>Heteroskedasticity means error variance changes with predictors or fitted values. OLS coefficients may remain unbiased under exogeneity, but classical standard errors are wrong. Robust standard errors, transformations, weighted least squares, or explicit variance models can help.</p>
+    <div class="exercise"><strong>Exercise:</strong> Simulate errors whose standard deviation grows with <code>x</code>. Compare ordinary and robust standard errors.</div>
+  </div>
+
+  <div class="term">
+    <h3>Influence</h3>
+    <p>Influence measures how much an observation changes the fitted model. A point is influential when it combines unusual predictors with a large residual. Influence is not automatically bad; it may reveal a data error or an important rare regime.</p>
+    <div class="exercise"><strong>Exercise:</strong> Add one extreme point to a simple regression dataset and compare the slope before and after.</div>
+  </div>
+
+  <div class="term">
+    <h3>Intercept</h3>
+    <p>The intercept is the predicted response when all predictors equal zero. It is often a centering constant rather than a substantively meaningful value. Centering predictors makes the intercept equal the predicted response at average predictor values.</p>
+    <div class="exercise"><strong>Exercise:</strong> Center a single predictor and show that the slope is unchanged while the intercept changes.</div>
+  </div>
+
+  <div class="term">
+    <h3>Interaction</h3>
+    <p>A model term, usually formed by multiplying two predictors, allowing one predictor's association with the outcome to depend on the value of another. Omitting a true interaction forces a single average slope across subgroups that actually differ.</p>
+    <div class="exercise"><strong>Exercise:</strong> Simulate data where the slope on x differs by group, fit a model without an interaction term, and describe what the single slope estimate represents.</div>
+  </div>
+
+  <div class="term">
+    <h3>Lasso</h3>
+    <p>Lasso is regression with an <code>L1</code> penalty on coefficients. The geometry of the penalty creates exact zeros, which supports feature selection. It is sensitive to scaling and to groups of correlated predictors.</p>
+    <div class="exercise"><strong>Exercise:</strong> Standardize predictors and fit lasso across several penalty values. Track how many coefficients are nonzero.</div>
+  </div>
+
+  <div class="term">
+    <h3>Leverage</h3>
+    <p>Leverage measures how unusual an observation's predictor values are relative to the design matrix. In OLS it is the diagonal of the hat matrix <code>H = X(X'X)⁻¹X'</code>. High leverage points can strongly affect the model if their response is also surprising.</p>
+    <div class="exercise"><strong>Exercise:</strong> Explain the difference between a high-leverage point with a small residual and one with a large residual.</div>
+  </div>
+
+  <div class="term">
+    <h3>Likelihood</h3>
+    <p>The probability (or density) of the observed data viewed as a function of unknown parameters rather than of the data. Maximum likelihood estimation picks the parameters that make the observed data most probable; under normal errors this coincides with least squares.</p>
+    <div class="exercise"><strong>Exercise:</strong> Show that maximizing the normal likelihood for simple linear regression is equivalent to minimizing the sum of squared residuals.</div>
+  </div>
+
+  <div class="term">
+    <h3>Loss Function</h3>
+    <p>A loss function defines the cost of prediction error. Squared loss targets conditional means, absolute loss targets conditional medians, pinball loss targets conditional quantiles, and Huber loss blends squared and absolute behavior.</p>
+    <div class="exercise"><strong>Exercise:</strong> For a dataset with severe outliers, compare the behavior of squared and absolute loss.</div>
+  </div>
+
+  <div class="term">
+    <h3>Log Odds</h3>
+    <p>The natural log of the odds of an event, log[p/(1-p)]. Logistic regression models log odds as linear in the predictors, which is what makes its coefficients constant on the log-odds scale even though the effect on probability itself is nonlinear.</p>
+    <div class="exercise"><strong>Exercise:</strong> Convert a fitted logistic coefficient of 0.7 into its effect on the odds ratio, and explain why the effect on probability depends on the starting probability.</div>
+  </div>
+
+  <div class="term">
+    <h3>Mean Squared Error</h3>
+    <p>The average of squared prediction errors. It is what unpenalized OLS minimizes; because errors are squared, MSE is sensitive to a few large errors, which is why its square root (RMSE) is often reported for interpretability.</p>
+    <div class="exercise"><strong>Exercise:</strong> Compute MSE and RMSE for a small set of predictions and explain what unit RMSE is expressed in.</div>
+  </div>
+
+  <div class="term">
+    <h3>Multicollinearity</h3>
+    <p>Strong linear dependence among two or more predictors, short of exact collinearity. It inflates coefficient variance (measured by the variance inflation factor) and destabilizes individual coefficients even though overall predictions and R² remain largely unaffected.</p>
+    <div class="exercise"><strong>Exercise:</strong> Add a predictor that is a near-duplicate of an existing one and observe how the standard errors change.</div>
+  </div>
+
+  <div class="term">
+    <h3>Normal Equations</h3>
+    <p>The system X&rsquo;Xβ&#770; = X&rsquo;y obtained by setting the gradient of the sum-of-squared-residuals objective to zero. Solving it (directly or via QR decomposition) gives the OLS estimates; a unique solution requires X&rsquo;X to be invertible.</p>
+    <div class="exercise"><strong>Exercise:</strong> Derive the normal equations for simple linear regression starting from the sum-of-squared-residuals objective.</div>
+  </div>
+
+  <div class="term">
+    <h3>Ordinary Least Squares</h3>
+    <p>OLS estimates coefficients by minimizing the sum of squared residuals. It has closed-form equations, projection geometry, and strong optimality properties under classical assumptions. It is the reference point for much of regression theory.</p>
+    <div class="exercise"><strong>Exercise:</strong> Fit OLS from scratch and verify that the residuals sum to approximately zero when an intercept is included.</div>
+  </div>
+
+  <div class="term">
+    <h3>Overfitting</h3>
+    <p>Overfitting occurs when a model learns noise or sample-specific artifacts rather than stable structure. It appears as low training error and much higher validation error. Regularization, validation, simpler models, and better data reduce overfitting.</p>
+    <div class="exercise"><strong>Exercise:</strong> Fit polynomial degrees 1 through 15 on noisy data. Plot or tabulate training and validation error.</div>
+  </div>
+
+  <div class="term">
+    <h3>Outlier</h3>
+    <p>An observation whose outcome is unusual relative to what the model predicts for its predictors, typically flagged by a large (standardized or studentized) residual. An outlier is not automatically influential, and not automatically an error.</p>
+    <div class="exercise"><strong>Exercise:</strong> Give an example of a point that is an outlier but has low leverage, and one that has high leverage but is not an outlier.</div>
+  </div>
+
+  <div class="term">
+    <h3>p-value</h3>
+    <p>A p-value is the probability, under a null hypothesis and model assumptions, of observing a test statistic at least as extreme as the one observed. It is not the probability that the null is true, nor a measure of effect size.</p>
+    <div class="exercise"><strong>Exercise:</strong> Explain how a tiny effect can have a small p-value in a very large dataset.</div>
+  </div>
+
+  <div class="term">
+    <h3>Prediction Interval</h3>
+    <p>An interval meant to contain a single future individual outcome, not just its conditional mean, so it includes both coefficient uncertainty and irreducible observation noise. It is always wider than the confidence interval for the mean response at the same predictors.</p>
+    <div class="exercise"><strong>Exercise:</strong> Explain why a prediction interval is wider than a confidence interval for the mean at the same x value.</div>
+  </div>
+
+  <div class="term">
+    <h3>QR Decomposition</h3>
+    <p>A matrix factorization X = QR, with Q orthogonal and R upper triangular, used to solve least squares without explicitly forming X&rsquo;X. It is numerically more stable than the normal equations when predictors are nearly collinear.</p>
+    <div class="exercise"><strong>Exercise:</strong> Explain why solving via QR avoids the numerical instability of inverting a near-singular X&rsquo;X directly.</div>
+  </div>
+
+  <div class="term">
+    <h3>R&sup2;</h3>
+    <p>The fraction of sample outcome variation explained by the fitted model, 1 &minus; SSE/SST. It never decreases when predictors are added regardless of relevance, which is why adjusted R&sup2; or out-of-sample validation should be used to compare models of different sizes.</p>
+    <div class="exercise"><strong>Exercise:</strong> Add a random, unrelated predictor to a model and confirm that R&sup2; still increases slightly.</div>
+  </div>
+
+  <div class="term">
+    <h3>Regularization</h3>
+    <p>Regularization constrains or penalizes model complexity. It improves stability and generalization by trading increased bias for reduced variance. Ridge, lasso, early stopping, priors, and smoothing penalties are all forms of regularization.</p>
+    <div class="exercise"><strong>Exercise:</strong> Explain regularization using the bias-variance decomposition.</div>
+  </div>
+
+  <div class="term">
+    <h3>Residual</h3>
+    <p>A residual is an observed training error: <code>rᵢ = yᵢ - ŷᵢ</code>. Residuals estimate but are not identical to true errors. Diagnostic plots use residuals to detect model misspecification, outliers, and variance problems.</p>
+    <div class="exercise"><strong>Exercise:</strong> Show why residuals are not independent in OLS even if the true errors are independent.</div>
+  </div>
+
+  <div class="term">
+    <h3>Ridge Regression</h3>
+    <p>Ridge regression adds an <code>L2</code> penalty to shrink coefficients. It is useful under multicollinearity and high-dimensional prediction. Ridge generally does not set coefficients exactly to zero, so it stabilizes more than it selects.</p>
+    <div class="exercise"><strong>Exercise:</strong> Fit ridge with increasing penalty values and describe what happens to coefficient magnitudes and training error.</div>
+  </div>
+
+  <div class="term">
+    <h3>Standard Error</h3>
+    <p>A standard error estimates the sampling variability of an estimator. In regression, it supports confidence intervals and hypothesis tests. Its validity depends on assumptions or robust/sandwich corrections.</p>
+    <div class="exercise"><strong>Exercise:</strong> Explain why standard errors usually grow when predictors are highly collinear.</div>
+  </div>
+
+  <div class="term">
+    <h3>Robust Standard Error</h3>
+    <p>A standard error formula designed to stay valid under specified assumption violations, most commonly heteroskedasticity-consistent (HC) errors. Robust standard errors use the same coefficient point estimates as OLS; they only change the estimated precision.</p>
+    <div class="exercise"><strong>Exercise:</strong> Fit a model with deliberately heteroskedastic errors and compare classical versus HC3 robust standard errors.</div>
+  </div>
+
+  <div class="term">
+    <h3>Student t Distribution</h3>
+    <p>A symmetric, heavier-tailed-than-normal distribution used as the reference distribution for coefficient inference when the error variance is estimated rather than known. It converges to the standard normal as degrees of freedom grow.</p>
+    <div class="exercise"><strong>Exercise:</strong> Compare the 97.5th percentile of the t distribution to the normal distribution at df = 5, 30, and 1000.</div>
+  </div>
+
+  <div class="term">
+    <h3>Train/Test Split</h3>
+    <p>A train/test split separates model fitting from final performance estimation. The test set should be used sparingly; repeated tuning on the test set turns it into training information.</p>
+    <div class="exercise"><strong>Exercise:</strong> Explain why temporal data should often be split by time rather than randomly.</div>
+  </div>
+
+  <div class="term">
+    <h3>Variance</h3>
+    <p>Variance is sensitivity to the particular training sample. High-variance models change substantially if the data are resampled. Flexible models, weak regularization, small sample sizes, and multicollinearity can increase variance.</p>
+    <div class="exercise"><strong>Exercise:</strong> Use bootstrap resampling to estimate the variability of a slope coefficient.</div>
+  </div>
+  <div class="term">
+    <h3>Variance Inflation Factor</h3>
+    <p>A per-predictor diagnostic, VIF = 1/(1 &minus; R&sup2;), where R&sup2; comes from regressing that predictor on all the others, measuring how much collinearity inflates its coefficient's variance. Values above roughly 5 to 10 are commonly flagged as concerning.</p>
+    <div class="exercise"><strong>Exercise:</strong> Compute VIF for two nearly duplicate predictors and for two unrelated predictors, and compare the results.</div>
+  </div>
+
+  <div class="term">
+    <h3>Zero Conditional Mean</h3>
+    <p>The assumption that the disturbance has expected value zero at every combination of predictor values. It is OLS's central identifying assumption; its failure, through omitted variables, reverse causality, or measurement error, is the main reason a coefficient may not be causal.</p>
+    <div class="exercise"><strong>Exercise:</strong> Describe a scenario where an omitted variable makes zero conditional mean fail, and predict the direction of the resulting bias.</div>
+  </div>
+
+</section>
+
+<section id="sources">
+  <h2>Offline Sources and Reference Notes</h2>
+  <ul>
+    <li><code>Regression_Mathematical_and_Python_Guide.docx</code>, local companion source used to expand this guide for beginners in mathematics, statistics, and Python.</li>
+    <li><code>regression_analysis.pdf</code>, local visual source used for scatterplot-first intuition, raw-sum simple-regression calculation, deviation/outlier explanations, logistic classification framing, and bias-variance target analogy.</li>
+    <li>scikit-learn user and API documentation for <code>LinearRegression</code>, <code>Ridge</code>, <code>Lasso</code>, <code>ElasticNetCV</code>, <code>Pipeline</code>, <code>ColumnTransformer</code>, and <code>PolynomialFeatures</code>.</li>
+    <li>statsmodels user and API documentation for <code>OLS</code>, formula regression, robust covariance estimators, and regression summary tables.</li>
+    <li>Legendre, <em>Nouvelles méthodes pour la détermination des orbites des comètes</em>, 1805.</li>
+    <li>Gauss, <em>Theoria Motus Corporum Coelestium in Sectionibus Conicis Solem Ambientium</em>, 1809.</li>
+    <li>Hoerl and Kennard, "Ridge Regression: Biased Estimation for Nonorthogonal Problems", <em>Technometrics</em>, 1970.</li>
+    <li>Tibshirani, "Regression Shrinkage and Selection via the Lasso", <em>Journal of the Royal Statistical Society: Series B</em>, 1996.</li>
+    <li>Friedman, Hastie, Tibshirani, "Regularization Paths for Generalized Linear Models via Coordinate Descent", <em>Journal of Statistical Software</em>, 2010.</li>
+    <li>Breiman, "Random Forests", <em>Machine Learning</em>, 2001.</li>
+    <li>Hastie, Tibshirani, Friedman, <em>The Elements of Statistical Learning</em>, 2nd edition, 2009.</li>
+    <li>James, Witten, Hastie, Tibshirani, <em>An Introduction to Statistical Learning</em>.</li>
+    <li>Hastie, Tibshirani, Wainwright, <em>Statistical Learning with Sparsity</em>, 2015.</li>
+  </ul>
+</section>
+
+</article>
+</main>
+<button class="floating-note-button" type="button" id="open-note-panel">New note</button>
+<aside class="floating-note-panel" id="floating-note-panel" hidden aria-label="Create topic note">
+  <header>
+    <h3>Create Note</h3>
+    <button class="close-note-panel" type="button" id="close-note-panel">Close</button>
+  </header>
+  <p class="floating-topic-context" id="floating-topic-context">Topic: General</p>
+  <label for="floating-note-section">Section</label>
+  <select id="floating-note-section">
+    <option>General</option>
+    <option>How to Use This Guide</option>
+    <option>Beginner Primer</option>
+    <option>Orientation</option>
+    <option>Mathematical Foundation</option>
+    <option>From Scratch Python</option>
+    <option>Core Regression Models</option>
+    <option>Diagnostics and Inference</option>
+    <option>Python Libraries</option>
+    <option>Research-Grade Workflow</option>
+    <option>Common Mistakes</option>
+    <option>Learning Sequence</option>
+    <option>NotebookLM Prompts</option>
+    <option>How to Read Papers</option>
+    <option>Further Research</option>
+    <option>Glossary</option>
+  </select>
+  <label for="floating-note-title">Title</label>
+  <input id="floating-note-title" type="text" placeholder="My understanding of this topic">
+  <label for="floating-note-body">Note</label>
+  <textarea id="floating-note-body" placeholder="Explain the topic in your own words, add questions, derivations, examples, or links to related ideas."></textarea>
+  <div class="notes-actions">
+    <button class="primary" type="button" id="floating-save-note">Save note</button>
+    <button type="button" id="floating-clear-note">Clear</button>
+  </div>
+  <div class="notes-status" id="floating-notes-status">Notes save to SQLite when the local server is running.</div>
+</aside>
+<script>
+(() => {
+  "use strict";
+
+  const app = document.querySelector("[data-notes-app]");
+  if (!app) return;
+
+  const sectionEl = document.getElementById("note-section");
+  const titleEl = document.getElementById("note-title");
+  const bodyEl = document.getElementById("note-body");
+  const statusEl = document.getElementById("notes-status");
+  const listEl = document.getElementById("notes-list");
+  const saveBtn = document.getElementById("save-note");
+  const refreshBtn = document.getElementById("refresh-notes");
+  const exportBtn = document.getElementById("export-notes");
+  const clearBtn = document.getElementById("clear-note-form");
+  const openPanelBtn = document.getElementById("open-note-panel");
+  const closePanelBtn = document.getElementById("close-note-panel");
+  const floatingPanel = document.getElementById("floating-note-panel");
+  const floatingContextEl = document.getElementById("floating-topic-context");
+  const floatingSectionEl = document.getElementById("floating-note-section");
+  const floatingTitleEl = document.getElementById("floating-note-title");
+  const floatingBodyEl = document.getElementById("floating-note-body");
+  const floatingSaveBtn = document.getElementById("floating-save-note");
+  const floatingClearBtn = document.getElementById("floating-clear-note");
+  const floatingStatusEl = document.getElementById("floating-notes-status");
+  let editingId = null;
+  let floatingEditingId = null;
+  let currentTopic = {
+    section: "General",
+    topic_anchor: "",
+    topic_title: "General"
+  };
+  const topicButtons = new Map();
+
+  function setStatus(message) {
+    statusEl.textContent = message;
+    if (floatingStatusEl) floatingStatusEl.textContent = message;
+  }
+
+  function escapeText(value) {
+    return String(value ?? "");
+  }
+
+  function slugify(value) {
+    return String(value)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 90) || "topic";
+  }
+
+  function cleanHeadingText(heading) {
+    return Array.from(heading.childNodes)
+      .filter((node) => node.nodeType === Node.TEXT_NODE)
+      .map((node) => node.textContent)
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function sectionNameFor(heading) {
+    const parentSection = heading.closest("section");
+    const h2 = parentSection ? parentSection.querySelector(":scope > h2") : null;
+    const raw = h2 ? cleanHeadingText(h2) : "General";
+    return raw.replace(/^\d+\.\s*/, "") || "General";
+  }
+
+  function ensureTopicControls() {
+    const headings = document.querySelectorAll("article section:not(#notes) h2, article section:not(#notes) h3");
+    const used = new Set();
+
+    headings.forEach((heading) => {
+      const topicTitle = cleanHeadingText(heading);
+      if (!topicTitle) return;
+      if (!heading.id) {
+        let base = slugify(topicTitle);
+        let id = base;
+        let i = 2;
+        while (document.getElementById(id) || used.has(id)) {
+          id = `${base}-${i}`;
+          i += 1;
+        }
+        heading.id = id;
+        used.add(id);
+      }
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "topic-note-button";
+      button.textContent = "Add note";
+      button.title = `Add a note for: ${topicTitle}`;
+      button.addEventListener("click", () => {
+        openFloatingPanel({
+          section: sectionNameFor(heading),
+          topic_anchor: heading.id,
+          topic_title: topicTitle
+        });
+      });
+      heading.appendChild(button);
+      topicButtons.set(heading.id, button);
+    });
+  }
+
+  async function api(path, options = {}) {
+    const response = await fetch(path, {
+      headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+      ...options
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || `Request failed: ${response.status}`);
+    }
+    return response.json();
+  }
+
+  function clearForm() {
+    editingId = null;
+    titleEl.value = "";
+    bodyEl.value = "";
+    sectionEl.value = "General";
+    saveBtn.textContent = "Save note";
+  }
+
+  function clearFloatingForm(keepTopic = true) {
+    floatingEditingId = null;
+    floatingTitleEl.value = "";
+    floatingBodyEl.value = "";
+    floatingSaveBtn.textContent = "Save note";
+    if (!keepTopic) {
+      currentTopic = { section: "General", topic_anchor: "", topic_title: "General" };
+      floatingSectionEl.value = "General";
+      floatingContextEl.textContent = "Topic: General";
+    }
+  }
+
+  function openFloatingPanel(topic, note = null) {
+    currentTopic = {
+      section: topic.section || "General",
+      topic_anchor: topic.topic_anchor || "",
+      topic_title: topic.topic_title || "General"
+    };
+    floatingPanel.hidden = false;
+    floatingSectionEl.value = currentTopic.section;
+    floatingContextEl.textContent = `Topic: ${currentTopic.topic_title}`;
+
+    if (note) {
+      floatingEditingId = note.id;
+      floatingTitleEl.value = note.title || "";
+      floatingBodyEl.value = note.body || "";
+      floatingSaveBtn.textContent = "Update note";
+    } else {
+      clearFloatingForm(true);
+    }
+    floatingTitleEl.focus();
+  }
+
+  function updateTopicButtonCounts(notes) {
+    const counts = new Map();
+    for (const note of notes) {
+      if (!note.topic_anchor) continue;
+      counts.set(note.topic_anchor, (counts.get(note.topic_anchor) || 0) + 1);
+    }
+    for (const [anchor, button] of topicButtons.entries()) {
+      const count = counts.get(anchor) || 0;
+      button.textContent = count ? `Add note (${count})` : "Add note";
+    }
+  }
+
+  function renderNotes(notes) {
+    listEl.innerHTML = "";
+    updateTopicButtonCounts(notes);
+    if (!notes.length) {
+      const empty = document.createElement("p");
+      empty.className = "notes-status";
+      empty.textContent = "No notes saved yet.";
+      listEl.appendChild(empty);
+      return;
+    }
+
+    for (const note of notes) {
+      const card = document.createElement("article");
+      card.className = "note-card";
+
+      const header = document.createElement("header");
+      const title = document.createElement("h4");
+      title.textContent = note.title || "(Untitled note)";
+      const meta = document.createElement("span");
+      meta.className = "meta";
+      const topic = note.topic_title ? ` > ${note.topic_title}` : "";
+      meta.textContent = `${note.section}${topic} | ${note.updated_at}`;
+      header.append(title, meta);
+
+      const body = document.createElement("p");
+      body.textContent = escapeText(note.body);
+
+      const actions = document.createElement("div");
+      actions.className = "notes-actions";
+
+      const edit = document.createElement("button");
+      edit.type = "button";
+      edit.textContent = "Edit";
+      edit.addEventListener("click", () => {
+        openFloatingPanel({
+          section: note.section || "General",
+          topic_anchor: note.topic_anchor || "",
+          topic_title: note.topic_title || "General"
+        }, note);
+      });
+
+      if (note.topic_anchor) {
+        const jump = document.createElement("button");
+        jump.type = "button";
+        jump.textContent = "Go to topic";
+        jump.addEventListener("click", () => {
+          document.getElementById(note.topic_anchor)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        actions.appendChild(jump);
+      }
+
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.textContent = "Delete";
+      remove.addEventListener("click", async () => {
+        if (!confirm("Delete this note from the SQLite database?")) return;
+        try {
+          await api(`/api/notes/${note.id}`, { method: "DELETE" });
+          setStatus("Note deleted.");
+          await loadNotes();
+        } catch (err) {
+          setStatus(`Delete failed: ${err.message}`);
+        }
+      });
+
+      actions.append(edit, remove);
+      card.append(header, body, actions);
+      listEl.appendChild(card);
+    }
+  }
+
+  async function loadNotes() {
+    try {
+      const data = await api("/api/notes");
+      renderNotes(data.notes || []);
+      setStatus(`SQLite notes ready. Database: ${data.database}`);
+    } catch (err) {
+      renderNotes([]);
+      setStatus("Notes are offline until you open this guide through notes_server.py.");
+    }
+  }
+
+  saveBtn.addEventListener("click", async () => {
+    const title = titleEl.value.trim();
+    const body = bodyEl.value.trim();
+    if (!title && !body) {
+      setStatus("Write a title or note body before saving.");
+      return;
+    }
+
+    try {
+      await api("/api/notes", {
+        method: "POST",
+        body: JSON.stringify({
+          id: editingId,
+          section: sectionEl.value,
+          topic_anchor: "",
+          topic_title: "",
+          title,
+          body
+        })
+      });
+      clearForm();
+      setStatus("Note saved to SQLite.");
+      await loadNotes();
+    } catch (err) {
+      setStatus(`Save failed: ${err.message}`);
+    }
+  });
+
+  refreshBtn.addEventListener("click", loadNotes);
+  clearBtn.addEventListener("click", clearForm);
+  exportBtn.addEventListener("click", () => {
+    window.location.href = "/api/notes/export";
+  });
+  openPanelBtn.addEventListener("click", () => openFloatingPanel({
+    section: "General",
+    topic_anchor: "",
+    topic_title: "General"
+  }));
+  closePanelBtn.addEventListener("click", () => {
+    floatingPanel.hidden = true;
+  });
+  floatingClearBtn.addEventListener("click", () => clearFloatingForm(true));
+  floatingSaveBtn.addEventListener("click", async () => {
+    const title = floatingTitleEl.value.trim();
+    const body = floatingBodyEl.value.trim();
+    if (!title && !body) {
+      setStatus("Write a title or note body before saving.");
+      return;
+    }
+
+    try {
+      await api("/api/notes", {
+        method: "POST",
+        body: JSON.stringify({
+          id: floatingEditingId,
+          section: floatingSectionEl.value || currentTopic.section,
+          topic_anchor: currentTopic.topic_anchor,
+          topic_title: currentTopic.topic_title,
+          title,
+          body
+        })
+      });
+      clearFloatingForm(true);
+      floatingPanel.hidden = true;
+      setStatus("Topic note saved to SQLite.");
+      await loadNotes();
+    } catch (err) {
+      setStatus(`Save failed: ${err.message}`);
+    }
+  });
+
+  ensureTopicControls();
+  loadNotes();
+})();
+</script>
+</body>
+</html>
