@@ -1445,7 +1445,7 @@ def migrate_sqlite_to_postgres() -> None:
                         (
                             note["id"], note["guide"], note["section"], note["topic_anchor"],
                             note["topic_title"], note["title"], note["body"],
-                            note.get("user_email", "anonymous"), note["created_at"], note["updated_at"]
+                            note["user_email"] if "user_email" in note.keys() else "anonymous", note["created_at"], note["updated_at"]
                         )
                     )
             print(f"Migrated {len(lite_notes)} notes to PostgreSQL.")
@@ -3499,9 +3499,10 @@ def sitemap_xml():
     <priority>0.8</priority>
   </url>""")
         
+    urls_str = "\n".join(urls)
     xml_content = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-{"\n".join(urls)}
+{urls_str}
 </urlset>
 """
     response = make_response(xml_content)
