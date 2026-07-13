@@ -629,6 +629,17 @@
       color: #0d9488;
       text-decoration: underline solid;
     }
+
+    .cross-link {
+      color: var(--accent);
+      text-decoration: underline dotted;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .cross-link:hover {
+      color: #0d9488;
+      text-decoration: underline solid;
+    }
 </style>
 </head>
 <body>
@@ -30600,5 +30611,347 @@ class MLP2Layer:
 
   ensureTopicControls();
   loadNotes();
+
+  // --- Reading Progress & Resume State Logic ---
+  const resumeStyles = `
+    .resume-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(11, 19, 41, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .resume-modal-overlay.active {
+      opacity: 1;
+    }
+    .resume-modal-container {
+      border-radius: 16px;
+      padding: 32px;
+      width: min(500px, 90vw);
+      transform: scale(0.9);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      font-family: system-ui, -apple-system, sans-serif;
+      text-align: center;
+    }
+    .resume-modal-overlay.active .resume-modal-container {
+      transform: scale(1);
+    }
+    .resume-modal-overlay.theme-hub {
+      --bg: rgba(28, 37, 65, 0.95);
+      --border: 1px solid rgba(91, 192, 190, 0.3);
+      --text: #ffffff;
+      --text-muted: #a5b4fc;
+      --shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 25px rgba(91, 192, 190, 0.2);
+      --primary-bg: #5bc0be;
+      --primary-text: #0b1329;
+      --primary-hover: #75d4d2;
+      --secondary-bg: rgba(255, 255, 255, 0.05);
+      --secondary-border: 1px solid rgba(255, 255, 255, 0.15);
+      --secondary-text: #ffffff;
+      --secondary-hover: rgba(255, 255, 255, 0.12);
+    }
+    .resume-modal-overlay.theme-guide {
+      --bg: rgba(255, 255, 255, 0.98);
+      --border: 1px solid rgba(15, 118, 110, 0.25);
+      --text: #1c232b;
+      --text-muted: #5b6673;
+      --shadow: 0 20px 40px rgba(15, 23, 42, 0.15), 0 0 25px rgba(15, 118, 110, 0.1);
+      --primary-bg: #0f766e;
+      --primary-text: #ffffff;
+      --primary-hover: #115e59;
+      --secondary-bg: #f8fafc;
+      --secondary-border: 1px solid #cbd5e1;
+      --secondary-text: #334155;
+      --secondary-hover: #e2e8f0;
+    }
+    .resume-modal-container {
+      background: var(--bg);
+      border: var(--border);
+      color: var(--text);
+      box-shadow: var(--shadow);
+    }
+    .resume-modal-title {
+      font-size: 24px;
+      font-weight: 800;
+      margin: 0 0 16px;
+      letter-spacing: -0.5px;
+    }
+    .resume-modal-body {
+      font-size: 15px;
+      line-height: 1.6;
+      margin: 0 0 28px;
+      color: var(--text-muted);
+    }
+    .resume-location-badge {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: rgba(15, 118, 110, 0.1);
+      color: #0f766e;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .theme-hub .resume-location-badge {
+      background: rgba(91, 192, 190, 0.1);
+      color: #5bc0be;
+    }
+    .resume-modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+    .resume-btn {
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    .resume-btn-primary {
+      background: var(--primary-bg);
+      color: var(--primary-text);
+      border: none;
+    }
+    .resume-btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .resume-btn-primary:active {
+      transform: translateY(0);
+    }
+    .resume-btn-secondary {
+      background: var(--secondary-bg);
+      border: var(--secondary-border);
+      color: var(--secondary-text);
+    }
+    .resume-btn-secondary:hover {
+      background: var(--secondary-hover);
+      color: var(--secondary-text);
+    }
+  `;
+
+  function getGuideKeyFromPath() {
+    const path = window.location.pathname;
+    const filename = path.substring(path.lastIndexOf('/') + 1);
+    if (!filename || filename === "index.html" || filename === "") {
+      return "hub";
+    }
+    let name = filename.replace(/\.html$/, "").replace(/\.md$/, "");
+    name = name.toLowerCase().replace(/_/g, "").replace(/-/g, "");
+    if (name.endsWith("guide") && name !== "regressionguide") {
+      name = name.substring(0, name.length - 5);
+    }
+    if (name === "regressionguide") {
+      name = "regression";
+    }
+    return name || "general";
+  }
+
+  function getGuideDisplayName(key) {
+    const names = {
+      "regression": "Linear & Logistic Regression Guide",
+      "generalizedlinearmodelsmathematicalandpython": "Generalized Linear Models Guide",
+      "nexttopicagentbrief": "Next Topic Agent Brief",
+      "notesreadme": "Notes Readme Guide"
+    };
+    return names[key] || key.charAt(0).toUpperCase() + key.slice(1);
+  }
+
+  function getActiveHeading() {
+    const headings = Array.from(document.querySelectorAll("h2, h3, h4"));
+    let active = null;
+    for (const h of headings) {
+      if (!h.id || h.closest("#notes")) continue;
+      const rect = h.getBoundingClientRect();
+      if (rect.top <= 150) {
+        active = h;
+      } else {
+        break;
+      }
+    }
+    return active;
+  }
+
+  let lastSavedState = null;
+  let saveTimeout = null;
+
+  function trackReadingProgress() {
+    const pathname = window.location.pathname;
+    if (pathname === "/" || pathname === "/index.html" || pathname === "") return;
+
+    const activeHeading = getActiveHeading();
+    const anchor = activeHeading ? "#" + activeHeading.id : "";
+    let headingTitle = activeHeading ? activeHeading.textContent : "";
+    if (headingTitle && headingTitle.includes("Add note")) {
+      headingTitle = headingTitle.replace("Add note", "").trim();
+    }
+
+    const scrollY = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollPercent = docHeight > 0 ? (scrollY / docHeight) * 100 : 0;
+    const guide = getGuideKeyFromPath();
+
+    const state = {
+      guide,
+      pathname,
+      anchor,
+      title: headingTitle || document.title,
+      scroll_y: scrollY,
+      scroll_percent: parseFloat(scrollPercent.toFixed(2))
+    };
+
+    if (
+      !lastSavedState ||
+      lastSavedState.pathname !== state.pathname ||
+      lastSavedState.anchor !== state.anchor ||
+      Math.abs(lastSavedState.scroll_y - state.scroll_y) > 100
+    ) {
+      lastSavedState = state;
+      localStorage.setItem("last_reading_state", JSON.stringify(state));
+
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(async () => {
+        try {
+          await fetch("/api/reading-state", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(state)
+          });
+        } catch (err) {
+          console.error("Failed to save reading state:", err);
+        }
+      }, 1500);
+    }
+  }
+
+  function restoreScrollPosition() {
+    const restoreY = localStorage.getItem("restore_scroll");
+    if (restoreY !== null) {
+      localStorage.removeItem("restore_scroll");
+      localStorage.removeItem("restore_scroll_percent");
+      const targetY = parseInt(restoreY, 10);
+      if (!isNaN(targetY)) {
+        window.scrollTo(0, targetY);
+        setTimeout(() => window.scrollTo(0, targetY), 300);
+        setTimeout(() => window.scrollTo(0, targetY), 800);
+      }
+    }
+  }
+
+  async function initResumePrompt() {
+    if (sessionStorage.getItem("resume_prompt_dismissed")) return;
+
+    const pathname = window.location.pathname;
+    const isHub = pathname === "/" || pathname === "/index.html" || pathname === "";
+    const currentGuide = getGuideKeyFromPath();
+
+    let state = null;
+    try {
+      const url = isHub ? "/api/reading-state" : "/api/reading-state?guide=" + currentGuide;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        state = data.state;
+      }
+    } catch (err) {
+      console.warn("Failed to fetch reading state:", err);
+    }
+
+    if (!state) {
+      try {
+        const local = localStorage.getItem("last_reading_state");
+        if (local) {
+          const parsed = JSON.parse(local);
+          if (isHub || parsed.guide === currentGuide) {
+            state = parsed;
+          }
+        }
+      } catch (e) {}
+    }
+
+    if (!state) return;
+
+    if (!isHub) {
+      if (window.scrollY > 200) return;
+      if (state.scroll_y < 200) return;
+      if (localStorage.getItem("restore_scroll")) return;
+    }
+
+    const styleEl = document.createElement("style");
+    styleEl.textContent = resumeStyles;
+    document.head.appendChild(styleEl);
+
+    const overlay = document.createElement("div");
+    overlay.className = "resume-modal-overlay theme-" + (isHub ? "hub" : "guide");
+
+    const container = document.createElement("div");
+    container.className = "resume-modal-container";
+
+    const titleEl = document.createElement("h3");
+    titleEl.className = "resume-modal-title";
+    titleEl.textContent = "Resume Reading?";
+
+    const bodyEl = document.createElement("div");
+    bodyEl.className = "resume-modal-body";
+    
+    const guideName = getGuideDisplayName(state.guide);
+    const locationText = state.title ? "<br><span class=\"resume-location-badge\">" + state.title + "</span>" : "";
+    bodyEl.innerHTML = "Welcome back! Would you like to resume reading <strong>" + guideName + "</strong>" + locationText + ", or start from the beginning?";
+
+    const actions = document.createElement("div");
+    actions.className = "resume-modal-actions";
+
+    const btnResume = document.createElement("button");
+    btnResume.className = "resume-btn resume-btn-primary";
+    btnResume.textContent = "Resume Reading";
+    btnResume.addEventListener("click", () => {
+      overlay.classList.remove("active");
+      setTimeout(() => overlay.remove(), 300);
+
+      if (isHub) {
+        localStorage.setItem("restore_scroll", state.scroll_y);
+        localStorage.setItem("restore_scroll_percent", state.scroll_percent);
+        window.location.href = state.pathname + (state.anchor || "");
+      } else {
+        window.scrollTo({ top: state.scroll_y, behavior: "smooth" });
+      }
+    });
+
+    const btnStart = document.createElement("button");
+    btnStart.className = "resume-btn resume-btn-secondary";
+    btnStart.textContent = "Start from Beginning";
+    btnStart.addEventListener("click", () => {
+      sessionStorage.setItem("resume_prompt_dismissed", "true");
+      overlay.classList.remove("active");
+      setTimeout(() => overlay.remove(), 300);
+    });
+
+    actions.append(btnResume, btnStart);
+    container.append(titleEl, bodyEl, actions);
+    overlay.appendChild(container);
+    document.body.appendChild(overlay);
+
+    setTimeout(() => overlay.classList.add("active"), 50);
+  }
+
+  window.addEventListener("scroll", trackReadingProgress, { passive: true });
+  window.addEventListener("hashchange", trackReadingProgress);
+  window.addEventListener("load", () => {
+    setTimeout(restoreScrollPosition, 100);
+    setTimeout(initResumePrompt, 500);
+  });
 })();
 </script>

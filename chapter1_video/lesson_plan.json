@@ -1,0 +1,241 @@
+[
+  {
+    "title": "The Anatomy of a Tensor",
+    "kicker": "CHAPTER 1  •  VIDEO TUTORIAL",
+    "subtitle": "From flat memory to strides, views, caches, and GPU performance",
+    "kind": "title",
+    "narration": "Welcome to Chapter One: The Anatomy of a Tensor and Compute Hardware. In this tutorial, we will look beneath NumPy and PyTorch and build a hardware-level mental model of a tensor. By the end, shape, strides, slicing, transpose, contiguity, and memory performance should feel like consequences of one simple idea: multidimensional data lives in a flat buffer. Keep one question in mind throughout the lesson: when I ask for a logical element, which physical memory address must the computer read?"
+  },
+  {
+    "title": "What you will be able to do",
+    "kicker": "LEARNING MAP",
+    "bullets": [
+      "Explain a tensor as buffer + dtype + shape + strides + offset",
+      "Translate a multidimensional index into a flat buffer position",
+      "Predict slicing and transpose without running Python",
+      "Recognize when an operation is a view and when it must copy",
+      "Connect access patterns to CPU cache and GPU bandwidth"
+    ],
+    "kind": "bullets",
+    "narration": "Our goal is not to memorize framework behavior. It is to predict it. First, we will identify the small pieces of metadata that turn a byte buffer into a tensor. Then we will derive the flat-index formula and use it to understand row-major and column-major layouts. Next, we will transform metadata to create slices, transposes, and reversed views without moving data. Finally, we will connect memory layout to CPU caches, GPU bandwidth, implementation choices, and the most common production mistakes."
+  },
+  {
+    "title": "Why not nested Python lists?",
+    "kicker": "MOTIVATION",
+    "kind": "pointers",
+    "bullets": [
+      "10,000 × 28 × 28 = 7.84 million pixels",
+      "Nested lists store pointers to Python objects",
+      "Each lookup may chase several unrelated addresses",
+      "A tensor stores raw values in one dense byte buffer"
+    ],
+    "narration": "Suppose we store ten thousand grayscale images as nested Python lists. A lookup such as images three forty-seven, row five, column thirteen does not jump directly to a pixel. Python follows a pointer to an image list, another pointer to a row list, and another pointer to a Python number object. Each number also carries object metadata. A tensor removes that overhead. It stores the numerical values, and only the values, in one flat block. A few integers then describe the logical geometry. The result is smaller, predictable, and friendly to hardware that reads consecutive bytes efficiently."
+  },
+  {
+    "title": "A tensor is a small contract",
+    "kicker": "THE CORE MODEL",
+    "kind": "components",
+    "items": [
+      [
+        "BUFFER",
+        "raw values",
+        "#39d8ff"
+      ],
+      [
+        "DTYPE",
+        "bytes per value",
+        "#ffb45b"
+      ],
+      [
+        "SHAPE",
+        "logical extents",
+        "#54e6a5"
+      ],
+      [
+        "STRIDES + OFFSET",
+        "address rule",
+        "#ff6fae"
+      ]
+    ],
+    "narration": "At hardware level, a tensor is a contract between a flat buffer and some metadata. The buffer owns the raw values. The dtype says how to interpret bytes and how wide each element is. Shape gives the length of every logical axis. Strides say how far to jump in the buffer when an index increases by one on each axis. Finally, a base offset says where this particular view begins. Frameworks may add devices, gradients, and dispatch machinery, but this is the load-bearing representation."
+  },
+  {
+    "title": "One formula explains every layout",
+    "kicker": "ADDRESS TRANSLATION",
+    "kind": "formula",
+    "formula": "flat(i₀,…,iₙ₋₁) = offset + Σ iₖ · strideₖ",
+    "example": "shape = (3, 4)   strides = (4, 1)   offset = 0\nindex (2, 1)  →  0 + 2·4 + 1·1 = 9",
+    "narration": "Here is the chapter's central equation. To translate a multidimensional index, start at the view's offset. For every axis, multiply that axis index by its stride, then add the results. For a three by four row-major matrix, the strides are four and one. Index two, one maps to zero plus two times four plus one times one, which is buffer position nine. The boundary rule is equally important: every index on axis k must be at least zero and less than shape k. Shape controls valid logical indices; strides control physical movement."
+  },
+  {
+    "title": "Row-major: the last axis moves fastest",
+    "kicker": "C-CONTIGUOUS  •  SHAPE (3, 4)  •  STRIDES (4, 1)",
+    "kind": "matrix",
+    "order": "C",
+    "narration": "In C-contiguous, or row-major, order, the last axis moves fastest. Our three by four matrix has stride one for columns because moving one column means moving one buffer element. The row stride is four because moving down one row skips the four elements in the previous row. In general, the final stride is one, and each earlier stride is the product of all dimensions to its right. Notice the highlighted path: walking left to right through a row visits consecutive addresses. That access pattern is ideal for cache lines."
+  },
+  {
+    "title": "Column-major: the first axis moves fastest",
+    "kicker": "F-CONTIGUOUS  •  SHAPE (3, 4)  •  STRIDES (1, 3)",
+    "kind": "matrix",
+    "order": "F",
+    "narration": "Fortran-contiguous, or column-major, order uses the same buffer model with different strides. Now the row stride is one and the column stride is three. Walking downward through a column visits consecutive addresses. In general, the first stride is one, and each later stride is the product of dimensions to its left. Row-major and column-major are therefore not different kinds of tensor. They are two particular stride configurations. This is why one strided representation can support C, Fortran, NumPy, PyTorch, and many layouts in between."
+  },
+  {
+    "title": "Slicing is an affine metadata update",
+    "kicker": "ZERO-COPY VIEW",
+    "kind": "slice",
+    "formula": "new_offset = offset + start · stride\nnew_stride = stride · step",
+    "narration": "A basic slice does not need to copy values. On a sliced axis, the new view starts later, so its offset becomes the old offset plus start times the old stride. If the step is greater than one, the new stride becomes the old stride times that step. The new shape is simply the number of selected positions. In this example, selecting every second column changes the column stride from one to two. Both the original tensor and the view still point to the same buffer, so writing through the view changes the original data."
+  },
+  {
+    "title": "Transpose swaps metadata, not bytes",
+    "kicker": "WHY .T IS FAST",
+    "kind": "transpose",
+    "narration": "Transpose is even simpler. For a two-dimensional tensor, swap the two shape entries and swap the two stride entries. A three by four tensor with strides four and one becomes a four by three view with strides one and four. The buffer remains untouched. That is why transposing a gigabyte-scale tensor can complete almost instantly: the operation changes a handful of integers, not a billion bytes. The tradeoff appears later, when a downstream operation traverses those bytes in an unfavorable order or requires contiguous input."
+  },
+  {
+    "title": "Reshape asks a stricter question",
+    "kicker": "VIEW OR COPY?",
+    "kind": "decision",
+    "bullets": [
+      "Can the same address sequence be described by the new shape?",
+      "YES → metadata-only view",
+      "NO → reshape must copy, or view must reject",
+      "Transpose often breaks C-contiguity without changing storage"
+    ],
+    "narration": "Reshape is not merely changing the labels on axes. A metadata-only reshape is valid only if the new shape can describe the same logical address sequence without rearranging storage. A contiguous tensor usually allows many reshapes because its addresses form one dense progression. A transposed view often does not. In PyTorch, view enforces this contiguity contract and may reject the operation. Reshape is more permissive: it returns a view when possible and silently allocates a contiguous copy when necessary. This difference matters in performance-sensitive loops."
+  },
+  {
+    "title": "Negative strides reverse a view",
+    "kicker": "SAME BUFFER  •  OPPOSITE DIRECTION",
+    "kind": "reverse",
+    "formula": "offset = 4,  stride = −1,  shape = (5,)",
+    "narration": "A negative stride means that increasing a logical index moves backward in physical storage. To reverse a five-element vector without copying, begin at buffer position four, use shape five, and use stride negative one. Logical index zero reads position four; logical index four reads position zero. The subtle point is validation. Checking only the starting offset is unsafe. An implementation must compute the minimum and maximum reachable offsets across the entire shape, accounting for every positive and negative stride, and confirm that both lie inside the backing buffer."
+  },
+  {
+    "title": "Why access order changes speed",
+    "kicker": "CPU MEMORY HIERARCHY",
+    "kind": "cache",
+    "items": [
+      [
+        "REGISTERS",
+        "~1 cycle",
+        "#54e6a5"
+      ],
+      [
+        "L1 / L2 CACHE",
+        "few cycles",
+        "#39d8ff"
+      ],
+      [
+        "L3 CACHE",
+        "tens of cycles",
+        "#ffb45b"
+      ],
+      [
+        "DRAM",
+        "~100+ cycles",
+        "#ff6fae"
+      ]
+    ],
+    "narration": "Modern processors hide slow memory behind a hierarchy. Registers are tiny and fastest. L1 and L2 caches are small and close to each core. L3 is larger and slower. DRAM is vastly larger but can cost well over one hundred cycles to reach. When the CPU requests one float, hardware typically fetches a whole sixty-four-byte cache line, enough for sixteen float thirty-two values. If the next fifteen values are adjacent, that one miss pays for many useful reads. If a large stride jumps to a different cache line each time, most fetched bytes go unused."
+  },
+  {
+    "title": "Contiguity is a performance property",
+    "kicker": "CACHE-LINE UTILIZATION",
+    "kind": "cachelines",
+    "narration": "Compare these two walks. The contiguous walk consumes neighboring values from every fetched cache line. The strided walk touches one value, skips the rest of the line, and forces another memory request. Both loops perform the same number of additions, so big-O notation calls both linear. Hardware does not. Average memory access time can be modeled as hit time plus miss rate times miss penalty. A worse miss rate can create a large constant-factor slowdown. This is why loop order should match layout: iterate along the stride-one axis in the innermost loop."
+  },
+  {
+    "title": "When should you call contiguous()?",
+    "kicker": "COPY ONCE OR PAY REPEATEDLY",
+    "kind": "breakeven",
+    "formula": "copy_cost < repeats × (strided_cost − dense_cost)",
+    "bullets": [
+      "One traversal: the copy may cost more than it saves",
+      "Repeated kernels: a one-time copy can win",
+      "Measure end-to-end; copies consume time and memory bandwidth"
+    ],
+    "narration": "Calling contiguous materializes values in a new dense buffer. That costs linear time, consumes extra memory, and uses memory bandwidth. The copy is worthwhile only when its one-time cost is smaller than the repeated penalty of operating on the strided layout. For a single cheap traversal, keep the view. For many kernels, or for an operation whose implementation is dramatically faster on dense input, copying once may win. Treat contiguous as an explicit performance tradeoff, not a ritual. Profile the complete workload, including allocation and transfer costs."
+  },
+  {
+    "title": "The same story continues on the GPU",
+    "kicker": "GPU MEMORY HIERARCHY",
+    "kind": "gpu",
+    "items": [
+      [
+        "GLOBAL HBM",
+        "large • high latency",
+        "#ff6fae"
+      ],
+      [
+        "L2 CACHE",
+        "shared on device",
+        "#ffb45b"
+      ],
+      [
+        "SHARED MEMORY",
+        "fast • per block",
+        "#39d8ff"
+      ],
+      [
+        "REGISTERS",
+        "fastest • per thread",
+        "#54e6a5"
+      ]
+    ],
+    "narration": "A GPU has its own hierarchy. Large global HBM holds tensors. An on-device L2 cache reduces some traffic. Each streaming multiprocessor offers much faster shared memory for cooperating threads, plus registers for individual threads. Efficient kernels load global memory in coalesced, neighboring transactions, reuse tiles from shared memory, and keep intermediate values in registers. Strides influence whether neighboring threads request neighboring addresses. A logically correct layout can still waste most of a memory transaction if its access pattern is scattered."
+  },
+  {
+    "title": "Arithmetic intensity predicts the bottleneck",
+    "kicker": "ROOFLINE INTUITION",
+    "kind": "intensity",
+    "formula": "arithmetic intensity = operations ÷ bytes moved",
+    "bullets": [
+      "Low intensity → memory-bandwidth-bound",
+      "High intensity → more likely compute-bound",
+      "Layout, fusion, and reuse can reduce byte movement"
+    ],
+    "narration": "Arithmetic intensity is the number of useful operations performed per byte moved from memory. Elementwise addition has low intensity: it reads inputs, performs one addition, and writes an output. It is usually bandwidth-bound. Matrix multiplication can reuse loaded tiles for many multiply-adds, giving much higher intensity and a better chance of becoming compute-bound. Layout optimization matters because coalescing, caching, fusion, and reuse reduce unnecessary byte movement. Peak floating-point throughput is irrelevant when the kernel cannot feed the arithmetic units quickly enough."
+  },
+  {
+    "title": "A minimal strided tensor implementation",
+    "kicker": "IMPLEMENTATION CHECKLIST",
+    "kind": "code",
+    "code": "class TensorView:\n    buffer: list[float]\n    shape: tuple[int, ...]\n    strides: tuple[int, ...]\n    offset: int\n\n    def flat_index(self, index):\n        return self.offset + sum(\n            i * s for i, s in zip(index, self.strides)\n        )",
+    "bullets": [
+      "Validate rank and index bounds",
+      "Views share the same buffer",
+      "Slice/transpose return new metadata",
+      "Validate min/max reachable offsets"
+    ],
+    "narration": "A minimal implementation needs a buffer, shape, strides, and offset. Element access validates the number and bounds of indices, computes the flat position with the central formula, and reads or writes the buffer. Slice and transpose return a new object that shares the same buffer but carries transformed metadata. Iteration must generate logical indices and translate each one. A robust implementation also handles zero-length dimensions, negative strides, axis insertion, and reachable-range validation. NumPy and PyTorch add optimized kernels and device machinery, but their view semantics grow from this same skeleton."
+  },
+  {
+    "title": "Five mistakes to catch early",
+    "kicker": "DEBUGGING GUIDE",
+    "kind": "mistakes",
+    "bullets": [
+      "Assuming a slice owns independent data",
+      "Assuming reshape is always zero-copy",
+      "Computing a stride with the wrong product",
+      "Validating only the base offset with negative strides",
+      "Ignoring dtype width or iterating against the layout"
+    ],
+    "narration": "Here are the mistakes that cause the most confusion. First, a basic slice usually aliases the original buffer, so mutation is shared. Second, reshape may allocate when the address pattern is incompatible. Third, C-order strides multiply dimensions to the right, while Fortran order multiplies dimensions to the left. Fourth, negative strides require validating the whole reachable range. Fifth, byte offsets depend on dtype width, and performance depends on traversal order. When debugging, print shape, strides, offset, dtype, and whether the tensor is contiguous before inspecting values."
+  },
+  {
+    "title": "The mental model to keep",
+    "kicker": "CHAPTER 1 SUMMARY",
+    "kind": "summary",
+    "bullets": [
+      "A tensor is a view over a flat typed buffer",
+      "Address = offset + the dot product of index and strides",
+      "Slice and transpose usually transform metadata",
+      "Reshape is a view only when address order permits it",
+      "Layout controls cache use, coalescing, and bandwidth"
+    ],
+    "narration": "Let us compress the chapter into five statements. A tensor is a logical view over a flat typed buffer. The physical address is the offset plus the dot product of indices and strides. Basic slicing and transpose usually create views by transforming metadata. Reshape is zero-copy only when the existing address sequence supports the new geometry. And layout is not cosmetic: it controls cache-line use, GPU coalescing, and memory bandwidth. With this foundation, automatic differentiation in Chapter Two becomes easier to reason about because every value and gradient ultimately lives in one of these strided buffers."
+  }
+]
