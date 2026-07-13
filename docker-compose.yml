@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: ml-book-db
+    restart: always
+    environment:
+      POSTGRES_DB: ml_book
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_secret_pass
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    container_name: ml-book-web
+    restart: always
+    environment:
+      - FLASK_SECRET_KEY=zeehayat_secret_key_123984
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=ml_book
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres_secret_pass
+    ports:
+      - "8765:8765"
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+
+volumes:
+  pgdata:

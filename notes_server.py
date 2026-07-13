@@ -5,9 +5,17 @@ import sqlite3
 import re
 from datetime import datetime, timezone
 from pathlib import Path
+import os
+import urllib.request
+import urllib.parse
 from urllib.parse import urlparse, parse_qs
 import markdown
-from flask import Flask, request, jsonify, send_from_directory, make_response
+from flask import Flask, request, jsonify, send_from_directory, make_response, session, redirect, render_template_string
+
+try:
+    import psycopg2
+except ImportError:
+    psycopg2 = None
 
 ROOT = Path(__file__).resolve().parent
 DB_FILE = ROOT / "regression_notes.sqlite3"
@@ -25,6 +33,40 @@ HUB_TEMPLATE = """<!DOCTYPE html>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Zeeshan Hayat | Machine Learning Researcher & Engineer</title>
+  <meta name="description" content="Personal website of Zeeshan Hayat, Machine Learning Researcher & Engineer. Read from scratch machine learning textbooks, auto-diff frameworks, and optimization guides.">
+  <meta name="keywords" content="Zeeshan Hayat, Machine Learning, Deep Learning, autograd, convex optimization, regression guide, neural networks, machine learning engineer">
+  <meta name="author" content="Zeeshan Hayat">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://zeehayat.com">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://zeehayat.com/">
+  <meta property="og:title" content="Zeeshan Hayat | Machine Learning Researcher & Engineer">
+  <meta property="og:description" content="Personal website of Zeeshan Hayat, ML Researcher. Exploring the math and raw hardware optimizations behind autograd, GLMs, and neural networks.">
+  <meta property="og:image" content="https://zeehayat.com/og-preview.png">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://zeehayat.com/">
+  <meta property="twitter:title" content="Zeeshan Hayat | Machine Learning Researcher & Engineer">
+  <meta property="twitter:description" content="Personal website of Zeeshan Hayat, ML Researcher. Exploring the math and raw hardware optimizations behind autograd, GLMs, and neural networks.">
+  <meta property="twitter:image" content="https://zeehayat.com/og-preview.png">
+
+  <!-- Schema.org JSON-LD structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Zeeshan Hayat",
+    "jobTitle": "Machine Learning Engineer & Researcher",
+    "url": "https://zeehayat.com",
+    "email": "zeenux@gmail.com",
+    "description": "Machine learning researcher and engineer specializing in structural foundations, autograd frameworks, and hardware-optimized mathematical representations.",
+    "sameAs": []
+  }
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
@@ -495,10 +537,7 @@ HUB_TEMPLATE = """<!DOCTYPE html>
     <div class="nav-container">
       <a href="#" class="logo">Zeeshan Hayat</a>
       <nav class="nav-links">
-        <a href="#">Home</a>
-        <a href="#about">About</a>
-        <a href="#guides">Guides</a>
-        <a href="#contact">Contact</a>
+        <!-- SESSION_LINKS -->
       </nav>
     </div>
   </header>
@@ -508,7 +547,7 @@ HUB_TEMPLATE = """<!DOCTYPE html>
       <div class="hero-content">
         <div class="hero-pretitle">Welcome to my space</div>
         <h1>Zeeshan Hayat</h1>
-        <p class="tagline">Machine learning engineer and researcher specializing in structural foundations, autograd frameworks, and hardware-optimized mathematical representations. Author of the Zero-to-Research ML sequence.</p>
+        <p class="tagline">Research Analyst & Data Scientist specializing in applying machine learning, MIS development, and large-scale data analytics to drive evidence-based decision-making.</p>
         <div class="hero-actions">
           <a href="#guides" class="btn btn-primary">Study My Guides</a>
           <a href="#contact" class="btn btn-secondary">Get in Touch</a>
@@ -518,29 +557,152 @@ HUB_TEMPLATE = """<!DOCTYPE html>
 
     <section id="about">
       <h2 class="section-title">About Me</h2>
-      <p class="section-desc">Pioneering mathematical depth and custom engineering representations for the next generation of machine learning practitioners.</p>
+      <p class="section-desc">Research Analyst and Data Scientist with expertise in machine learning, MIS development, and social impact analytics.</p>
       
-      <div class="about-grid">
-        <div class="about-text">
-          <p>I focus on bridge-building between abstract mathematical frameworks (like Convex Optimization, Matrix Calculus, and Generalized Linear Models) and raw CPU/GPU memory layouts (like strided tensor architectures). My philosophy is that to truly research machine learning, you must build its core components from absolute scratch.</p>
-          <p>Through my Zero-to-Research Machine Learning Curriculum, I provide detailed, hardware-aware guiding materials covering ordinary least squares, autograd engines, SVM optimization, topological spectral clustering, and modular backpropagation engines written in pure Python/NumPy.</p>
+      <div class="about-grid" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; margin-bottom: 48px;">
+        <div style="background: var(--surface); border: 1px solid var(--surface-border); border-radius: 16px; padding: 32px;">
+          <h3 style="margin-top: 0; color: var(--accent); font-family: var(--font-display); font-size: 22px; margin-bottom: 16px;">Professional Profile</h3>
+          <p style="line-height: 1.6; color: var(--text); margin-bottom: 24px;">
+            I specialize in applying <strong>machine learning, MIS development, and large-scale data analytics</strong> to drive evidence-based decision-making in donor-funded programmes (EU, UNFPA, AusAID, PPAF, Govt of KP).
+          </p>
+          <p style="line-height: 1.6; color: var(--text-muted); margin-bottom: 24px;">
+            My work includes designing impact assessments, poverty diagnostics, GBV analytics, and predictive credit scoring models that shape policy, enable public–private partnerships, and improve livelihoods for millions.
+          </p>
+          <div style="border-top: 1px solid var(--surface-border); padding-top: 20px;">
+            <h4 style="margin: 0 0 12px; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted);">Education</h4>
+            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+              <li><strong>MS</strong> — Gandhara University</li>
+              <li><strong>Masters in Information Technology</strong> — Gomal University</li>
+              <li><strong>Masters in International Relations</strong> — University of Peshawar</li>
+            </ul>
+          </div>
         </div>
-        <div class="about-stats">
-          <div class="stat-card">
-            <h3>10+</h3>
-            <p>Chapters Compiled</p>
+
+        <div style="background: var(--surface); border: 1px solid var(--surface-border); border-radius: 16px; padding: 32px; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h3 style="margin-top: 0; color: var(--accent); font-family: var(--font-display); font-size: 22px; margin-bottom: 20px;">Experience</h3>
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+              <div>
+                <span style="color: var(--accent); font-size: 12px; font-weight: 600; text-transform: uppercase;">2014 – Present</span>
+                <h4 style="margin: 4px 0; font-size: 16px;">Manager IT</h4>
+                <p style="margin: 0; font-size: 13px; color: var(--text-muted);">Sarhad Rural Support Programme (SRSP)</p>
+              </div>
+              <div>
+                <span style="color: var(--accent); font-size: 12px; font-weight: 600; text-transform: uppercase;">2005 – 2014</span>
+                <h4 style="margin: 4px 0; font-size: 16px;">Manager IT / Program Officer IT</h4>
+                <p style="margin: 0; font-size: 13px; color: var(--text-muted);">Sarhad Rural Support Programme (SRSP)</p>
+              </div>
+              <div>
+                <span style="color: var(--accent); font-size: 12px; font-weight: 600; text-transform: uppercase;">Remote Roles</span>
+                <h4 style="margin: 4px 0; font-size: 16px;">Analytics Consultant & Technical Lead</h4>
+                <p style="margin: 0; font-size: 13px; color: var(--text-muted);">OctoFrost AB (Sweden), Topit Technologies, LocumJobsPk</p>
+              </div>
+            </div>
           </div>
-          <div class="stat-card">
-            <h3>100%</h3>
-            <p>Local & Offline</p>
+          
+          <div style="border-top: 1px solid var(--surface-border); padding-top: 20px; margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="stat-card" style="padding: 16px; text-align: center; background: rgba(255,255,255,0.01);">
+              <h3 style="margin: 0; font-size: 24px; color: var(--accent);">40%</h3>
+              <p style="margin: 4px 0 0; font-size: 12px; color: var(--text-muted);">Monitoring Efficiency Gain</p>
+            </div>
+            <div class="stat-card" style="padding: 16px; text-align: center; background: rgba(255,255,255,0.01);">
+              <h3 style="margin: 0; font-size: 24px; color: var(--accent);">3.5B</h3>
+              <p style="margin: 4px 0 0; font-size: 12px; color: var(--text-muted);">PKR Loan Model Portfolio</p>
+            </div>
           </div>
-          <div class="stat-card">
-            <h3>From Scratch</h3>
-            <p>Code Implementations</p>
+        </div>
+      </div>
+
+      <h3 style="text-align: center; font-family: var(--font-display); font-size: 24px; margin-bottom: 24px;">Key Research Projects & Social Impact</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 48px;">
+        <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid var(--surface-border); border-radius: 12px; padding: 24px;">
+          <h4 style="margin: 0 0 8px; color: var(--text); font-size: 16px;">Poverty Alleviation (Govt of KP)</h4>
+          <p style="margin: 0; font-size: 13px; line-height: 1.5; color: var(--text-muted);">
+            Developed Poverty Score Card (PSC) software based on Schreiner's tool, coordinating surveys covering <strong>100,000+ households</strong> to guide geographic targeting of poverty interventions.
+          </p>
+        </div>
+        <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid var(--surface-border); border-radius: 12px; padding: 24px;">
+          <h4 style="margin: 0 0 8px; color: var(--text); font-size: 16px;">EU PEACE Programme Swat & Kohistan</h4>
+          <p style="margin: 0; font-size: 13px; line-height: 1.5; color: var(--text-muted);">
+            Designed impact assessment methodology for PKR 1.57B micro-hydro projects using Dedoose Outcome Harvesting, directly measuring benefits for <strong>200,000+ rural households</strong>.
+          </p>
+        </div>
+        <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid var(--surface-border); border-radius: 12px; padding: 24px;">
+          <h4 style="margin: 0 0 8px; color: var(--text); font-size: 16px;">Gender-Based Violence (UNFPA)</h4>
+          <p style="margin: 0; font-size: 13px; line-height: 1.5; color: var(--text-muted);">
+            Developed the MIS & GBV cause analytics for KP's largest program, analyzing trends that enabled support for <strong>311,376 WGFS facility users</strong> and <strong>700,000+ participants</strong>.
+          </p>
+        </div>
+        <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid var(--surface-border); border-radius: 12px; padding: 24px;">
+          <h4 style="margin: 0 0 8px; color: var(--text); font-size: 16px;">SRSP Microfinance Credit Model</h4>
+          <p style="margin: 0; font-size: 13px; line-height: 1.5; color: var(--text-muted);">
+            Designed predictive machine learning-based credit scoring model serving <strong>160,000 clients</strong> with PKR 3.5B loan portfolio, improving repayment rates and expanding marginalized access.
+          </p>
+        </div>
+      </div>
+
+      <div style="background: var(--surface); border: 1px solid var(--surface-border); border-radius: 16px; padding: 32px; text-align: center;">
+        <h3 style="margin-top: 0; font-family: var(--font-display); font-size: 20px; margin-bottom: 20px;">Skills & Methodologies</h3>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+          <span style="background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.15); color: var(--accent); padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 500;">Poverty Score Card Surveys</span>
+          <span style="background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.15); color: var(--accent); padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 500;">Impact Assessment Frameworks</span>
+          <span style="background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.15); color: var(--accent); padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 500;">Outcome Harvesting & Mapping</span>
+          <span style="background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.15); color: var(--accent); padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 500;">MIS/ERP Development</span>
+          <span style="background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.15); color: var(--accent); padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 500;">Machine Learning (Scikit-Learn, TensorFlow)</span>
+          <span style="background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.15); color: var(--accent); padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 500;">Statistical Modeling (Python / R)</span>
+          <span style="background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.15); color: var(--accent); padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 500;">Data Visualization (Matplotlib, Pandas)</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="simulator">
+      <h2 class="section-title">Gradient Descent Simulator</h2>
+      <p class="section-desc">Visualize optimization in real-time. Adjust parameters to see how learning rate and noise affect convergence speed and stability.</p>
+      
+      <div style="background: var(--surface); border: 1px solid var(--surface-border); border-radius: 16px; padding: 32px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px;">
+        <div style="position: relative; width: 100%; height: 320px; background: rgba(3, 7, 18, 0.4); border-radius: 12px; border: 1px solid var(--surface-border); overflow: hidden;">
+          <canvas id="simCanvas" style="display: block; width: 100%; height: 100%;"></canvas>
+        </div>
+        <div style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h3 style="margin: 0 0 16px; font-family: var(--font-display); font-size: 20px;">Control Panel</h3>
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <label style="margin: 0; font-size: 14px; font-weight: 550; color: var(--text-muted);">Learning Rate (α)</label>
+                <span id="lrVal" style="color: var(--accent); font-weight: 600;">0.050</span>
+              </div>
+              <input type="range" id="simLr" min="0.001" max="0.300" step="0.001" value="0.050" style="width: 100%; accent-color: var(--accent);">
+            </div>
+            <div class="form-group" style="margin-top: 16px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <label style="margin: 0; font-size: 14px; font-weight: 550; color: var(--text-muted);">Data Noise</label>
+                <span id="noiseVal" style="color: var(--accent); font-weight: 600;">15</span>
+              </div>
+              <input type="range" id="simNoise" min="0" max="40" step="1" value="15" style="width: 100%; accent-color: var(--accent);">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px;">
+              <button class="btn btn-secondary" id="btnResetPoints" style="padding: 10px; font-size: 14px;">Reset Data</button>
+              <button class="btn btn-primary" id="btnToggleSim" style="padding: 10px; font-size: 14px; color: #030712;">Pause</button>
+            </div>
           </div>
-          <div class="stat-card">
-            <h3>SQLite</h3>
-            <p>Integrated Studying Notes</p>
+          
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--surface-border); border-radius: 8px; padding: 16px; margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px;">
+            <div>
+              <span style="color: var(--text-muted);">Iteration:</span>
+              <strong id="simIter" style="color: #fff; float: right;">0</strong>
+            </div>
+            <div>
+              <span style="color: var(--text-muted);">MSE Loss:</span>
+              <strong id="simLoss" style="color: #34d399; float: right;">0.0000</strong>
+            </div>
+            <div>
+              <span style="color: var(--text-muted);">Weight (w):</span>
+              <strong id="simW" style="color: #fff; float: right;">0.0000</strong>
+            </div>
+            <div>
+              <span style="color: var(--text-muted);">Bias (b):</span>
+              <strong id="simB" style="color: #fff; float: right;">0.0000</strong>
+            </div>
           </div>
         </div>
       </div>
@@ -661,6 +823,162 @@ HUB_TEMPLATE = """<!DOCTYPE html>
         btn.textContent = "Send Message";
       }
     });
+
+    // --- Gradient Descent Simulator JS ---
+    const canvas = document.getElementById("simCanvas");
+    const ctx = canvas.getContext("2d");
+    let points = [];
+    let w = 0, b = 0;
+    let lr = 0.05;
+    let noise = 15;
+    let iterations = 0;
+    let isRunning = true;
+    
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+    
+    function generateData() {
+      points = [];
+      w = 0;
+      b = 0;
+      iterations = 0;
+      const trueW = 1.5;
+      const trueB = 40;
+      
+      for (let i = 0; i < 35; i++) {
+        const x = (Math.random() - 0.5) * 200;
+        const err = (Math.random() - 0.5) * noise * 4;
+        const y = trueW * x + trueB + err;
+        points.push({ x, y });
+      }
+    }
+    
+    function stepGradientDescent() {
+      if (!points.length) return;
+      
+      let gradW = 0;
+      let gradB = 0;
+      let loss = 0;
+      const n = points.length;
+      
+      for (let p of points) {
+        const pred = w * p.x + b;
+        const diff = pred - p.y;
+        gradW += diff * p.x;
+        gradB += diff;
+        loss += diff * diff;
+      }
+      
+      gradW = (2 / n) * gradW;
+      gradB = (2 / n) * gradB;
+      loss = loss / n;
+      
+      w -= lr * gradW;
+      b -= lr * gradB;
+      
+      iterations++;
+      
+      document.getElementById("simIter").textContent = iterations;
+      document.getElementById("simLoss").textContent = loss.toFixed(4);
+      document.getElementById("simW").textContent = w.toFixed(4);
+      document.getElementById("simB").textContent = b.toFixed(4);
+    }
+    
+    function drawSimulation() {
+      ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+      
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+      const centerX = width / 2;
+      const centerY = height / 2;
+      
+      ctx.strokeStyle = "rgba(255,255,255,0.03)";
+      ctx.lineWidth = 1;
+      for (let x = 0; x < width; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+      }
+      for (let y = 0; y < height; y += 40) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+      }
+      
+      ctx.strokeStyle = "rgba(255,255,255,0.1)";
+      ctx.beginPath(); ctx.moveTo(centerX, 0); ctx.lineTo(centerX, height); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, centerY); ctx.lineTo(width, centerY); ctx.stroke();
+      
+      ctx.fillStyle = "rgba(6, 182, 212, 0.7)";
+      for (let p of points) {
+        ctx.beginPath();
+        const screenX = centerX + p.x;
+        const screenY = centerY - p.y;
+        ctx.arc(screenX, screenY, 5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.strokeStyle = "rgba(6, 182, 212, 0.3)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+      
+      ctx.strokeStyle = "#3b82f6";
+      ctx.lineWidth = 3;
+      ctx.shadowColor = "rgba(59, 130, 246, 0.5)";
+      ctx.shadowBlur = 8;
+      
+      ctx.beginPath();
+      const startX = -centerX;
+      const startY = w * startX + b;
+      ctx.moveTo(centerX + startX, centerY - startY);
+      
+      const endX = centerX;
+      const endY = w * endX + b;
+      ctx.lineTo(centerX + endX, centerY - endY);
+      ctx.stroke();
+      
+      ctx.shadowBlur = 0;
+    }
+    
+    function simLoop() {
+      if (isRunning) {
+        stepGradientDescent();
+      }
+      drawSimulation();
+      requestAnimationFrame(simLoop);
+    }
+    
+    document.getElementById("simLr").addEventListener("input", (e) => {
+      lr = parseFloat(e.target.value);
+      document.getElementById("lrVal").textContent = lr.toFixed(3);
+    });
+    
+    document.getElementById("simNoise").addEventListener("input", (e) => {
+      noise = parseInt(e.target.value);
+      document.getElementById("noiseVal").textContent = noise;
+      generateData();
+    });
+    
+    document.getElementById("btnResetPoints").addEventListener("click", () => {
+      generateData();
+    });
+    
+    document.getElementById("btnToggleSim").addEventListener("click", (e) => {
+      isRunning = !isRunning;
+      e.target.textContent = isRunning ? "Pause" : "Resume";
+      e.target.className = isRunning ? "btn btn-primary" : "btn btn-secondary";
+    });
+    
+    window.addEventListener("resize", () => {
+      resizeCanvas();
+      generateData();
+    });
+    
+    setTimeout(() => {
+      resizeCanvas();
+      generateData();
+      simLoop();
+    }, 100);
 
     (() => {
       // --- Reading Progress & Resume State Logic ---
@@ -892,73 +1210,305 @@ def get_guide_title(filename: str) -> str:
         return "Next Topic Agent Brief"
     return stem.replace("_", " ")
 
-def init_db() -> None:
-    with sqlite3.connect(DB_FILE) as conn:
-        conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS notes (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                guide TEXT NOT NULL DEFAULT 'regression',
-                section TEXT NOT NULL DEFAULT 'General',
-                topic_anchor TEXT NOT NULL DEFAULT '',
-                topic_title TEXT NOT NULL DEFAULT '',
-                title TEXT NOT NULL DEFAULT '',
-                body TEXT NOT NULL DEFAULT '',
-                created_at TEXT NOT NULL,
-                updated_at TEXT NOT NULL
-            )
-            """
+def db_execute(query: str, params: tuple = ()) -> tuple[list[dict], int | None]:
+    db_host = os.environ.get("DB_HOST")
+    if db_host:
+        if not psycopg2:
+            raise RuntimeError("psycopg2 is not installed but DB_HOST is configured")
+        # PostgreSQL path
+        query_pg = query.replace("?", "%s")
+        conn = psycopg2.connect(
+            host=db_host,
+            port=os.environ.get("DB_PORT", "5432"),
+            database=os.environ.get("DB_NAME", "ml_book"),
+            user=os.environ.get("DB_USER", "postgres"),
+            password=os.environ.get("DB_PASSWORD", "postgres_secret_pass")
         )
-        conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS reading_state (
-                guide TEXT PRIMARY KEY,
-                pathname TEXT NOT NULL,
-                anchor TEXT NOT NULL,
-                title TEXT NOT NULL,
-                scroll_y INTEGER NOT NULL,
-                scroll_percent REAL NOT NULL,
-                updated_at TEXT NOT NULL
-            )
-            """
-        )
-        conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS contact_messages (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                email TEXT NOT NULL,
-                subject TEXT NOT NULL,
-                message TEXT NOT NULL,
-                created_at TEXT NOT NULL
-            )
-            """
-        )
-        columns = {row[1] for row in conn.execute("PRAGMA table_info(notes)").fetchall()}
-        if "topic_anchor" not in columns:
-            conn.execute("ALTER TABLE notes ADD COLUMN topic_anchor TEXT NOT NULL DEFAULT ''")
-        if "topic_title" not in columns:
-            conn.execute("ALTER TABLE notes ADD COLUMN topic_title TEXT NOT NULL DEFAULT ''")
-        if "guide" not in columns:
-            conn.execute("ALTER TABLE notes ADD COLUMN guide TEXT NOT NULL DEFAULT 'regression'")
-            
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_notes_section ON notes(section)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_notes_topic ON notes(topic_anchor)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_notes_guide ON notes(guide)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at)")
+        try:
+            with conn.cursor() as cur:
+                cur.execute(query_pg, params)
+                rows = []
+                if cur.description:
+                    colnames = [desc[0] for desc in cur.description]
+                    rows = [dict(zip(colnames, row)) for row in cur.fetchall()]
+                conn.commit()
+                
+                lastrowid = None
+                if "INSERT" in query.upper():
+                    try:
+                        cur.execute("SELECT LASTVAL()")
+                        lastrowid = cur.fetchone()[0]
+                    except Exception:
+                        pass
+                return rows, lastrowid
+        finally:
+            conn.close()
+    else:
+        # SQLite path
+        with sqlite3.connect(DB_FILE) as conn:
+            conn.row_factory = sqlite3.Row
+            cur = conn.execute(query, params)
+            rows = []
+            if cur.description:
+                rows = [dict(row) for row in cur.fetchall()]
+            conn.commit()
+            return rows, cur.lastrowid
 
-def row_to_dict(row: sqlite3.Row) -> dict:
-    return {
-        "id": row["id"],
-        "guide": row["guide"] if "guide" in row.keys() else "regression",
-        "section": row["section"],
-        "topic_anchor": row["topic_anchor"],
-        "topic_title": row["topic_title"],
-        "title": row["title"],
-        "body": row["body"],
-        "created_at": row["created_at"],
-        "updated_at": row["updated_at"],
-    }
+def init_db() -> None:
+    db_host = os.environ.get("DB_HOST")
+    if db_host:
+        if not psycopg2:
+            return
+        conn = psycopg2.connect(
+            host=db_host,
+            port=os.environ.get("DB_PORT", "5432"),
+            database=os.environ.get("DB_NAME", "ml_book"),
+            user=os.environ.get("DB_USER", "postgres"),
+            password=os.environ.get("DB_PASSWORD", "postgres_secret_pass")
+        )
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS notes (
+                        id SERIAL PRIMARY KEY,
+                        guide VARCHAR(100) NOT NULL DEFAULT 'regression',
+                        section VARCHAR(120) NOT NULL DEFAULT 'General',
+                        topic_anchor VARCHAR(160) NOT NULL DEFAULT '',
+                        topic_title VARCHAR(240) NOT NULL DEFAULT '',
+                        title VARCHAR(240) NOT NULL DEFAULT '',
+                        body TEXT NOT NULL DEFAULT '',
+                        user_email VARCHAR(255) NOT NULL DEFAULT 'anonymous',
+                        created_at VARCHAR(100) NOT NULL,
+                        updated_at VARCHAR(100) NOT NULL
+                    )
+                    """
+                )
+                cur.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS reading_state_v2 (
+                        user_email VARCHAR(255) NOT NULL,
+                        guide VARCHAR(100) NOT NULL,
+                        pathname VARCHAR(255) NOT NULL,
+                        anchor VARCHAR(160) NOT NULL DEFAULT '',
+                        title VARCHAR(240) NOT NULL DEFAULT '',
+                        scroll_y INTEGER NOT NULL,
+                        scroll_percent REAL NOT NULL,
+                        updated_at VARCHAR(100) NOT NULL,
+                        PRIMARY KEY (user_email, guide)
+                    )
+                    """
+                )
+                cur.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS contact_messages (
+                        id SERIAL PRIMARY KEY,
+                        name VARCHAR(100) NOT NULL,
+                        email VARCHAR(100) NOT NULL,
+                        subject VARCHAR(200) NOT NULL,
+                        message TEXT NOT NULL,
+                        created_at VARCHAR(100) NOT NULL
+                    )
+                    """
+                )
+                cur.execute("CREATE INDEX IF NOT EXISTS idx_notes_section ON notes(section)")
+                cur.execute("CREATE INDEX IF NOT EXISTS idx_notes_topic ON notes(topic_anchor)")
+                cur.execute("CREATE INDEX IF NOT EXISTS idx_notes_guide ON notes(guide)")
+                cur.execute("CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at)")
+                cur.execute("CREATE INDEX IF NOT EXISTS idx_notes_user_email ON notes(user_email)")
+            conn.commit()
+        finally:
+            conn.close()
+    else:
+        with sqlite3.connect(DB_FILE) as conn:
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS notes (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    guide TEXT NOT NULL DEFAULT 'regression',
+                    section TEXT NOT NULL DEFAULT 'General',
+                    topic_anchor TEXT NOT NULL DEFAULT '',
+                    topic_title TEXT NOT NULL DEFAULT '',
+                    title TEXT NOT NULL DEFAULT '',
+                    body TEXT NOT NULL DEFAULT '',
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                )
+                """
+            )
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS reading_state (
+                    guide TEXT PRIMARY KEY,
+                    pathname TEXT NOT NULL,
+                    anchor TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    scroll_y INTEGER NOT NULL,
+                    scroll_percent REAL NOT NULL,
+                    updated_at TEXT NOT NULL
+                )
+                """
+            )
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS reading_state_v2 (
+                    user_email TEXT NOT NULL,
+                    guide TEXT NOT NULL,
+                    pathname TEXT NOT NULL,
+                    anchor TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    scroll_y INTEGER NOT NULL,
+                    scroll_percent REAL NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (user_email, guide)
+                )
+                """
+            )
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS contact_messages (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    email TEXT NOT NULL,
+                    subject TEXT NOT NULL,
+                    message TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                )
+                """
+            )
+            columns = {row[1] for row in conn.execute("PRAGMA table_info(notes)").fetchall()}
+            if "topic_anchor" not in columns:
+                conn.execute("ALTER TABLE notes ADD COLUMN topic_anchor TEXT NOT NULL DEFAULT ''")
+            if "topic_title" not in columns:
+                conn.execute("ALTER TABLE notes ADD COLUMN topic_title TEXT NOT NULL DEFAULT ''")
+            if "guide" not in columns:
+                conn.execute("ALTER TABLE notes ADD COLUMN guide TEXT NOT NULL DEFAULT 'regression'")
+            if "user_email" not in columns:
+                conn.execute("ALTER TABLE notes ADD COLUMN user_email TEXT NOT NULL DEFAULT 'anonymous'")
+                
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_notes_section ON notes(section)")
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_notes_topic ON notes(topic_anchor)")
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_notes_guide ON notes(guide)")
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at)")
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_notes_user_email ON notes(user_email)")
+
+def migrate_sqlite_to_postgres() -> None:
+    db_host = os.environ.get("DB_HOST")
+    if not db_host or not psycopg2:
+        return
+        
+    sqlite_file = ROOT / "regression_notes.sqlite3"
+    if not sqlite_file.exists():
+        return
+        
+    try:
+        pg_conn = psycopg2.connect(
+            host=db_host,
+            port=os.environ.get("DB_PORT", "5432"),
+            database=os.environ.get("DB_NAME", "ml_book"),
+            user=os.environ.get("DB_USER", "postgres"),
+            password=os.environ.get("DB_PASSWORD", "postgres_secret_pass")
+        )
+        try:
+            with pg_conn.cursor() as cur:
+                cur.execute("SELECT COUNT(*) FROM notes")
+                count = cur.fetchone()[0]
+                if count > 0:
+                    return
+        except Exception:
+            return
+        finally:
+            pg_conn.close()
+            
+        print("Starting SQLite to PostgreSQL migration...")
+        lite_conn = sqlite3.connect(sqlite_file)
+        lite_conn.row_factory = sqlite3.Row
+        
+        pg_conn = psycopg2.connect(
+            host=db_host,
+            port=os.environ.get("DB_PORT", "5432"),
+            database=os.environ.get("DB_NAME", "ml_book"),
+            user=os.environ.get("DB_USER", "postgres"),
+            password=os.environ.get("DB_PASSWORD", "postgres_secret_pass")
+        )
+        
+        try:
+            lite_notes = lite_conn.execute("SELECT * FROM notes").fetchall()
+            with pg_conn.cursor() as cur:
+                for note in lite_notes:
+                    cur.execute(
+                        """
+                        INSERT INTO notes (id, guide, section, topic_anchor, topic_title, title, body, user_email, created_at, updated_at)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (id) DO NOTHING
+                        """,
+                        (
+                            note["id"], note["guide"], note["section"], note["topic_anchor"],
+                            note["topic_title"], note["title"], note["body"],
+                            note.get("user_email", "anonymous"), note["created_at"], note["updated_at"]
+                        )
+                    )
+            print(f"Migrated {len(lite_notes)} notes to PostgreSQL.")
+            
+            lite_tables = {row[0] for row in lite_conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
+            states_migrated = 0
+            with pg_conn.cursor() as cur:
+                if "reading_state_v2" in lite_tables:
+                    lite_states = lite_conn.execute("SELECT * FROM reading_state_v2").fetchall()
+                    for state in lite_states:
+                        cur.execute(
+                            """
+                            INSERT INTO reading_state_v2 (user_email, guide, pathname, anchor, title, scroll_y, scroll_percent, updated_at)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                            ON CONFLICT (user_email, guide) DO NOTHING
+                            """,
+                            (
+                                state["user_email"], state["guide"], state["pathname"], state["anchor"],
+                                state["title"], state["scroll_y"], state["scroll_percent"], state["updated_at"]
+                            )
+                        )
+                    states_migrated = len(lite_states)
+                elif "reading_state" in lite_tables:
+                    lite_states = lite_conn.execute("SELECT * FROM reading_state").fetchall()
+                    for state in lite_states:
+                        cur.execute(
+                            """
+                            INSERT INTO reading_state_v2 (user_email, guide, pathname, anchor, title, scroll_y, scroll_percent, updated_at)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                            ON CONFLICT (user_email, guide) DO NOTHING
+                            """,
+                            (
+                                "anonymous", state["guide"], state["pathname"], state["anchor"],
+                                state["title"], state["scroll_y"], state["scroll_percent"], state["updated_at"]
+                            )
+                        )
+                    states_migrated = len(lite_states)
+            print(f"Migrated {states_migrated} reading records to PostgreSQL.")
+            
+            if "contact_messages" in lite_tables:
+                lite_msgs = lite_conn.execute("SELECT * FROM contact_messages").fetchall()
+                with pg_conn.cursor() as cur:
+                    for msg in lite_msgs:
+                        cur.execute(
+                            """
+                            INSERT INTO contact_messages (id, name, email, subject, message, created_at)
+                            VALUES (%s, %s, %s, %s, %s, %s)
+                            ON CONFLICT (id) DO NOTHING
+                            """,
+                            (
+                                msg["id"], msg["name"], msg["email"], msg["subject"], msg["message"], msg["created_at"]
+                            )
+                        )
+                print(f"Migrated {len(lite_msgs)} contact messages to PostgreSQL.")
+            pg_conn.commit()
+        except Exception as e:
+            pg_conn.rollback()
+            print("Failed to run SQLite to PostgreSQL migration:", e)
+        finally:
+            lite_conn.close()
+            pg_conn.close()
+    except Exception as e:
+        print("Database connection error during migration:", e)
 
 def find_markdown_file(stem: str) -> Path | None:
     norm = normalize_guide_name(stem)
@@ -977,12 +1527,15 @@ def get_note_counts() -> dict[str, int]:
     for f in ROOT.glob("*.md"):
         counts[normalize_guide_name(f.name)] = 0
     try:
-        with sqlite3.connect(DB_FILE) as conn:
-            rows = conn.execute("SELECT guide, COUNT(*) FROM notes GROUP BY guide").fetchall()
-            for row in rows:
-                counts[normalize_guide_name(row[0])] = row[1]
-    except Exception:
-        pass
+        user_email = get_current_user_email()
+        rows, _ = db_execute(
+            "SELECT guide, COUNT(*) as cnt FROM notes WHERE user_email = ? GROUP BY guide",
+            (user_email,)
+        )
+        for row in rows:
+            counts[normalize_guide_name(row["guide"])] = row["cnt"]
+    except Exception as e:
+        print("Error getting note counts:", e)
     return counts
 
 def render_markdown_guide(md_file: Path) -> str:
@@ -1007,6 +1560,23 @@ def render_markdown_guide(md_file: Path) -> str:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{TITLE}}</title>
+  <meta name="description" content="Study {{TITLE}}, a step-by-step chapter of the Zero-to-Research Machine Learning Curriculum by Zeeshan Hayat.">
+  <meta name="keywords" content="{{TITLE}}, Machine Learning, Zeeshan Hayat, Zero-to-Research, autograd, linear regression, GLM, AI">
+  <meta name="author" content="Zeeshan Hayat">
+  <meta name="robots" content="index, follow">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="{{TITLE}} | Zero-to-Research ML Curriculum">
+  <meta property="og:description" content="Study {{TITLE}}, a step-by-step chapter of the Zero-to-Research Machine Learning Curriculum by Zeeshan Hayat.">
+  <meta property="og:image" content="https://zeehayat.com/og-preview.png">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:title" content="{{TITLE}} | Zero-to-Research ML Curriculum">
+  <meta property="twitter:description" content="Study {{TITLE}}, a step-by-step chapter of the Zero-to-Research Machine Learning Curriculum by Zeeshan Hayat.">
+  <meta property="twitter:image" content="https://zeehayat.com/og-preview.png">
+
   <style>
     :root {
       --ink: #1c232b;
@@ -2166,7 +2736,36 @@ def render_markdown_guide(md_file: Path) -> str:
     )
 
 
+init_db()
+migrate_sqlite_to_postgres()
 app = Flask(__name__)
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "zeehayat_secret_key_123984")
+
+@app.before_request
+def enforce_login():
+    # If logged in, proceed
+    if session.get("user_email"):
+        return
+        
+    endpoint = request.endpoint
+    if not endpoint:
+        return
+        
+    # Allow access to login, callback, status, logout, robots.txt, and sitemap.xml endpoints
+    allowed_endpoints = ["login_page", "login_email", "google_callback", "auth_status", "logout", "robots_txt", "sitemap_xml"]
+    if endpoint in allowed_endpoints:
+        return
+        
+    # Block API access to notes and progress for unauthenticated users
+    blocked_endpoints = ["list_notes", "save_note", "delete_note", "export_notes", "get_reading_state", "save_reading_state"]
+    if endpoint in blocked_endpoints:
+        return jsonify({"error": "Unauthorized", "message": "Please sign in first"}), 401
+        
+    # Block access to book files (HTML guides)
+    if endpoint == "serve_static":
+        filename = request.view_args.get("filename", "")
+        if filename.lower().endswith(".html"):
+            return redirect("/login")
 
 def serve_hub() -> str:
     counts = get_note_counts()
@@ -2209,7 +2808,27 @@ def serve_hub() -> str:
         </a>
         """)
 
+    user_email = session.get("user_email")
+    if user_email:
+        nav_html = f"""
+        <a href="#">Home</a>
+        <a href="#about">About</a>
+        <a href="#guides">Guides</a>
+        <a href="#contact">Contact</a>
+        <span class="user-badge" style="background: rgba(6,182,212,0.1); color: var(--accent); padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{user_email}</span>
+        <a href="/logout" style="color: #ef4444; font-weight: 600;">Logout</a>
+        """
+    else:
+        nav_html = """
+        <a href="#">Home</a>
+        <a href="#about">About</a>
+        <a href="#guides">Guides</a>
+        <a href="#contact">Contact</a>
+        <a href="/login" style="background: var(--accent-gradient); color: #030712; padding: 4px 10px; border-radius: 6px; font-weight: 600; text-decoration: none; display: inline-block;">Sign In</a>
+        """
+
     template = HUB_TEMPLATE.replace("<!-- Cards will be populated dynamically -->", "\n".join(cards_html))
+    template = template.replace("<!-- SESSION_LINKS -->", nav_html)
     return template
 
 @app.route("/")
@@ -2231,22 +2850,21 @@ def list_notes():
             guide = "regression"
     
     guide = normalize_guide_name(guide)
-    with sqlite3.connect(DB_FILE) as conn:
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute(
-            """
-            SELECT id, guide, section, title, body, created_at, updated_at
-            , topic_anchor, topic_title
-            FROM notes
-            WHERE guide = ?
-            ORDER BY updated_at DESC, id DESC
-            """,
-            (guide,),
-        ).fetchall()
+    user_email = get_current_user_email()
+    rows, _ = db_execute(
+        """
+        SELECT id, guide, section, title, body, created_at, updated_at
+        , topic_anchor, topic_title
+        FROM notes
+        WHERE guide = ? AND user_email = ?
+        ORDER BY updated_at DESC, id DESC
+        """,
+        (guide, user_email),
+    )
     
     response = jsonify({
-        "database": str(DB_FILE),
-        "notes": [row_to_dict(row) for row in rows],
+        "database": "postgresql" if os.environ.get("DB_HOST") else str(DB_FILE),
+        "notes": rows,
     })
     response.headers["Cache-Control"] = "no-store"
     return response
@@ -2260,6 +2878,7 @@ def save_note():
     topic_title = str(payload.get("topic_title") or "").strip()[:240]
     title = str(payload.get("title") or "").strip()[:240]
     body = str(payload.get("body") or "").strip()
+    user_email = get_current_user_email()
     
     if not title and not body:
         return "Title or body is required", 400
@@ -2275,33 +2894,38 @@ def save_note():
             
     guide = normalize_guide_name(guide)
     now = utc_now()
-    with sqlite3.connect(DB_FILE) as conn:
-        if note_id:
-            conn.execute(
-                """
-                UPDATE notes
-                SET section = ?, topic_anchor = ?, topic_title = ?, title = ?, body = ?, updated_at = ?
-                WHERE id = ?
-                """,
-                (section, topic_anchor, topic_title, title, body, now, int(note_id)),
-            )
-            saved_id = int(note_id)
-        else:
-            cur = conn.execute(
-                """
-                INSERT INTO notes(guide, section, topic_anchor, topic_title, title, body, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (guide, section, topic_anchor, topic_title, title, body, now, now),
-            )
-            saved_id = int(cur.lastrowid)
+    if note_id:
+        # Ensure ownership
+        rows, _ = db_execute("SELECT user_email FROM notes WHERE id = ?", (int(note_id),))
+        if rows and rows[0]["user_email"] != user_email:
+            return "Permission denied", 403
+        db_execute(
+            """
+            UPDATE notes
+            SET section = ?, topic_anchor = ?, topic_title = ?, title = ?, body = ?, updated_at = ?
+            WHERE id = ? AND user_email = ?
+            """,
+            (section, topic_anchor, topic_title, title, body, now, int(note_id), user_email),
+        )
+        saved_id = int(note_id)
+    else:
+        _, saved_id = db_execute(
+            """
+            INSERT INTO notes(guide, section, topic_anchor, topic_title, title, body, user_email, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (guide, section, topic_anchor, topic_title, title, body, user_email, now, now),
+        )
             
     return jsonify({"ok": True, "id": saved_id})
 
 @app.route("/api/notes/<int:note_id>", methods=["DELETE"])
 def delete_note(note_id):
-    with sqlite3.connect(DB_FILE) as conn:
-        conn.execute("DELETE FROM notes WHERE id = ?", (note_id,))
+    user_email = get_current_user_email()
+    rows, _ = db_execute("SELECT user_email FROM notes WHERE id = ?", (note_id,))
+    if rows and rows[0]["user_email"] != user_email:
+        return "Permission denied", 403
+    db_execute("DELETE FROM notes WHERE id = ? AND user_email = ?", (note_id, user_email))
     return jsonify({"ok": True})
 
 @app.route("/api/notes/export", methods=["GET"])
@@ -2316,20 +2940,19 @@ def export_notes():
             guide = "regression"
             
     guide = normalize_guide_name(guide)
-    with sqlite3.connect(DB_FILE) as conn:
-        conn.row_factory = sqlite3.Row
-        rows = conn.execute(
-            """
-            SELECT id, guide, section, title, body, created_at, updated_at
-            , topic_anchor, topic_title
-            FROM notes
-            WHERE guide = ?
-            ORDER BY section ASC, topic_title ASC, updated_at DESC, id DESC
-            """,
-            (guide,),
-        ).fetchall()
+    user_email = get_current_user_email()
+    rows, _ = db_execute(
+        """
+        SELECT id, guide, section, title, body, created_at, updated_at
+        , topic_anchor, topic_title
+        FROM notes
+        WHERE guide = ? AND user_email = ?
+        ORDER BY section ASC, topic_title ASC, updated_at DESC, id DESC
+        """,
+        (guide, user_email),
+    )
         
-    data = json.dumps([row_to_dict(row) for row in rows], indent=2).encode("utf-8")
+    data = json.dumps(rows, indent=2).encode("utf-8")
     response = make_response(data)
     response.headers["Content-Type"] = "application/json; charset=utf-8"
     response.headers["Content-Disposition"] = f'attachment; filename="{guide}_notes_export.json"'
@@ -2339,31 +2962,19 @@ def export_notes():
 @app.route("/api/reading-state", methods=["GET"])
 def get_reading_state():
     guide = request.args.get("guide")
-    with sqlite3.connect(DB_FILE) as conn:
-        conn.row_factory = sqlite3.Row
-        if guide:
-            row = conn.execute(
-                "SELECT guide, pathname, anchor, title, scroll_y, scroll_percent, updated_at FROM reading_state WHERE guide = ?",
-                (normalize_guide_name(guide),)
-            ).fetchone()
-        else:
-            row = conn.execute(
-                "SELECT guide, pathname, anchor, title, scroll_y, scroll_percent, updated_at FROM reading_state ORDER BY updated_at DESC LIMIT 1"
-            ).fetchone()
-    
-    if row:
-        state = {
-            "guide": row["guide"],
-            "pathname": row["pathname"],
-            "anchor": row["anchor"],
-            "title": row["title"],
-            "scroll_y": row["scroll_y"],
-            "scroll_percent": row["scroll_percent"],
-            "updated_at": row["updated_at"]
-        }
+    user_email = get_current_user_email()
+    if guide:
+        rows, _ = db_execute(
+            "SELECT guide, pathname, anchor, title, scroll_y, scroll_percent, updated_at FROM reading_state_v2 WHERE user_email = ? AND guide = ?",
+            (user_email, normalize_guide_name(guide))
+        )
     else:
-        state = None
-        
+        rows, _ = db_execute(
+            "SELECT guide, pathname, anchor, title, scroll_y, scroll_percent, updated_at FROM reading_state_v2 WHERE user_email = ? ORDER BY updated_at DESC LIMIT 1",
+            (user_email,)
+        )
+    
+    state = rows[0] if rows else None
     response = jsonify({"ok": True, "state": state})
     response.headers["Cache-Control"] = "no-store"
     return response
@@ -2377,20 +2988,423 @@ def save_reading_state():
     title = payload.get("title") or ""
     scroll_y = payload.get("scroll_y", 0)
     scroll_percent = payload.get("scroll_percent", 0.0)
+    user_email = get_current_user_email()
     
     if not guide or not pathname:
         return "guide and pathname are required", 400
         
     guide = normalize_guide_name(guide)
     now = utc_now()
-    with sqlite3.connect(DB_FILE) as conn:
-        conn.execute(
-            """
-            INSERT OR REPLACE INTO reading_state (guide, pathname, anchor, title, scroll_y, scroll_percent, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            """,
-            (guide, pathname, anchor, title, int(scroll_y), float(scroll_percent), now)
-        )
+    db_execute(
+        """
+        INSERT INTO reading_state_v2 (user_email, guide, pathname, anchor, title, scroll_y, scroll_percent, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(user_email, guide) DO UPDATE SET
+            pathname = excluded.pathname,
+            anchor = excluded.anchor,
+            title = excluded.title,
+            scroll_y = excluded.scroll_y,
+            scroll_percent = excluded.scroll_percent,
+            updated_at = excluded.updated_at
+        """,
+        (user_email, guide, pathname, anchor, title, int(scroll_y), float(scroll_percent), now)
+    )
+    return jsonify({"ok": True})
+
+# --- Authentication & Google Sign-In Integrations ---
+
+LOGIN_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign In | Zeeshan Hayat</title>
+  {% if google_configured %}
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  {% endif %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #030712;
+      --surface: rgba(15, 23, 42, 0.7);
+      --surface-border: rgba(255, 255, 255, 0.07);
+      --accent: #06b6d4;
+      --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    
+    .glow-container {
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .glow-orb {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, rgba(59, 130, 246, 0.03) 50%, transparent 100%);
+      filter: blur(100px);
+      top: -200px;
+      right: -200px;
+    }
+
+    .login-container {
+      position: relative;
+      z-index: 1;
+      width: min(420px, 90vw);
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    
+    .logo {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 8px;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+      margin: 0 0 32px;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+      margin: 24px 0;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--surface-border);
+    }
+    .divider:not(:empty)::before { margin-right: 12px; }
+    .divider:not(:empty)::after { margin-left: 12px; }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    .form-group input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: inherit;
+      font-size: 14px;
+      color: #fff;
+      transition: all 0.3s;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      font-weight: 700;
+      border: none;
+      background: var(--accent-gradient);
+      color: #030712;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 15px;
+      transition: all 0.3s;
+    }
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(6, 182, 212, 0.2);
+    }
+    
+    /* Center Google Sign In */
+    .google-btn-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+    
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 24px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.2s;
+    }
+    .back-link:hover {
+      color: var(--text);
+    }
+    
+    .config-warning {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-container">
+    <div class="glow-orb"></div>
+  </div>
+
+  <div class="login-container">
+    <div class="logo">Zeeshan Hayat</div>
+    <div class="subtitle">Sign in to sync your studying notes & reading progress</div>
+
+    {% if not google_configured %}
+    <div class="config-warning">
+      <strong>Note:</strong> Google authentication Client ID is not configured on the server. Google Login is disabled. You can still sign in using the Email option below.
+    </div>
+    {% endif %}
+
+    {% if google_configured %}
+    <div class="google-btn-wrapper">
+      <div id="g_id_onload"
+           data-client_id="{{ google_client_id }}"
+           data-context="signin"
+           data-ux_mode="redirect"
+           data-login_uri="{{ redirect_uri }}"
+           data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin"
+           data-type="standard"
+           data-shape="rectangular"
+           data-theme="filled_dark"
+           data-text="signin_with"
+           data-size="large"
+           data-logo_alignment="left">
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="divider">or continue with email</div>
+
+    <form action="/login/email" method="POST">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" required placeholder="name@example.com">
+      </div>
+      <button type="submit" class="btn-submit">Sign In with Email</button>
+    </form>
+
+    <a href="/" class="back-link">← Back to Homepage</a>
+  </div>
+
+
+</body>
+</html>
+"""
+
+SESSION_PILL_SCRIPT = """
+async function initSessionPill() {
+  let user = null;
+  try {
+    const res = await fetch("/api/auth/status");
+    if (res.ok) {
+      const data = await res.json();
+      if (data.logged_in) {
+        user = data.email;
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to check auth status:", err);
+  }
+
+  const style = document.createElement("style");
+  style.textContent = `
+    .session-pill-container {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 9999;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .session-pill {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 8px 16px;
+      border-radius: 99px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      font-size: 13px;
+      color: #f3f4f6;
+    }
+    .session-pill a {
+      color: #06b6d4;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    .session-pill a:hover {
+      color: #3b82f6;
+    }
+    .session-pill .logout-btn {
+      color: #ef4444;
+    }
+    .session-pill .logout-btn:hover {
+      color: #f87171;
+    }
+  `;
+  document.head.appendChild(style);
+
+  const container = document.createElement("div");
+  container.className = "session-pill-container";
+
+  const pill = document.createElement("div");
+  pill.className = "session-pill";
+
+  if (user) {
+    pill.innerHTML = `<span>Studying as <strong>${user}</strong></span><a href="/logout" class="logout-btn">Logout</a>`;
+  } else {
+    pill.innerHTML = `<span>Not signed in</span><a href="/login">Sign In</a>`;
+  }
+
+  container.appendChild(pill);
+  document.body.appendChild(container);
+}
+window.addEventListener("DOMContentLoaded", initSessionPill);
+"""
+
+def get_google_client_id_from_file() -> str | None:
+    config_file = ROOT / "auth_config.json"
+    if config_file.exists():
+        try:
+            with open(config_file, "r") as f:
+                data = json.load(f)
+                val = data.get("google_client_id")
+                return val.strip() if val else None
+        except Exception as e:
+            print("Failed to read auth_config.json:", e)
+    return None
+
+def verify_google_token(id_token: str) -> dict | None:
+    try:
+        url = f"https://oauth2.googleapis.com/tokeninfo?id_token={urllib.parse.quote(id_token)}"
+        req = urllib.request.Request(url, method="GET")
+        with urllib.request.urlopen(req, timeout=5) as response:
+            data = json.loads(response.read().decode("utf-8"))
+            if "error_description" in data:
+                print("Google token verification error:", data["error_description"])
+                return None
+            return data
+    except Exception as e:
+        print("Failed to verify Google token:", e)
+        return None
+
+def get_current_user_email() -> str:
+    return session.get("user_email") or "anonymous"
+
+@app.route("/login")
+def login_page():
+    google_client_id = os.environ.get("GOOGLE_CLIENT_ID") or get_google_client_id_from_file()
+    google_configured = bool(google_client_id)
+    
+    scheme = request.headers.get("X-Forwarded-Proto", "http")
+    host = request.headers.get("Host", request.host)
+    if "zeehayat.com" in host:
+        scheme = "https"
+    redirect_uri = f"{scheme}://{host}/api/auth/google/callback"
+    
+    return render_template_string(
+        LOGIN_TEMPLATE,
+        google_configured=google_configured,
+        google_client_id=google_client_id,
+        redirect_uri=redirect_uri
+    )
+
+@app.route("/login/email", methods=["POST"])
+def login_email():
+    email = request.form.get("email", "").strip().lower()
+    if not email:
+        return "Email is required", 400
+    session["user_email"] = email
+    return redirect("/")
+
+@app.route("/api/auth/google/callback", methods=["POST"])
+def google_callback():
+    id_token = request.form.get("credential")
+    if not id_token:
+        return "Token is missing", 400
+        
+    user_info = verify_google_token(id_token)
+    if not user_info:
+        return "Invalid or expired token", 400
+        
+    email = user_info.get("email")
+    if not email:
+        return "Email not found in token", 400
+        
+    session["user_email"] = email.lower()
+    session["user_name"] = user_info.get("name", "")
+    session["user_picture"] = user_info.get("picture", "")
+    return redirect("/")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+@app.route("/api/auth/status")
+def auth_status():
+    user = session.get("user_email")
+    if user:
+        return jsonify({"logged_in": True, "email": user})
+    return jsonify({"logged_in": False})
         
 @app.route("/api/contact", methods=["POST"])
 def save_contact_message():
@@ -2404,14 +3418,13 @@ def save_contact_message():
         return "Name, email, and message are required", 400
         
     now = utc_now()
-    with sqlite3.connect(DB_FILE) as conn:
-        conn.execute(
-            """
-            INSERT INTO contact_messages (name, email, subject, message, created_at)
-            VALUES (?, ?, ?, ?, ?)
-            """,
-            (name, email, subject, message, now)
-        )
+    db_execute(
+        """
+        INSERT INTO contact_messages (name, email, subject, message, created_at)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (name, email, subject, message, now)
+    )
     return jsonify({"ok": True})
 
 @app.route("/<path:filename>")
@@ -2419,7 +3432,11 @@ def serve_static(filename):
     file_path = ROOT / filename
     if filename.endswith(".html"):
         if file_path.exists():
-            response = send_from_directory(ROOT, filename)
+            with open(file_path, "r", encoding="utf-8") as f:
+                content = f.read()
+            session_script = f"\n<script>\n{SESSION_PILL_SCRIPT}\n</script>\n"
+            content = content.replace("</body>", f"{session_script}</body>")
+            response = make_response(content)
             response.headers["Cache-Control"] = "no-store"
             return response
             
@@ -2427,6 +3444,8 @@ def serve_static(filename):
         md_file = find_markdown_file(stem)
         if md_file and md_file.exists():
             html_content = render_markdown_guide(md_file)
+            session_script = f"\n<script>\n{SESSION_PILL_SCRIPT}\n</script>\n"
+            html_content = html_content.replace("</body>", f"{session_script}</body>")
             response = make_response(html_content)
             response.headers["Cache-Control"] = "no-store"
             return response
@@ -2435,6 +3454,59 @@ def serve_static(filename):
         return send_from_directory(ROOT, filename)
         
     return "Not found", 404
+
+@app.route("/robots.txt")
+def robots_txt():
+    content = """User-agent: *
+Allow: /
+Allow: /sitemap.xml
+Disallow: /api/
+Disallow: /logout
+
+Sitemap: https://zeehayat.com/sitemap.xml
+"""
+    response = make_response(content)
+    response.headers["Content-Type"] = "text/plain; charset=utf-8"
+    return response
+
+@app.route("/sitemap.xml")
+def sitemap_xml():
+    base_url = "https://zeehayat.com"
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    urls = [
+        f"""  <url>
+    <loc>{base_url}/</loc>
+    <lastmod>{now}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>""",
+        f"""  <url>
+    <loc>{base_url}/regression_guide.html</loc>
+    <lastmod>{now}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>"""
+    ]
+    
+    for f in sorted(ROOT.glob("*.md")):
+        norm_name = normalize_guide_name(f.name)
+        href = f"{f.stem}.html"
+        urls.append(f"""  <url>
+    <loc>{base_url}/{href}</loc>
+    <lastmod>{now}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>""")
+        
+    xml_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{"\n".join(urls)}
+</urlset>
+"""
+    response = make_response(xml_content)
+    response.headers["Content-Type"] = "application/xml; charset=utf-8"
+    return response
 
 def main() -> None:
     import sys
