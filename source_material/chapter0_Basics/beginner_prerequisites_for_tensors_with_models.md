@@ -2,7 +2,7 @@
 
 **Audience:** A complete beginner in mathematics who is comfortable only with addition, subtraction, multiplication, division, and percentages.
 
-**Goal:** To prepare you for the prerequisite list you shared, especially for a machine-learning book that begins with **tensors**.
+**Goal:** To prepare you with the essential mathematical and computational foundations required for a machine-learning curriculum that begins with **tensors**.
 
 This document does **not** assume algebra, square roots, LCM, calculus, linear algebra, or prior computer science. It builds slowly from ordinary arithmetic and plain language.
 
@@ -281,7 +281,7 @@ This matters for memory, batching, array indexing, and tensors.
 
 ## 5. The Ceiling Function
 
-The prerequisite list mentions:
+We frequently encounter the ceiling function, written as:
 
 ```text
 ceil(x)
@@ -1107,7 +1107,7 @@ multiply all the dimension sizes together
 
 ## 13. Functions from One Set to Another: f: A -> B
 
-The prerequisite list says you should understand:
+One of the most important concepts to understand is function mapping, written as:
 
 ```text
 f: A -> B
@@ -1913,7 +1913,7 @@ Type hints help the reader know what kind of object is being passed around.
 
 # Part 5 — Computer Memory from the Beginning
 
-The prerequisite list says:
+When studying systems programming or machine learning implementation, a common core concept is:
 
 > You understand that computer memory is a large, flat array of addressable bytes. Every variable your program uses — an integer, a float, a list — occupies a contiguous range of bytes at a specific address.
 
@@ -2340,7 +2340,7 @@ multi-dimensional indexing is mapped to flat memory
 
 # Part 6 — C Extensions and Why NumPy Is Fast
 
-The prerequisite list says:
+In high-performance numerical computing, a key performance guideline is:
 
 > You understand what a C extension is at a conceptual level: a Python library whose performance-critical routines are compiled to native machine code and called from Python. You do not need to write C, but you should know that when you call numpy.sum(), the actual loop over bytes is running compiled C, not Python.
 
@@ -2974,9 +2974,9 @@ Broadcasting saves us from writing repeated loops.
 
 ---
 
-# Part 8 — How the Prerequisite List Looks After Translation
+# Part 8 — Summary of Core Technical Concepts and Translations
 
-Here is the original prerequisite list rewritten in beginner language.
+Here is a summary of the core mathematical and computational ideas translated into plain, beginner-friendly terms.
 
 ---
 
@@ -3410,7 +3410,7 @@ You may see:
 x ∈ R^n
 ```
 
-This uses a symbol not in your prerequisite list, but it is common.
+This uses a standard mathematical symbol that is very common in ML documentation.
 
 `R` usually means real numbers, which include ordinary decimals.
 

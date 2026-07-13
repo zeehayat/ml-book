@@ -519,6 +519,16 @@ HUB_TEMPLATE = """<!DOCTYPE html>
       background: rgba(15, 23, 42, 0.3);
     }
     
+    .skill-category-card:hover {
+      border-color: var(--accent) !important;
+      background: rgba(6, 182, 212, 0.03) !important;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(6, 182, 212, 0.05);
+    }
+    .skill-category-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    
     @media (max-width: 800px) {
       .about-grid, .contact-grid {
         grid-template-columns: 1fr;
@@ -565,47 +575,36 @@ HUB_TEMPLATE = """<!DOCTYPE html>
           <p style="line-height: 1.6; color: var(--text); margin-bottom: 24px;">
             I specialize in applying <strong>machine learning, MIS development, and large-scale data analytics</strong> to drive evidence-based decision-making in donor-funded programmes (EU, UNFPA, AusAID, PPAF, Govt of KP).
           </p>
-          <p style="line-height: 1.6; color: var(--text-muted); margin-bottom: 24px;">
+          <p style="line-height: 1.6; color: var(--text-muted); margin-bottom: 0;">
             My work includes designing impact assessments, poverty diagnostics, GBV analytics, and predictive credit scoring models that shape policy, enable public–private partnerships, and improve livelihoods for millions.
           </p>
-          <div style="border-top: 1px solid var(--surface-border); padding-top: 20px;">
-            <h4 style="margin: 0 0 12px; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted);">Education</h4>
-            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
-              <li><strong>MS</strong> — Gandhara University</li>
-              <li><strong>Masters in Information Technology</strong> — Gomal University</li>
-              <li><strong>Masters in International Relations</strong> — University of Peshawar</li>
-            </ul>
-          </div>
         </div>
 
         <div style="background: var(--surface); border: 1px solid var(--surface-border); border-radius: 16px; padding: 32px; display: flex; flex-direction: column; justify-content: space-between;">
           <div>
-            <h3 style="margin-top: 0; color: var(--accent); font-family: var(--font-display); font-size: 22px; margin-bottom: 20px;">Experience</h3>
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-              <div>
-                <span style="color: var(--accent); font-size: 12px; font-weight: 600; text-transform: uppercase;">2014 – Present</span>
-                <h4 style="margin: 4px 0; font-size: 16px;">Manager IT</h4>
-                <p style="margin: 0; font-size: 13px; color: var(--text-muted);">Sarhad Rural Support Programme (SRSP)</p>
-              </div>
-              <div>
-                <span style="color: var(--accent); font-size: 12px; font-weight: 600; text-transform: uppercase;">2005 – 2014</span>
-                <h4 style="margin: 4px 0; font-size: 16px;">Manager IT / Program Officer IT</h4>
-                <p style="margin: 0; font-size: 13px; color: var(--text-muted);">Sarhad Rural Support Programme (SRSP)</p>
-              </div>
-              <div>
-                <span style="color: var(--accent); font-size: 12px; font-weight: 600; text-transform: uppercase;">Remote Roles</span>
-                <h4 style="margin: 4px 0; font-size: 16px;">Analytics Consultant & Technical Lead</h4>
-                <p style="margin: 0; font-size: 13px; color: var(--text-muted);">OctoFrost AB (Sweden), Topit Technologies, LocumJobsPk</p>
-              </div>
-            </div>
+            <h3 style="margin-top: 0; color: var(--accent); font-family: var(--font-display); font-size: 22px; margin-bottom: 16px;">Education</h3>
+            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
+              <li style="display: flex; align-items: center; gap: 8px;">
+                <span style="color: var(--accent);">•</span>
+                <strong>MS</strong>
+              </li>
+              <li style="display: flex; align-items: center; gap: 8px;">
+                <span style="color: var(--accent);">•</span>
+                <strong>Masters in Information Technology</strong>
+              </li>
+              <li style="display: flex; align-items: center; gap: 8px;">
+                <span style="color: var(--accent);">•</span>
+                <strong>Masters in International Relations</strong>
+              </li>
+            </ul>
           </div>
           
           <div style="border-top: 1px solid var(--surface-border); padding-top: 20px; margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-            <div class="stat-card" style="padding: 16px; text-align: center; background: rgba(255,255,255,0.01);">
+            <div class="stat-card" style="padding: 16px; text-align: center; background: rgba(255,255,255,0.01); border: 1px solid var(--surface-border); border-radius: 8px;">
               <h3 style="margin: 0; font-size: 24px; color: var(--accent);">40%</h3>
               <p style="margin: 4px 0 0; font-size: 12px; color: var(--text-muted);">Monitoring Efficiency Gain</p>
             </div>
-            <div class="stat-card" style="padding: 16px; text-align: center; background: rgba(255,255,255,0.01);">
+            <div class="stat-card" style="padding: 16px; text-align: center; background: rgba(255,255,255,0.01); border: 1px solid var(--surface-border); border-radius: 8px;">
               <h3 style="margin: 0; font-size: 24px; color: var(--accent);">3.5B</h3>
               <p style="margin: 4px 0 0; font-size: 12px; color: var(--text-muted);">PKR Loan Model Portfolio</p>
             </div>
@@ -641,16 +640,95 @@ HUB_TEMPLATE = """<!DOCTYPE html>
         </div>
       </div>
 
-      <div style="background: var(--surface); border: 1px solid var(--surface-border); border-radius: 16px; padding: 32px; text-align: center;">
-        <h3 style="margin-top: 0; font-family: var(--font-display); font-size: 20px; margin-bottom: 20px;">Skills & Methodologies</h3>
-        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
-          <span style="background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.15); color: var(--accent); padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 500;">Poverty Score Card Surveys</span>
-          <span style="background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.15); color: var(--accent); padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 500;">Impact Assessment Frameworks</span>
-          <span style="background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.15); color: var(--accent); padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 500;">Outcome Harvesting & Mapping</span>
-          <span style="background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.15); color: var(--accent); padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 500;">MIS/ERP Development</span>
-          <span style="background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.15); color: var(--accent); padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 500;">Machine Learning (Scikit-Learn, TensorFlow)</span>
-          <span style="background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.15); color: var(--accent); padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 500;">Statistical Modeling (Python / R)</span>
-          <span style="background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.15); color: var(--accent); padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 500;">Data Visualization (Matplotlib, Pandas)</span>
+      <div style="margin-top: 48px;">
+        <h3 style="text-align: center; font-family: var(--font-display); font-size: 24px; margin-bottom: 8px;">Core Skills & Technical Expertise</h3>
+        <p style="text-align: center; color: var(--text-muted); max-width: 600px; margin: 0 auto 32px; font-size: 14px; line-height: 1.5;">
+          Bridging statistical research, machine learning, and enterprise MIS engineering to solve complex socio-economic challenges. Click on any category to view real-world project applications.
+        </p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; text-align: left;">
+          
+          <!-- Category 1: Machine Learning & Data Science -->
+          <div class="skill-category-card" onclick="toggleSkillHighlight('ml-hl')" style="background: var(--surface); border: 1px solid var(--surface-border); border-radius: 12px; padding: 24px; cursor: pointer; transition: all 0.3s ease; position: relative;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <h4 style="margin: 0; font-family: var(--font-display); font-size: 17px; color: var(--accent);">Machine Learning & Data Science</h4>
+              <span style="font-size: 18px; color: var(--accent);">🤖</span>
+            </div>
+            <p style="margin: 0 0 16px; font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+              Developing predictive and prescriptive algorithms using R, Python, and SQL to solve classification, estimation, and forecasting challenges.
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <span style="font-size: 11px; background: rgba(255,255,255,0.03); border: 1px solid var(--surface-border); padding: 3px 8px; border-radius: 4px; color: #fff;">Python & R</span>
+              <span style="font-size: 11px; background: rgba(255,255,255,0.03); border: 1px solid var(--surface-border); padding: 3px 8px; border-radius: 4px; color: #fff;">Scikit-Learn</span>
+              <span style="font-size: 11px; background: rgba(255,255,255,0.03); border: 1px solid var(--surface-border); padding: 3px 8px; border-radius: 4px; color: #fff;">TensorFlow</span>
+              <span style="font-size: 11px; background: rgba(255,255,255,0.03); border: 1px solid var(--surface-border); padding: 3px 8px; border-radius: 4px; color: #fff;">Predictive Modeling</span>
+              <span style="font-size: 11px; background: rgba(255,255,255,0.03); border: 1px solid var(--surface-border); padding: 3px 8px; border-radius: 4px; color: #fff;">Regression Models</span>
+            </div>
+            <div id="ml-hl" class="skill-highlight-box" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--surface-border); font-size: 12px; color: var(--accent); line-height: 1.5;">
+              <strong>Real-World Application:</strong> Designed the predictive ML credit-scoring model serving 160,000 clients with a PKR 3.5B loan portfolio, improving repayment rates and streamlining automated lending decisions.
+            </div>
+          </div>
+
+          <!-- Category 2: Research & Policy Analysis -->
+          <div class="skill-category-card" onclick="toggleSkillHighlight('research-hl')" style="background: var(--surface); border: 1px solid var(--surface-border); border-radius: 12px; padding: 24px; cursor: pointer; transition: all 0.3s ease; position: relative;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <h4 style="margin: 0; font-family: var(--font-display); font-size: 17px; color: var(--accent);">Research & Policy Analysis</h4>
+              <span style="font-size: 18px; color: var(--accent);">📊</span>
+            </div>
+            <p style="margin: 0 0 16px; font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+              Designing complex multi-district surveys, poverty scorecard algorithms, project appraisals, and policy evaluation reports for international donors.
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <span style="font-size: 11px; background: rgba(255,255,255,0.03); border: 1px solid var(--surface-border); padding: 3px 8px; border-radius: 4px; color: #fff;">Survey Design</span>
+              <span style="font-size: 11px; background: rgba(255,255,255,0.03); border: 1px solid var(--surface-border); padding: 3px 8px; border-radius: 4px; color: #fff;">Poverty Scorecards</span>
+              <span style="font-size: 11px; background: rgba(255,255,255,0.03); border: 1px solid var(--surface-border); padding: 3px 8px; border-radius: 4px; color: #fff;">Feasibility Studies</span>
+              <span style="font-size: 11px; background: rgba(255,255,255,0.03); border: 1px solid var(--surface-border); padding: 3px 8px; border-radius: 4px; color: #fff;">Impact Assessments</span>
+            </div>
+            <div id="research-hl" class="skill-highlight-box" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--surface-border); font-size: 12px; color: var(--accent); line-height: 1.5;">
+              <strong>Real-World Application:</strong> Directed the Bacha Khan Poverty Alleviation program covering 100,000+ households. Developed customized Poverty Score Card algorithms guiding KP Government resource allocations.
+            </div>
+          </div>
+
+          <!-- Category 3: Enterprise Systems & MIS Development -->
+          <div class="skill-category-card" onclick="toggleSkillHighlight('systems-hl')" style="background: var(--surface); border: 1px solid var(--surface-border); border-radius: 12px; padding: 24px; cursor: pointer; transition: all 0.3s ease; position: relative;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <h4 style="margin: 0; font-family: var(--font-display); font-size: 17px; color: var(--accent);">Enterprise Systems & MIS</h4>
+              <span style="font-size: 18px; color: var(--accent);">🖥️</span>
+            </div>
+            <p style="margin: 0 0 16px; font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+              Designing full-stack enterprise web platforms, custom ERP/MIS databases, and Docker/Git version-controlled software deployments.
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <span style="font-size: 11px; background: rgba(255,255,255,0.03); border: 1px solid var(--surface-border); padding: 3px 8px; border-radius: 4px; color: #fff;">ERP/MIS Architecture</span>
+              <span style="font-size: 11px; background: rgba(255,255,255,0.03); border: 1px solid var(--surface-border); padding: 3px 8px; border-radius: 4px; color: #fff;">PostgreSQL & SQL</span>
+              <span style="font-size: 11px; background: rgba(255,255,255,0.03); border: 1px solid var(--surface-border); padding: 3px 8px; border-radius: 4px; color: #fff;">Full-Stack Development</span>
+              <span style="font-size: 11px; background: rgba(255,255,255,0.03); border: 1px solid var(--surface-border); padding: 3px 8px; border-radius: 4px; color: #fff;">Docker Stack</span>
+            </div>
+            <div id="systems-hl" class="skill-highlight-box" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--surface-border); font-size: 12px; color: var(--accent); line-height: 1.5;">
+              <strong>Real-World Application:</strong> Led core ERP and MIS platform developments across 100+ field sites, scaling efficiency by 40% and managing data portals for 557,565 project trainees.
+            </div>
+          </div>
+
+          <!-- Category 4: M&E Methodologies & Specialized Tools -->
+          <div class="skill-category-card" onclick="toggleSkillHighlight('tools-hl')" style="background: var(--surface); border: 1px solid var(--surface-border); border-radius: 12px; padding: 24px; cursor: pointer; transition: all 0.3s ease; position: relative;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <h4 style="margin: 0; font-family: var(--font-display); font-size: 17px; color: var(--accent);">M&E Tools & Methodologies</h4>
+              <span style="font-size: 18px; color: var(--accent);">🛠️</span>
+            </div>
+            <p style="margin: 0 0 16px; font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+              Applying specialized monitoring methodologies like Outcome Harvesting, Outcome Mapping, and qualitative coding tools.
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <span style="font-size: 11px; background: rgba(255,255,255,0.03); border: 1px solid var(--surface-border); padding: 3px 8px; border-radius: 4px; color: #fff;">Outcome Harvesting</span>
+              <span style="font-size: 11px; background: rgba(255,255,255,0.03); border: 1px solid var(--surface-border); padding: 3px 8px; border-radius: 4px; color: #fff;">Dedoose (Qualitative)</span>
+              <span style="font-size: 11px; background: rgba(255,255,255,0.03); border: 1px solid var(--surface-border); padding: 3px 8px; border-radius: 4px; color: #fff;">Schreiner Poverty Tool</span>
+              <span style="font-size: 11px; background: rgba(255,255,255,0.03); border: 1px solid var(--surface-border); padding: 3px 8px; border-radius: 4px; color: #fff;">Analytics Dashboards</span>
+            </div>
+            <div id="tools-hl" class="skill-highlight-box" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--surface-border); font-size: 12px; color: var(--accent); line-height: 1.5;">
+              <strong>Real-World Application:</strong> Applied Outcome Harvesting and qualitative coding in Dedoose to evaluate the socio-economic impacts of EU-funded hydro projects (benefiting 200,000+ households).
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
@@ -702,6 +780,100 @@ HUB_TEMPLATE = """<!DOCTYPE html>
             <div>
               <span style="color: var(--text-muted);">Bias (b):</span>
               <strong id="simB" style="color: #fff; float: right;">0.0000</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="credit-simulator">
+      <h2 class="section-title">Microfinance Credit Risk Simulator</h2>
+      <p class="section-desc">Experience a simulated version of the predictive machine learning credit scoring model designed for SRSP's PKR 3.5B loan portfolio. Adjust parameters to test applicant risk assessment.</p>
+      
+      <div style="background: var(--surface); border: 1px solid var(--surface-border); border-radius: 16px; padding: 32px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; margin-bottom: 48px;">
+        <div>
+          <h3 style="margin: 0 0 20px; font-family: var(--font-display); font-size: 20px; color: var(--accent);">Applicant Parameters</h3>
+          
+          <div class="form-group" style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <label style="margin: 0; font-size: 14px; font-weight: 550; color: var(--text-muted);">Monthly Household Income (PKR)</label>
+              <span id="creditIncomeVal" style="color: var(--accent); font-weight: 600;">PKR 45,000</span>
+            </div>
+            <input type="range" id="creditIncome" min="10000" max="200000" step="5000" value="45000" style="width: 100%; accent-color: var(--accent);">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <label style="margin: 0; font-size: 14px; font-weight: 550; color: var(--text-muted);">Debt-to-Income Ratio (%)</label>
+              <span id="creditDebtVal" style="color: var(--accent); font-weight: 600;">20%</span>
+            </div>
+            <input type="range" id="creditDebt" min="5" max="80" step="5" value="20" style="width: 100%; accent-color: var(--accent);">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <label style="margin: 0; font-size: 14px; font-weight: 550; color: var(--text-muted);">Poverty Scorecard Rating (0 - 100)</label>
+              <span id="creditPscVal" style="color: var(--accent); font-weight: 600;">60</span>
+            </div>
+            <input type="range" id="creditPsc" min="0" max="100" step="1" value="60" style="width: 100%; accent-color: var(--accent);">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px;">
+            <div class="form-group">
+              <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 550; color: var(--text-muted);">Active Credit Lines</label>
+              <select id="creditLines" style="width: 100%; padding: 10px; background: rgba(3, 7, 18, 0.4); border: 1px solid var(--surface-border); border-radius: 8px; color: #fff; outline: none; font-size: 14px;">
+                <option value="0" selected>0 (No other loans)</option>
+                <option value="1">1 Active Loan</option>
+                <option value="2">2 Active Loans</option>
+                <option value="3">3+ Active Loans</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 550; color: var(--text-muted);">Default History</label>
+              <select id="creditDefaults" style="width: 100%; padding: 10px; background: rgba(3, 7, 18, 0.4); border: 1px solid var(--surface-border); border-radius: 8px; color: #fff; outline: none; font-size: 14px;">
+                <option value="0" selected>Clean Record</option>
+                <option value="1">1 Past Default</option>
+                <option value="2">2+ Past Defaults</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: rgba(3, 7, 18, 0.2); border: 1px solid var(--surface-border); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; position: relative; overflow: hidden;">
+          <div style="text-align: center; width: 100%;">
+            <h3 style="margin: 0 0 8px; font-family: var(--font-display); font-size: 18px; color: var(--text-muted);">Appraisal Outcome</h3>
+            <div style="position: relative; width: 220px; height: 130px; margin: 16px auto 0;">
+              <canvas id="creditGauge" width="220" height="130" style="display: block;"></canvas>
+              <div style="position: absolute; bottom: 5px; left: 0; right: 0; text-align: center;">
+                <span id="creditScoreText" style="font-size: 32px; font-weight: 800; color: #fff; font-family: var(--font-display); letter-spacing: -0.5px;">720</span>
+                <p style="margin: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted);">FICO-Equiv Score</p>
+              </div>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin: 16px 0; width: 100%;">
+            <div id="decisionBadge" style="display: inline-block; padding: 8px 24px; border-radius: 99px; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); margin-bottom: 8px;">
+              Approved
+            </div>
+            <p id="riskCategoryText" style="margin: 0; font-size: 13px; font-weight: 600; color: #10b981;">Low Risk Profile</p>
+          </div>
+
+          <div style="width: 100%; border-top: 1px solid var(--surface-border); padding-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12px; text-align: left;">
+            <div>
+              <span style="color: var(--text-muted);">Default Prob (PD):</span>
+              <strong id="creditPdVal" style="color: #fff; float: right;">1.2%</strong>
+            </div>
+            <div>
+              <span style="color: var(--text-muted);">Debt Burden:</span>
+              <strong id="creditDebtRatioVal" style="color: #fff; float: right;">Optimal</strong>
+            </div>
+            <div>
+              <span style="color: var(--text-muted);">Poverty Status:</span>
+              <strong id="creditPscStatusVal" style="color: #fff; float: right;">Stable</strong>
+            </div>
+            <div>
+              <span style="color: var(--text-muted);">Limit Estimate:</span>
+              <strong id="creditLimitVal" style="color: #fff; float: right;">PKR 85,000</strong>
             </div>
           </div>
         </div>
@@ -781,6 +953,17 @@ HUB_TEMPLATE = """<!DOCTYPE html>
       const domain = "gmail.com";
       const email = user + "@" + domain;
       document.getElementById("email-container").innerHTML = `<a href="mailto:${email}" style="color: var(--accent); font-weight: 600; text-decoration: none;">${email}</a>`;
+    }
+
+    function toggleSkillHighlight(hlId) {
+      const box = document.getElementById(hlId);
+      if (box) {
+        const isVisible = box.style.display === "block";
+        // Hide all boxes first
+        document.querySelectorAll(".skill-highlight-box").forEach(b => b.style.display = "none");
+        // Toggle the clicked one
+        box.style.display = isVisible ? "none" : "block";
+      }
     }
 
     document.getElementById("direct-contact-form").addEventListener("submit", async (e) => {
@@ -979,6 +1162,147 @@ HUB_TEMPLATE = """<!DOCTYPE html>
       generateData();
       simLoop();
     }, 100);
+
+    // --- Credit Risk Simulator JS ---
+    const gCanvas = document.getElementById("creditGauge");
+    const gCtx = gCanvas.getContext("2d");
+
+    function computeCreditScore() {
+      const income = parseFloat(document.getElementById("creditIncome").value);
+      const debtRatio = parseFloat(document.getElementById("creditDebt").value) / 100;
+      const psc = parseFloat(document.getElementById("creditPsc").value);
+      const activeLines = parseInt(document.getElementById("creditLines").value);
+      const defaults = parseInt(document.getElementById("creditDefaults").value);
+
+      const normIncome = (income - 10000) / 190000;
+      const normPSC = psc / 100;
+
+      let z = 1.8;
+      z += 3.2 * normIncome;
+      z -= 4.8 * debtRatio;
+      z += 2.2 * normPSC;
+      z -= 1.2 * activeLines;
+      z -= 5.5 * defaults;
+
+      const pd = 1 / (1 + Math.exp(z));
+      
+      let score = Math.round(300 + 550 * pd);
+      if (score < 300) score = 300;
+      if (score > 850) score = 850;
+
+      document.getElementById("creditIncomeVal").textContent = "PKR " + income.toLocaleString();
+      document.getElementById("creditDebtVal").textContent = Math.round(debtRatio * 100) + "%";
+      document.getElementById("creditPscVal").textContent = psc;
+
+      const defaultProbPct = ((1 - pd) * 100).toFixed(1) + "%";
+      document.getElementById("creditPdVal").textContent = defaultProbPct;
+
+      let riskLabel = "";
+      let riskColor = "";
+      let decision = "";
+      let decisionBg = "";
+      let decisionBorder = "";
+      let debtStatus = "Optimal";
+      let pscStatus = "Stable";
+
+      if (debtRatio > 0.5) {
+        debtStatus = "Critical";
+      } else if (debtRatio > 0.3) {
+        debtStatus = "Moderate";
+      }
+
+      if (psc < 30) {
+        pscStatus = "Vulnerable";
+      } else if (psc < 60) {
+        pscStatus = "Developing";
+      }
+
+      if (score >= 700) {
+        riskLabel = "Low Risk Profile";
+        riskColor = "#10b981";
+        decision = "Approved";
+        decisionBg = "rgba(16, 185, 129, 0.15)";
+        decisionBorder = "1px solid rgba(16, 185, 129, 0.3)";
+      } else if (score >= 550) {
+        riskLabel = "Medium Risk Profile";
+        riskColor = "#f59e0b";
+        decision = "Conditional";
+        decisionBg = "rgba(245, 158, 11, 0.15)";
+        decisionBorder = "1px solid rgba(245, 158, 11, 0.3)";
+      } else {
+        riskLabel = "High Risk Profile";
+        riskColor = "#ef4444";
+        decision = "Rejected";
+        decisionBg = "rgba(239, 68, 68, 0.15)";
+        decisionBorder = "1px solid rgba(239, 68, 68, 0.3)";
+      }
+
+      let baseLimit = income * 2.5;
+      if (score < 500) baseLimit = 0;
+      else if (score < 600) baseLimit = baseLimit * 0.4;
+      else if (score < 700) baseLimit = baseLimit * 0.85;
+      
+      if (baseLimit > 400000) baseLimit = 400000;
+      
+      const limitText = baseLimit > 0 ? "PKR " + Math.round(baseLimit).toLocaleString() : "N/A (Declined)";
+
+      document.getElementById("creditScoreText").textContent = score;
+      document.getElementById("riskCategoryText").textContent = riskLabel;
+      document.getElementById("riskCategoryText").style.color = riskColor;
+      
+      const badge = document.getElementById("decisionBadge");
+      badge.textContent = decision;
+      badge.style.color = riskColor;
+      badge.style.background = decisionBg;
+      badge.style.border = decisionBorder;
+
+      document.getElementById("creditDebtRatioVal").textContent = debtStatus;
+      document.getElementById("creditDebtRatioVal").style.color = debtRatio > 0.5 ? "#ef4444" : (debtRatio > 0.3 ? "#f59e0b" : "#34d399");
+      document.getElementById("creditPscStatusVal").textContent = pscStatus;
+      document.getElementById("creditPscStatusVal").style.color = psc < 30 ? "#ef4444" : (psc < 60 ? "#f59e0b" : "#34d399");
+      document.getElementById("creditLimitVal").textContent = limitText;
+
+      drawCreditGauge(score, riskColor);
+    }
+
+    function drawCreditGauge(score, color) {
+      gCtx.clearRect(0, 0, gCanvas.width, gCanvas.height);
+      const cx = gCanvas.width / 2;
+      const cy = gCanvas.height - 15;
+      const r = 85;
+
+      gCtx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+      gCtx.lineWidth = 12;
+      gCtx.lineCap = "round";
+      gCtx.beginPath();
+      gCtx.arc(cx, cy, r, Math.PI, 2 * Math.PI);
+      gCtx.stroke();
+
+      const scoreFraction = (score - 300) / 550;
+      const endAngle = Math.PI + scoreFraction * Math.PI;
+      
+      gCtx.strokeStyle = color;
+      gCtx.lineWidth = 12;
+      gCtx.lineCap = "round";
+      gCtx.beginPath();
+      gCtx.arc(cx, cy, r, Math.PI, endAngle);
+      gCtx.stroke();
+
+      gCtx.fillStyle = "rgba(255, 255, 255, 0.4)";
+      gCtx.font = "10px sans-serif";
+      gCtx.textAlign = "center";
+      gCtx.fillText("300", cx - r - 2, cy + 12);
+      gCtx.fillText("575", cx, cy - r - 8);
+      gCtx.fillText("850", cx + r + 2, cy + 12);
+    }
+
+    document.getElementById("creditIncome").addEventListener("input", computeCreditScore);
+    document.getElementById("creditDebt").addEventListener("input", computeCreditScore);
+    document.getElementById("creditPsc").addEventListener("input", computeCreditScore);
+    document.getElementById("creditLines").addEventListener("change", computeCreditScore);
+    document.getElementById("creditDefaults").addEventListener("change", computeCreditScore);
+
+    setTimeout(computeCreditScore, 200);
 
     (() => {
       // --- Reading Progress & Resume State Logic ---

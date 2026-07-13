@@ -4,27 +4,24 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Zero-to-Research Machine Learning Textbook (Complete) | Zeeshan Hayat</title>
-<meta name="description" content="A complete 10-chapter, step-by-step, zero-to-research-level machine learning curriculum by Zeeshan Hayat. Covers ordinary least squares, autograd engines, convex optimization, dimensional reduction, and neural network foundations."/>
-<meta name="keywords" content="Machine Learning, Zeeshan Hayat, Textbook, autograd, convex optimization, regression guide, neural networks"/>
-<meta name="author" content="Zeeshan Hayat"/>
-<meta name="robots" content="index, follow"/>
-<link rel="canonical" href="https://zeehayat.com/regression_guide.html"/>
-
+<title>Zero-to-Research Machine Learning Textbook (Complete)</title>
+<meta content="A complete 10-chapter, step-by-step, zero-to-research-level machine learning curriculum by Zeeshan Hayat. Covers ordinary least squares, autograd engines, convex optimization, dimensional reduction, and neural network foundations." name="description"/>
+<meta content="Machine Learning, Zeeshan Hayat, Textbook, autograd, convex optimization, regression guide, neural networks" name="keywords"/>
+<meta content="Zeeshan Hayat" name="author"/>
+<meta content="index, follow" name="robots"/>
+<link href="https://zeehayat.com/regression_guide.html" rel="canonical"/>
 <!-- Open Graph / Facebook -->
-<meta property="og:type" content="book"/>
-<meta property="og:url" content="https://zeehayat.com/regression_guide.html"/>
-<meta property="og:title" content="Zero-to-Research Machine Learning Textbook (Complete)"/>
-<meta property="og:description" content="A complete 10-chapter, step-by-step, zero-to-research-level machine learning curriculum by Zeeshan Hayat. Covers ordinary least squares, autograd engines, convex optimization, dimensional reduction, and neural network foundations."/>
-<meta property="og:image" content="https://zeehayat.com/og-preview.png"/>
-
+<meta content="book" property="og:type"/>
+<meta content="https://zeehayat.com/regression_guide.html" property="og:url"/>
+<meta content="Zero-to-Research Machine Learning Textbook (Complete)" property="og:title"/>
+<meta content="A complete 10-chapter, step-by-step, zero-to-research-level machine learning curriculum by Zeeshan Hayat. Covers ordinary least squares, autograd engines, convex optimization, dimensional reduction, and neural network foundations." property="og:description"/>
+<meta content="https://zeehayat.com/og-preview.png" property="og:image"/>
 <!-- Twitter -->
-<meta property="twitter:card" content="summary_large_image"/>
-<meta property="twitter:url" content="https://zeehayat.com/regression_guide.html"/>
-<meta property="twitter:title" content="Zero-to-Research Machine Learning Textbook (Complete)"/>
-<meta property="twitter:description" content="A complete 10-chapter, step-by-step, zero-to-research-level machine learning curriculum by Zeeshan Hayat. Covers ordinary least squares, autograd engines, convex optimization, dimensional reduction, and neural network foundations."/>
-<meta property="twitter:image" content="https://zeehayat.com/og-preview.png"/>
-
+<meta content="summary_large_image" property="twitter:card"/>
+<meta content="https://zeehayat.com/regression_guide.html" property="twitter:url"/>
+<meta content="Zero-to-Research Machine Learning Textbook (Complete)" property="twitter:title"/>
+<meta content="A complete 10-chapter, step-by-step, zero-to-research-level machine learning curriculum by Zeeshan Hayat. Covers ordinary least squares, autograd engines, convex optimization, dimensional reduction, and neural network foundations." property="twitter:description"/>
+<meta content="https://zeehayat.com/og-preview.png" property="twitter:image"/>
 <style>
     :root {
       --ink: #1c232b;
@@ -660,6 +657,17 @@
       color: #0d9488;
       text-decoration: underline solid;
     }
+
+    .cross-link {
+      color: var(--accent);
+      text-decoration: underline dotted;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .cross-link:hover {
+      color: #0d9488;
+      text-decoration: underline solid;
+    }
 </style>
 </head>
 <body>
@@ -739,7 +747,7 @@
 <p><strong>Advanced Research Deliverable:</strong> Build a predictive linear and <a class="cross-link" href="#chapter-1-linear-regression-logistic-models" target="_blank">logistic regression (Chapter 1 Regression Model)</a> model from scratch in pure Python, analyze residuals, and map linear decision boundaries.</p>
 <p><strong>Curriculum Path:</strong> Acts as the foundation of the Zero-to-Research sequence, establishing arithmetic symbols and basic coding execution prior to advanced multi-dimensional matrix operations.</p></div><section id="chapter-0"><h3 id="chapter-0-beginner-prerequisites-for-machine-learning">Chapter 0: Beginner Prerequisites for Machine Learning</h3><div class="box review-note"><strong>Learning Goal:</strong> Identify and interpret basic mathematical notations including functions (domain and codomain), set membership, summation, products, and ceiling/floor functions. Trace basic Python control flow, list comprehensions, and nested loops, and translate them to mathematical notation.</div>
 <p><strong>Audience:</strong> A complete beginner in mathematics who is comfortable only with addition, subtraction, multiplication, division, and percentages.</p>
-<p><strong>Goal:</strong> To prepare you for the prerequisite list you shared, especially for a machine-learning book that begins with <strong>tensors</strong>.</p>
+<p><strong>Goal:</strong> To prepare you with the essential mathematical and computational foundations required for a machine-learning curriculum that begins with <strong>tensors</strong>.</p>
 <p>This document does <strong>not</strong> assume algebra, square roots, LCM, calculus, linear algebra, or prior computer science. It builds slowly from ordinary arithmetic and plain language.</p>
 <hr/>
 <h4 id="how-to-use-this-document">How to Use This Document</h4>
@@ -902,7 +910,7 @@ print(10 / 4)   # 2.5
 <p>This matters for memory, batching, array indexing, and tensors.</p>
 <hr/>
 <h4 id="5-the-ceiling-function">5. The Ceiling Function</h4>
-<p>The prerequisite list mentions:</p>
+<p>We frequently encounter the ceiling function, written as:</p>
 <pre><code class="language-text">ceil(x)
 </code></pre>
 <p>or in mathematical notation:</p>
@@ -1335,7 +1343,7 @@ x_3 = 4
 </code></pre>
 <hr/>
 <h4 id="13-functions-from-one-set-to-another-f-a-b">13. Functions from One Set to Another: f: A -&gt; B</h4>
-<p>The prerequisite list says you should understand:</p>
+<p>One of the most important concepts to understand is function mapping, written as:</p>
 <pre><code class="language-text">f: A -&gt; B
 </code></pre>
 <p>This is function notation.</p>
@@ -1805,7 +1813,7 @@ numbers: List[int] = [1, 2, 3]
 <p>Type hints help the reader know what kind of object is being passed around.</p>
 <hr/>
 <h4 id="part-5-computer-memory-from-the-beginning">Part 5 — Computer Memory from the Beginning</h4>
-<p>The prerequisite list says:</p>
+<p>When studying systems programming or machine learning implementation, a common core concept is:</p>
 <blockquote>
 <p>You understand that computer memory is a large, flat array of addressable bytes. Every variable your program uses — an integer, a float, a list — occupies a contiguous range of bytes at a specific address.</p>
 </blockquote>
@@ -2049,7 +2057,7 @@ location of data
 </code></pre>
 <hr/>
 <h4 id="part-6-c-extensions-and-why-numpy-is-fast">Part 6 — C Extensions and Why NumPy Is Fast</h4>
-<p>The prerequisite list says:</p>
+<p>In high-performance numerical computing, a key performance guideline is:</p>
 <blockquote>
 <p>You understand what a C extension is at a conceptual level: a Python library whose performance-critical routines are compiled to native machine code and called from Python. You do not need to write C, but you should know that when you call numpy.sum(), the actual loop over bytes is running compiled C, not Python.</p>
 </blockquote>
@@ -2408,8 +2416,8 @@ print(x + y)
 <p>The vector <code>[1, 2, 3]</code> is added to each row.</p>
 <p>Broadcasting saves us from writing repeated loops.</p>
 <hr/>
-<h4 id="part-8-how-the-prerequisite-list-looks-after-translation">Part 8 — How the Prerequisite List Looks After Translation</h4>
-<p>Here is the original prerequisite list rewritten in beginner language.</p>
+<h4 id="part-8-summary-of-core-technical-concepts-and-translations">Part 8 — Summary of Core Technical Concepts and Translations</h4>
+<p>Here is a summary of the core mathematical and computational ideas translated into plain, beginner-friendly terms.</p>
 <hr/>
 <h4 id="37-computer-science-fundamentals-translated">37. Computer Science Fundamentals — Translated</h4>
 <h5 id="original-idea-1">Original idea 1</h5>
@@ -2667,7 +2675,7 @@ len(numbers)  # 4
 <p>You may see:</p>
 <pre><code class="language-text">x ∈ R^n
 </code></pre>
-<p>This uses a symbol not in your prerequisite list, but it is common.</p>
+<p>This uses a standard mathematical symbol that is very common in ML documentation.</p>
 <p><code>R</code> usually means real numbers, which include ordinary decimals.</p>
 <p><code>R^n</code> usually means:</p>
 <pre><code class="language-text">all vectors of length n containing real numbers
