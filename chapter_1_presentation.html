@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chapter 1 Teaching Presentation: The Anatomy of a Tensor & Compute Hardware</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #172033;
+      --panel-2: #202b40;
+      --text: #eef2ff;
+      --muted: #b8c1d6;
+      --faint: #7d89a4;
+      --accent: #2dd4bf;
+      --accent-2: #f59e0b;
+      --accent-3: #93c5fd;
+      --danger: #fb7185;
+      --ok: #86efac;
+      --line: #334155;
+      --code: #07111f;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    body {
+      overflow: hidden;
+    }
+
+    .deck {
+      height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    header,
+    footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
+      border-color: var(--line);
+      background: rgba(15, 23, 42, 0.92);
+    }
+
+    header {
+      border-bottom: 1px solid var(--line);
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      min-width: 0;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      height: 1.7rem;
+      padding: 0 0.65rem;
+      border: 1px solid rgba(45, 212, 191, 0.45);
+      color: var(--accent);
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .brand-title {
+      color: var(--muted);
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .progress-wrap {
+      width: min(32vw, 360px);
+      height: 0.45rem;
+      background: #111827;
+      border: 1px solid #263244;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-3));
+      transition: width 180ms ease;
+    }
+
+    .stage {
+      overflow: hidden;
+      position: relative;
+    }
+
+    .slide {
+      display: none;
+      width: 100%;
+      height: 100%;
+      padding: clamp(1.25rem, 2.5vw, 2.3rem);
+      overflow: auto;
+    }
+
+    .slide.active {
+      display: block;
+    }
+
+    .slide-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      min-height: 100%;
+      display: grid;
+      align-content: center;
+      gap: 1.15rem;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      max-width: 980px;
+      font-size: clamp(2.4rem, 5vw, 5.5rem);
+      font-weight: 900;
+    }
+
+    h2 {
+      font-size: clamp(2rem, 3.4vw, 3.4rem);
+      font-weight: 850;
+    }
+
+    h3 {
+      font-size: clamp(1.05rem, 1.4vw, 1.35rem);
+      color: var(--accent-3);
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 1.25vw, 1.25rem);
+    }
+
+    .lead {
+      max-width: 850px;
+      font-size: clamp(1.15rem, 1.65vw, 1.6rem);
+      color: #d7def0;
+    }
+
+    .small {
+      font-size: 0.95rem;
+    }
+
+    .caption {
+      color: var(--faint);
+      font-size: 0.86rem;
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(32, 43, 64, 0.98), rgba(23, 32, 51, 0.98));
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 1rem;
+      min-width: 0;
+    }
+
+    .card strong {
+      color: var(--text);
+    }
+
+    .note {
+      border-left: 4px solid var(--accent);
+      background: rgba(45, 212, 191, 0.08);
+      padding: 0.85rem 1rem;
+      color: #d7fff8;
+      border-radius: 6px;
+    }
+
+    .warn {
+      border-left-color: var(--accent-2);
+      background: rgba(245, 158, 11, 0.09);
+      color: #ffedc2;
+    }
+
+    .danger {
+      border-left-color: var(--danger);
+      background: rgba(251, 113, 133, 0.1);
+      color: #ffe2e7;
+    }
+
+    ul,
+    ol {
+      margin: 0;
+      padding-left: 1.25rem;
+      color: var(--muted);
+      font-size: clamp(0.98rem, 1.18vw, 1.14rem);
+    }
+
+    li + li {
+      margin-top: 0.45rem;
+    }
+
+    .formula,
+    pre {
+      margin: 0;
+      border: 1px solid #263244;
+      background: var(--code);
+      color: #d8e5ff;
+      border-radius: 8px;
+      padding: 0.8rem 0.9rem;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: clamp(0.88rem, 1vw, 1rem);
+      line-height: 1.45;
+    }
+
+    code {
+      color: #a7f3d0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: clamp(0.9rem, 1vw, 1rem);
+    }
+
+    th,
+    td {
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      color: var(--text);
+      background: #1e293b;
+    }
+
+    td {
+      color: var(--muted);
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .memory-strip {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 0.35rem;
+    }
+
+    .cell {
+      min-height: 3rem;
+      border: 1px solid #3b4a63;
+      background: #111b2d;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      color: #d8e5ff;
+      font-size: 0.82rem;
+      text-align: center;
+      padding: 0.25rem;
+    }
+
+    .cell.accent {
+      border-color: rgba(45, 212, 191, 0.8);
+      background: rgba(45, 212, 191, 0.12);
+      color: #b8fff5;
+    }
+
+    .axis-demo {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.4rem;
+      max-width: 480px;
+    }
+
+    .axis-demo .cell {
+      min-height: 3.6rem;
+    }
+
+    .teacher {
+      display: block;
+      border: 1px dashed rgba(147, 197, 253, 0.45);
+      background: rgba(147, 197, 253, 0.07);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      color: #dbeafe;
+      font-size: 0.96rem;
+    }
+
+    .teacher-label {
+      display: block;
+      color: var(--accent-3);
+      font-weight: 850;
+      margin-bottom: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.76rem;
+    }
+
+    .activity {
+      border: 1px solid rgba(134, 239, 172, 0.4);
+      background: rgba(134, 239, 172, 0.08);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+    }
+
+    .activity strong {
+      color: var(--ok);
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid #3b4a63;
+      color: var(--text);
+      background: #1e293b;
+      border-radius: 6px;
+      min-height: 2.15rem;
+      padding: 0 0.75rem;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: var(--accent);
+    }
+
+    .kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.7rem;
+      height: 1.7rem;
+      padding: 0 0.45rem;
+      border: 1px solid #475569;
+      border-bottom-width: 2px;
+      border-radius: 5px;
+      background: #111827;
+      color: #dbeafe;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.8rem;
+    }
+
+    .title-mark {
+      color: var(--accent);
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .two-col-compact {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    @media (max-width: 860px) {
+      body {
+        overflow: auto;
+      }
+
+      .deck {
+        height: auto;
+        min-height: 100vh;
+      }
+
+      .slide {
+        min-height: calc(100vh - 120px);
+      }
+
+      .grid-2,
+      .grid-3,
+      .grid-4,
+      .two-col-compact {
+        grid-template-columns: 1fr;
+      }
+
+      .progress-wrap {
+        display: none;
+      }
+
+      .brand-title {
+        display: none;
+      }
+    }
+
+    @media print {
+      body {
+        overflow: visible;
+        background: white;
+        color: black;
+      }
+
+      header,
+      footer {
+        display: none;
+      }
+
+      .deck,
+      .stage {
+        display: block;
+        height: auto;
+        overflow: visible;
+      }
+
+      .slide,
+      .slide.active {
+        display: block;
+        height: auto;
+        page-break-after: always;
+        padding: 0.6in;
+      }
+
+      .slide-inner {
+        min-height: auto;
+        max-width: none;
+      }
+
+      .card,
+      .formula,
+      pre,
+      table,
+      .teacher,
+      .activity,
+      .note {
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <header>
+      <div class="brand">
+        <span class="pill">Chapter 1</span>
+        <span class="brand-title">The Anatomy of a Tensor & Compute Hardware</span>
+      </div>
+      <div class="progress-wrap" aria-hidden="true">
+        <div class="progress" id="progress"></div>
+      </div>
+      <div class="caption" id="counter">Slide 1</div>
+    </header>
+
+    <main class="stage">
+      <section class="slide active">
+        <div class="slide-inner">
+          <span class="title-mark">Zero-to-Research ML Curriculum</span>
+          <h1>The Anatomy of a Tensor & Compute Hardware</h1>
+          <p class="lead">A teacher-ready presentation for Chapter 1: tensors as flat memory buffers, shape/stride metadata, zero-copy views, and hardware-aware performance.</p>
+          <div class="grid-3">
+            <div class="card"><strong>Audience</strong><br><span class="caption">Students with basic Python and elementary math.</span></div>
+            <div class="card"><strong>Duration</strong><br><span class="caption">90-120 minutes, or two shorter classes.</span></div>
+            <div class="card"><strong>Outcome</strong><br><span class="caption">Students can manually compute shape, strides, offset, and flat index.</span></div>
+          </div>
+          <div class="teacher"><span class="teacher-label">Teacher opening</span>Frame this chapter as the hardware foundation for every ML framework. The central promise: by the end, students should understand why a transpose can be instant and why a bad memory layout can be slow.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Lesson Map</h2>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Part A: Mental Model</h3>
+              <ul>
+                <li>Why nested Python lists are slow.</li>
+                <li>Tensor = flat storage + metadata.</li>
+                <li>Warehouse locker analogy.</li>
+                <li>C-order vs F-order layout.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Part B: Formal Model</h3>
+              <ul>
+                <li>Shape, rank, volume, dtype.</li>
+                <li>Stride vector and base offset.</li>
+                <li>Flat index formula.</li>
+                <li>Slicing and transpose as metadata changes.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Part C: Hardware</h3>
+              <ul>
+                <li>Cache lines and spatial locality.</li>
+                <li>AMAT model.</li>
+                <li>GPU global memory vs shared memory.</li>
+                <li>Arithmetic intensity.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Part D: Engineering</h3>
+              <ul>
+                <li>Implement a minimal strided tensor.</li>
+                <li>Understand PyTorch tensor internals.</li>
+                <li>Know when .contiguous() costs a copy.</li>
+                <li>Avoid common bugs.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="teacher"><span class="teacher-label">Timing</span>Spend 25 minutes on intuition, 35 minutes on formulas and worked examples, 20 minutes on hardware, and the remaining time on code walkthrough and student exercises.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Learning Objectives</h2>
+          <div class="grid-2">
+            <div class="card">
+              <ul>
+                <li>Define a tensor as a flat byte buffer plus metadata.</li>
+                <li>Compute row-major and column-major stride vectors.</li>
+                <li>Use the flat index formula for any valid coordinate.</li>
+                <li>Predict slice metadata: new shape, strides, and offset.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <ul>
+                <li>Explain why transpose is usually zero-copy.</li>
+                <li>Explain why reshape can require a copy.</li>
+                <li>Reason about cache misses caused by large strides.</li>
+                <li>Connect the teaching implementation to NumPy and PyTorch.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="activity"><strong>Cold-start question:</strong> If a matrix has one million numbers, does transposing it require moving one million numbers? Ask for a yes/no vote before explaining.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>The Problem: Store 10,000 Images</h2>
+          <p>A dataset of 10,000 grayscale images, each 28 by 28 pixels, has 7,840,000 scalar values.</p>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Naive Python representation</h3>
+              <pre><code>images = [
+    [[pixel(img, row, col) for col in range(28)]
+     for row in range(28)]
+    for img in range(10000)
+]</code></pre>
+            </div>
+            <div class="card">
+              <h3>Why this is expensive</h3>
+              <ul>
+                <li>Python lists store pointers, not raw numbers.</li>
+                <li>Each Python float carries object overhead.</li>
+                <li>Accessing one pixel requires several pointer dereferences.</li>
+                <li>The CPU sees scattered objects instead of one dense numeric buffer.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="teacher"><span class="teacher-label">Teaching move</span>Do not start with formulas. Start with the pain: students already understand a list of images. Then show why the natural representation is the wrong physical representation.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>The Core Solution</h2>
+          <p>Store only the numeric values in one flat buffer. Store the multidimensional meaning separately as metadata.</p>
+          <div class="grid-4">
+            <div class="card"><h3>Storage</h3><p class="small">One flat array of values in memory.</p></div>
+            <div class="card"><h3>Shape</h3><p class="small">How many positions exist along each axis.</p></div>
+            <div class="card"><h3>Strides</h3><p class="small">How far to jump in storage when one logical index changes.</p></div>
+            <div class="card"><h3>Offset</h3><p class="small">Where this view begins inside the shared storage.</p></div>
+          </div>
+          <div class="formula">Tensor view = storage + shape + strides + offset + dtype</div>
+          <div class="note">Key sentence for students: a tensor is not "a grid in memory"; it is a rule for interpreting flat memory as a grid.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Warehouse Locker Analogy</h2>
+          <p>Think of RAM as one long row of numbered lockers. Each locker holds one scalar value.</p>
+          <div class="memory-strip">
+            <div class="cell accent">0<br>G00</div>
+            <div class="cell accent">1<br>G01</div>
+            <div class="cell accent">2<br>G02</div>
+            <div class="cell accent">3<br>G03</div>
+            <div class="cell">4<br>G10</div>
+            <div class="cell">5<br>G11</div>
+            <div class="cell">6<br>G12</div>
+            <div class="cell">7<br>G13</div>
+            <div class="cell">8<br>G20</div>
+            <div class="cell">9<br>G21</div>
+            <div class="cell">10<br>G22</div>
+            <div class="cell">11<br>G23</div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Logical question</h3>
+              <p>Where is matrix entry G[2,1]?</p>
+            </div>
+            <div class="card">
+              <h3>Physical answer</h3>
+              <p>It lives in one numbered locker. The metadata tells us which one.</p>
+            </div>
+          </div>
+          <div class="teacher"><span class="teacher-label">Board activity</span>Draw 12 boxes and ask students to place a 3 by 4 matrix into them row by row. Then ask what changes if you fill columns first.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Rank, Shape, and Volume</h2>
+          <div class="grid-3">
+            <div class="card">
+              <h3>Rank</h3>
+              <p>Number of axes or dimensions.</p>
+              <div class="formula">rank((2, 3, 4)) = 3</div>
+            </div>
+            <div class="card">
+              <h3>Shape</h3>
+              <p>Extent along each axis.</p>
+              <div class="formula">shape = (2, 3, 4)</div>
+            </div>
+            <div class="card">
+              <h3>Volume</h3>
+              <p>Total scalar count.</p>
+              <div class="formula">V = 2 * 3 * 4 = 24</div>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>Object</th><th>Shape</th><th>Rank</th><th>Volume</th></tr></thead>
+            <tbody>
+              <tr><td>Vector</td><td>(5)</td><td>1</td><td>5</td></tr>
+              <tr><td>Matrix</td><td>(3, 4)</td><td>2</td><td>12</td></tr>
+              <tr><td>Image batch</td><td>(10000, 28, 28)</td><td>3</td><td>7,840,000</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>The Flat Index Formula</h2>
+          <p>Every logical coordinate maps to one physical storage position.</p>
+          <div class="formula">I(i) = O_base + sum over k of i_k * d_k</div>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Symbols</h3>
+              <ul>
+                <li><code>I(i)</code>: flat storage index.</li>
+                <li><code>O_base</code>: base offset of the view.</li>
+                <li><code>i_k</code>: logical index on axis k.</li>
+                <li><code>d_k</code>: stride on axis k.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Meaning</h3>
+              <p>Start at the view's offset. For every axis, multiply the logical coordinate by that axis's stride. Add the jumps.</p>
+            </div>
+          </div>
+          <div class="activity"><strong>Student check:</strong> For shape (3,4), strides (4,1), offset 0, compute I(2,1). Answer: 2*4 + 1*1 = 9.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>C-Contiguous Layout</h2>
+          <p>C-order, also called row-major layout, stores rows contiguously. The last axis varies fastest.</p>
+          <div class="two-col-compact">
+            <div class="card">
+              <h3>3 by 4 matrix</h3>
+              <div class="axis-demo">
+                <div class="cell accent">G00</div><div class="cell accent">G01</div><div class="cell accent">G02</div><div class="cell accent">G03</div>
+                <div class="cell">G10</div><div class="cell">G11</div><div class="cell">G12</div><div class="cell">G13</div>
+                <div class="cell">G20</div><div class="cell">G21</div><div class="cell">G22</div><div class="cell">G23</div>
+              </div>
+            </div>
+            <div class="card">
+              <h3>Strides</h3>
+              <div class="formula">shape = (3, 4)<br>strides = (4, 1)</div>
+              <ul>
+                <li>Move one row down: jump 4 storage positions.</li>
+                <li>Move one column right: jump 1 storage position.</li>
+                <li>Rows are cache-friendly.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="formula">C-order recursive rule: d_last = 1, and d_k = shape[k+1] * d_{k+1}</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>F-Contiguous Layout</h2>
+          <p>Fortran-order, also called column-major layout, stores columns contiguously. The first axis varies fastest.</p>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Same logical matrix</h3>
+              <p>Nothing changes about the mathematical matrix. Only the storage order changes.</p>
+              <div class="formula">shape = (3, 4)<br>strides = (1, 3)</div>
+            </div>
+            <div class="card">
+              <h3>Interpretation</h3>
+              <ul>
+                <li>Move one row down: jump 1 storage position.</li>
+                <li>Move one column right: jump 3 storage positions.</li>
+                <li>Columns are cache-friendly.</li>
+              </ul>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>Layout</th><th>Stride pattern for (3,4)</th><th>Fast traversal</th><th>Common ecosystem</th></tr></thead>
+            <tbody>
+              <tr><td>C-order</td><td>(4, 1)</td><td>Rows</td><td>C, NumPy default, PyTorch default</td></tr>
+              <tr><td>F-order</td><td>(1, 3)</td><td>Columns</td><td>FORTRAN, MATLAB, BLAS/LAPACK heritage</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Worked Example: 3D C-Order Strides</h2>
+          <p>For shape (3, 4, 5), compute C-contiguous strides from right to left.</p>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Stride derivation</h3>
+              <div class="formula">d_2 = 1<br>d_1 = shape[2] * d_2 = 5 * 1 = 5<br>d_0 = shape[1] * d_1 = 4 * 5 = 20</div>
+            </div>
+            <div class="card">
+              <h3>Flat index</h3>
+              <div class="formula">I(2,1,3) = 0 + 2*20 + 1*5 + 3*1<br>I(2,1,3) = 48</div>
+            </div>
+          </div>
+          <div class="activity"><strong>Ask students:</strong> For the same shape, what are F-order strides? Answer: (1, 3, 12).</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Slicing Is Metadata Transformation</h2>
+          <p>A slice usually does not copy data. It creates a new view with new metadata.</p>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Original</h3>
+              <div class="formula">shape = (3, 4)<br>strides = (4, 1)<br>offset = 0</div>
+            </div>
+            <div class="card">
+              <h3>Slice: T[1:, 1:]</h3>
+              <div class="formula">shape = (2, 3)<br>strides = (4, 1)<br>offset = 1*4 + 1*1 = 5</div>
+            </div>
+          </div>
+          <div class="note">The storage buffer is unchanged. The view simply starts at flat position 5 and accepts a smaller coordinate range.</div>
+          <div class="teacher"><span class="teacher-label">Common misconception</span>Many students assume slices are independent arrays. Demonstrate with mutation: modifying a view can modify the original when storage is shared.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>General Slice Rule</h2>
+          <p>A slice along axis k has <code>start</code>, <code>stop</code>, and <code>step</code>. The view coordinate maps back to the original coordinate by an affine rule.</p>
+          <div class="formula">i_k = start_k + j_k * step_k</div>
+          <div class="grid-2">
+            <div class="card">
+              <h3>New offset</h3>
+              <div class="formula">O'_base = O_base + sum(start_k * d_k)</div>
+            </div>
+            <div class="card">
+              <h3>New strides</h3>
+              <div class="formula">d'_k = step_k * d_k</div>
+            </div>
+          </div>
+          <div class="activity"><strong>Practice:</strong> Original shape (10,10), strides (10,1). Slice T[1:5:2, ::-1]. Result: shape (2,10), strides (20,-1), offset 19.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Transpose Is a Stride Permutation</h2>
+          <p>For a 2D matrix, transpose swaps the axes. That means shape and strides swap. The storage buffer stays fixed.</p>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Before</h3>
+              <div class="formula">shape = (3, 4)<br>strides = (4, 1)<br>offset = 0</div>
+            </div>
+            <div class="card">
+              <h3>After T.T</h3>
+              <div class="formula">shape = (4, 3)<br>strides = (1, 4)<br>offset = 0</div>
+            </div>
+          </div>
+          <div class="note">This is why transposing a huge tensor can be nearly instant: the framework creates a new view object instead of moving all values.</div>
+          <div class="warn note">But the transposed view may be non-contiguous for the next operation. Zero-copy does not always mean fast to traverse.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Reshape: When Is It Free?</h2>
+          <p>Reshape is zero-copy only when the existing memory layout can be reinterpreted consistently under the new shape.</p>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Usually free</h3>
+              <ul>
+                <li>Tensor is contiguous.</li>
+                <li>New shape has same volume.</li>
+                <li>Existing storage order matches the requested interpretation.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Requires copy</h3>
+              <ul>
+                <li>Tensor is a non-contiguous slice.</li>
+                <li>Tensor was transposed and then flattened.</li>
+                <li>Strides cannot describe the new logical layout.</li>
+              </ul>
+            </div>
+          </div>
+          <pre><code># PyTorch distinction
+y = x.view(new_shape)      # requires compatible contiguous-like layout
+y = x.reshape(new_shape)   # returns a view if possible, otherwise copies</code></pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Dtype and Memory Footprint</h2>
+          <p>The dtype controls how many bytes each scalar occupies and what numeric range/precision it has.</p>
+          <table>
+            <thead><tr><th>dtype</th><th>Bytes</th><th>Typical use</th><th>Important trade-off</th></tr></thead>
+            <tbody>
+              <tr><td>float32</td><td>4</td><td>General training and analysis</td><td>Good precision, larger memory footprint</td></tr>
+              <tr><td>float16</td><td>2</td><td>Mixed precision compute</td><td>Narrower range, underflow risk</td></tr>
+              <tr><td>bfloat16</td><td>2</td><td>Modern accelerator training</td><td>Wide range, lower mantissa precision</td></tr>
+              <tr><td>int8</td><td>1</td><td>Quantized inference</td><td>Small memory, approximate values</td></tr>
+            </tbody>
+          </table>
+          <div class="formula">Bytes = volume * itemsize</div>
+          <div class="activity"><strong>Quick calculation:</strong> How much memory for a (10000, 28, 28) float32 tensor? 7,840,000 * 4 = 31,360,000 bytes, about 31.36 MB.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Why Strides Affect Speed</h2>
+          <p>CPUs fetch memory in cache lines, not one value at a time. A typical cache line is 64 bytes.</p>
+          <div class="grid-2">
+            <div class="card">
+              <h3>float32 cache line</h3>
+              <div class="formula">64 bytes / 4 bytes = 16 float32 values</div>
+              <p>If you access values contiguously, one miss brings the next 15 values along with it.</p>
+            </div>
+            <div class="card">
+              <h3>Large stride</h3>
+              <p>If each next value is more than one cache line away, almost every access is a miss.</p>
+              <div class="formula">stride >= 16 float32 elements -> poor spatial locality</div>
+            </div>
+          </div>
+          <div class="teacher"><span class="teacher-label">Analogy</span>The cache line is like receiving 16 nearby lockers whenever you request one locker. Sequential access uses the delivery well; large-stride access throws most of it away.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>AMAT: A Simple Cost Model</h2>
+          <p>Average Memory Access Time estimates the cost of memory access from hit time and miss rate.</p>
+          <div class="formula">AMAT = T_hit + miss_rate * T_penalty</div>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Contiguous float32 access</h3>
+              <div class="formula">miss_rate = 1/16 = 0.0625<br>AMAT = 1 ns + 0.0625 * 100 ns<br>AMAT = 7.25 ns</div>
+            </div>
+            <div class="card">
+              <h3>Cache-thrashing access</h3>
+              <div class="formula">miss_rate = 1.0<br>AMAT = 1 ns + 1.0 * 100 ns<br>AMAT = 101 ns</div>
+            </div>
+          </div>
+          <div class="warn note">The exact constants are simplified for teaching. The direction is the important point: bad memory access patterns can dominate arithmetic.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>View vs Copy Trade-off</h2>
+          <p>A view is cheap to create. A copy is expensive upfront but can make later reads faster.</p>
+          <table>
+            <thead><tr><th>Operation</th><th>Touches data?</th><th>Time idea</th><th>When useful</th></tr></thead>
+            <tbody>
+              <tr><td>Slice view</td><td>No</td><td>O(rank)</td><td>Inspect, pass around, light use</td></tr>
+              <tr><td>Transpose view</td><td>No</td><td>O(rank)</td><td>Change logical axes cheaply</td></tr>
+              <tr><td>Contiguous copy</td><td>Yes</td><td>O(volume)</td><td>Hot loop, matrix multiply, repeated traversal</td></tr>
+            </tbody>
+          </table>
+          <div class="note">Practical rule: if a non-contiguous view will be traversed repeatedly in a performance-critical operation, making it contiguous may be worth the copy.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>GPU Memory Hierarchy</h2>
+          <p>GPUs have the same fundamental problem: moving data is often more limiting than doing arithmetic.</p>
+          <div class="grid-4">
+            <div class="card"><h3>Registers</h3><p class="small">Fastest, per thread.</p></div>
+            <div class="card"><h3>Shared / L1</h3><p class="small">Fast, per streaming multiprocessor.</p></div>
+            <div class="card"><h3>L2 Cache</h3><p class="small">Shared across the GPU.</p></div>
+            <div class="card"><h3>HBM</h3><p class="small">Large global GPU memory, slower than on-chip memory.</p></div>
+          </div>
+          <div class="formula">Arithmetic intensity = FLOPs / bytes read</div>
+          <div class="teacher"><span class="teacher-label">Bridge to later chapters</span>Tell students this is why fused kernels, FlashAttention, and optimized matrix multiplication matter. They reduce expensive memory traffic.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Implementation: Minimal Strided Tensor</h2>
+          <p>The teaching implementation stores a Python list as storage and manually tracks shape, strides, and offset.</p>
+          <pre><code>class FlatArray:
+    def __init__(self, shape, values=None, storage=None,
+                 strides=None, offset=0):
+        self.shape = tuple(shape)
+        self.strides = strides or row_major_strides(shape)
+        self.offset = offset
+        self.storage = storage if storage is not None else list(values)
+
+    def flat_offset(self, indices):
+        return self.offset + sum(
+            i * d for i, d in zip(indices, self.strides)
+        )</code></pre>
+          <div class="note">The code is short because the core idea is simple: every access is offset arithmetic followed by a storage lookup.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Implementation Walkthrough</h2>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Construction</h3>
+              <ul>
+                <li>Validate shape.</li>
+                <li>Compute default row-major strides.</li>
+                <li>Store or share a flat buffer.</li>
+                <li>Validate reachable offsets.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Indexing</h3>
+              <ul>
+                <li>Integer index consumes an axis.</li>
+                <li>Slice keeps an axis but changes shape, stride, offset.</li>
+                <li><code>None</code> inserts an axis with stride 0.</li>
+                <li>Ellipsis expands omitted axes.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="activity"><strong>Live coding prompt:</strong> Implement <code>row_major_strides((3,4,5))</code> and test that it returns <code>(20,5,1)</code>.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Connection to PyTorch</h2>
+          <p>PyTorch tensors use the same structural idea at production scale.</p>
+          <table>
+            <thead><tr><th>Teaching object</th><th>PyTorch equivalent</th><th>Role</th></tr></thead>
+            <tbody>
+              <tr><td><code>storage</code></td><td>StorageImpl</td><td>Flat memory buffer on CPU or GPU</td></tr>
+              <tr><td><code>shape</code></td><td>sizes</td><td>Logical extents</td></tr>
+              <tr><td><code>strides</code></td><td>strides</td><td>Jump sizes per axis</td></tr>
+              <tr><td><code>offset</code></td><td>storage_offset</td><td>Start position of this view</td></tr>
+              <tr><td><code>dtype</code></td><td>scalar_type</td><td>Bytes and numeric interpretation</td></tr>
+            </tbody>
+          </table>
+          <div class="note">This is not just an analogy. The teaching model is a simplified version of the same design used inside real tensor libraries.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Common Student Mistakes</h2>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Concept mistakes</h3>
+              <ul>
+                <li>Thinking a slice always copies data.</li>
+                <li>Thinking transpose physically rearranges values.</li>
+                <li>Confusing logical shape with physical storage order.</li>
+                <li>Ignoring dtype when computing memory footprint.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Math/code mistakes</h3>
+              <ul>
+                <li>Using the wrong stride formula for C-order.</li>
+                <li>Forgetting offset when indexing a view.</li>
+                <li>Handling negative strides incorrectly.</li>
+                <li>Calling reshape and assuming it is always free.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="danger note">Most bugs come from forgetting that a view's logical element (0,0) may not live at physical storage position 0.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Classroom Exercise 1: Compute Metadata</h2>
+          <div class="card">
+            <h3>Prompt</h3>
+            <p>A tensor has shape (6, 8), C-order strides (8, 1), and offset 0. You take <code>T[2:6:2, 1:7:3]</code>.</p>
+          </div>
+          <div class="grid-3">
+            <div class="card"><strong>Question 1</strong><br>What is the new shape?</div>
+            <div class="card"><strong>Question 2</strong><br>What are the new strides?</div>
+            <div class="card"><strong>Question 3</strong><br>What is the new offset?</div>
+          </div>
+          <div class="teacher"><span class="teacher-label">Answer</span>Axis 0 range(2,6,2) has 2 elements and stride 2*8 = 16. Axis 1 range(1,7,3) has 2 elements and stride 3*1 = 3. Offset = 2*8 + 1*1 = 17. Result: shape (2,2), strides (16,3), offset 17.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Classroom Exercise 2: Predict Aliasing</h2>
+          <pre><code>x = FlatArray.arange((3, 4))
+y = x[1:, 1:3]
+y[:, :] = 99</code></pre>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Ask students</h3>
+              <ul>
+                <li>Does <code>x</code> change?</li>
+                <li>Which flat storage positions are modified?</li>
+                <li>What does the final 3 by 4 matrix look like?</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Answer</h3>
+              <p><code>x</code> changes because <code>y</code> is a view. Modified offsets: 5, 6, 9, 10.</p>
+              <pre><code>[[0, 1, 2, 3],
+ [4, 99, 99, 7],
+ [8, 99, 99, 11]]</code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Assessment Questions</h2>
+          <ol>
+            <li>Define tensor storage, shape, strides, offset, and dtype.</li>
+            <li>For shape (2,3,4), compute C-order strides and F-order strides.</li>
+            <li>For shape (3,4), strides (4,1), offset 0, compute flat index of (2,3).</li>
+            <li>Explain why transpose can be zero-copy.</li>
+            <li>Explain why a non-contiguous tensor may need <code>.contiguous()</code> before a hot loop.</li>
+            <li>What does a negative stride mean?</li>
+            <li>Why can column traversal of a large C-order matrix be cache-unfriendly?</li>
+          </ol>
+          <div class="teacher"><span class="teacher-label">Use</span>These work as exit-ticket questions or a short oral review at the start of the next class.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Chapter Summary</h2>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Conceptual takeaways</h3>
+              <ul>
+                <li>A tensor is flat storage plus metadata.</li>
+                <li>Shape describes valid logical coordinates.</li>
+                <li>Strides translate coordinate movement into storage movement.</li>
+                <li>Offset allows views to start inside shared storage.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Engineering takeaways</h3>
+              <ul>
+                <li>Slicing and transpose are often metadata-only.</li>
+                <li>Reshape is free only when layout permits it.</li>
+                <li>Bad strides can waste cache lines and memory bandwidth.</li>
+                <li>PyTorch and NumPy are built on this model.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="formula">The formula to remember: flat_index = offset + sum(index_k * stride_k)</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="slide-inner">
+          <h2>Suggested Teaching Flow</h2>
+          <table>
+            <thead><tr><th>Time</th><th>Segment</th><th>Teaching action</th></tr></thead>
+            <tbody>
+              <tr><td>0-10 min</td><td>Motivation</td><td>Start with image dataset and nested-list problem.</td></tr>
+              <tr><td>10-30 min</td><td>Mental model</td><td>Use warehouse lockers and C/F-order examples.</td></tr>
+              <tr><td>30-60 min</td><td>Mathematics</td><td>Derive strides and flat index formula with board examples.</td></tr>
+              <tr><td>60-80 min</td><td>Views</td><td>Work through slicing, transpose, and aliasing exercises.</td></tr>
+              <tr><td>80-100 min</td><td>Hardware</td><td>Explain cache lines, AMAT, and why layout affects speed.</td></tr>
+              <tr><td>100-120 min</td><td>Code</td><td>Walk through FlatArray and connect it to PyTorch.</td></tr>
+            </tbody>
+          </table>
+          <div class="activity"><strong>Homework:</strong> Implement <code>row_major_strides</code>, <code>flat_offset</code>, and a slice metadata function. Test them on at least five manual examples.</div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="controls">
+        <button id="prev" type="button">Previous</button>
+        <button id="next" type="button">Next</button>
+      </div>
+      <div>Use <span class="kbd">Left</span> / <span class="kbd">Right</span>, <span class="kbd">Home</span>, <span class="kbd">End</span>. Print to PDF for handouts.</div>
+    </footer>
+  </div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll(".slide"));
+    const counter = document.getElementById("counter");
+    const progress = document.getElementById("progress");
+    const prev = document.getElementById("prev");
+    const next = document.getElementById("next");
+    let index = 0;
+
+    function render() {
+      slides.forEach((slide, i) => slide.classList.toggle("active", i === index));
+      counter.textContent = `Slide ${index + 1} / ${slides.length}`;
+      progress.style.width = `${((index + 1) / slides.length) * 100}%`;
+      prev.disabled = index === 0;
+      next.disabled = index === slides.length - 1;
+    }
+
+    function go(delta) {
+      index = Math.max(0, Math.min(slides.length - 1, index + delta));
+      render();
+    }
+
+    prev.addEventListener("click", () => go(-1));
+    next.addEventListener("click", () => go(1));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") {
+        event.preventDefault();
+        go(1);
+      }
+      if (event.key === "ArrowLeft" || event.key === "PageUp") {
+        event.preventDefault();
+        go(-1);
+      }
+      if (event.key === "Home") {
+        event.preventDefault();
+        index = 0;
+        render();
+      }
+      if (event.key === "End") {
+        event.preventDefault();
+        index = slides.length - 1;
+        render();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>

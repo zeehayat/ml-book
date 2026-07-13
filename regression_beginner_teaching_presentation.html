@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Regression Beginner Teaching Presentation</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #151d32;
+      --panel2: #1d2840;
+      --ink: #f4f7fb;
+      --muted: #bdc7dc;
+      --faint: #7d8aa5;
+      --line: #34435f;
+      --cyan: #22d3ee;
+      --green: #86efac;
+      --yellow: #facc15;
+      --orange: #fb923c;
+      --rose: #fb7185;
+      --blue: #93c5fd;
+      --violet: #c4b5fd;
+      --code: #07111f;
+      --white: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+    }
+
+    .deck {
+      height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    header, footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: .75rem 1rem;
+      background: rgba(11, 16, 32, .96);
+      border-color: var(--line);
+    }
+    header { border-bottom: 1px solid var(--line); }
+    footer { border-top: 1px solid var(--line); color: var(--muted); font-size: .9rem; }
+
+    .brand { display: flex; align-items: center; gap: .6rem; min-width: 0; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      height: 1.7rem;
+      padding: 0 .65rem;
+      border: 1px solid rgba(34,211,238,.45);
+      border-radius: 999px;
+      color: var(--cyan);
+      font-size: .75rem;
+      font-weight: 900;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .brand-title {
+      color: var(--muted);
+      font-weight: 750;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .progress-wrap {
+      width: min(30vw, 360px);
+      height: .44rem;
+      border: 1px solid #2a3852;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #111827;
+    }
+    .progress {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--cyan), var(--green));
+      transition: width 160ms ease;
+    }
+
+    .stage { overflow: hidden; position: relative; }
+    .slide {
+      display: none;
+      width: 100%;
+      height: 100%;
+      padding: clamp(1.15rem, 2.3vw, 2.4rem);
+      overflow: auto;
+    }
+    .slide.active { display: block; }
+    .inner {
+      max-width: 1200px;
+      min-height: 100%;
+      margin: 0 auto;
+      display: grid;
+      align-content: center;
+      gap: 1rem;
+    }
+
+    h1, h2, h3 { margin: 0; line-height: 1.08; letter-spacing: 0; }
+    h1 { font-size: clamp(2.55rem, 5.2vw, 5.6rem); font-weight: 950; max-width: 980px; }
+    h2 { font-size: clamp(2rem, 3.4vw, 3.55rem); font-weight: 900; }
+    h3 { font-size: clamp(1.08rem, 1.35vw, 1.35rem); color: var(--blue); }
+    p { margin: 0; color: var(--muted); font-size: clamp(1rem, 1.18vw, 1.18rem); }
+    .lead { color: #dbeafe; max-width: 880px; font-size: clamp(1.18rem, 1.65vw, 1.6rem); }
+    .caption { color: var(--faint); font-size: .86rem; }
+    .small { font-size: .95rem; }
+
+    .grid2, .grid3, .grid4 { display: grid; gap: .95rem; }
+    .grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .split { display: grid; grid-template-columns: .92fr 1.08fr; gap: 1rem; align-items: center; }
+    .split-top { display: grid; grid-template-columns: .95fr 1.05fr; gap: 1rem; align-items: start; }
+
+    .card {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--panel2), var(--panel));
+      border-radius: 8px;
+      padding: 1rem;
+      min-width: 0;
+    }
+    .card strong { color: var(--ink); }
+    .card ul, .card ol { margin-top: .5rem; }
+
+    ul, ol {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: var(--muted);
+      font-size: clamp(.98rem, 1.12vw, 1.12rem);
+    }
+    li + li { margin-top: .36rem; }
+
+    .formula, pre {
+      margin: 0;
+      border: 1px solid #26364f;
+      background: var(--code);
+      color: #dbeafe;
+      border-radius: 8px;
+      padding: .8rem .9rem;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: clamp(.86rem, .97vw, .99rem);
+      line-height: 1.45;
+    }
+    code {
+      color: #a7f3d0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    .teacher, .study, .activity, .warning {
+      border-radius: 8px;
+      padding: .78rem .9rem;
+      border: 1px solid rgba(147,197,253,.35);
+      background: rgba(147,197,253,.08);
+      color: #dbeafe;
+      font-size: .96rem;
+    }
+    .activity { border-color: rgba(134,239,172,.42); background: rgba(134,239,172,.08); }
+    .warning { border-color: rgba(251,146,60,.48); background: rgba(251,146,60,.1); color: #ffedd5; }
+    .study { border-color: rgba(34,211,238,.35); background: rgba(34,211,238,.07); }
+    .label {
+      display: block;
+      margin-bottom: .22rem;
+      color: var(--cyan);
+      font-size: .74rem;
+      font-weight: 900;
+      letter-spacing: .055em;
+      text-transform: uppercase;
+    }
+    .activity .label { color: var(--green); }
+    .warning .label { color: var(--orange); }
+
+    a { color: #67e8f9; text-decoration: none; font-weight: 750; }
+    a:hover { text-decoration: underline; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: clamp(.88rem, .97vw, 1rem);
+    }
+    th, td {
+      padding: .62rem .72rem;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: var(--ink); background: #1f2a44; }
+    td { color: var(--muted); }
+    tr:last-child td { border-bottom: 0; }
+
+    svg {
+      width: 100%;
+      height: auto;
+      max-height: 430px;
+      display: block;
+    }
+    .svgbox {
+      border: 1px solid var(--line);
+      background: #0d1629;
+      border-radius: 8px;
+      padding: .45rem;
+    }
+    .axis { stroke: #94a3b8; stroke-width: 2; }
+    .gridline { stroke: #24324a; stroke-width: 1; }
+    .point { fill: var(--cyan); opacity: .9; }
+    .line { stroke: var(--green); stroke-width: 4; fill: none; }
+    .badline { stroke: var(--rose); stroke-width: 4; fill: none; stroke-dasharray: 8 6; }
+    .resid { stroke: var(--orange); stroke-width: 2.4; stroke-dasharray: 4 4; }
+    .shade { fill: rgba(147,197,253,.15); stroke: rgba(147,197,253,.7); }
+    .txt { fill: #dbeafe; font-size: 16px; font-weight: 700; }
+    .mutedtxt { fill: #94a3b8; font-size: 13px; }
+
+    .controls { display: flex; align-items: center; gap: .5rem; }
+    button {
+      appearance: none;
+      border: 1px solid #3b4a63;
+      border-radius: 6px;
+      background: #1f2a44;
+      color: var(--ink);
+      min-height: 2.1rem;
+      padding: 0 .75rem;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--cyan); }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    .kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.65rem;
+      height: 1.65rem;
+      padding: 0 .4rem;
+      border: 1px solid #475569;
+      border-bottom-width: 2px;
+      border-radius: 5px;
+      background: #111827;
+      color: #dbeafe;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: .78rem;
+    }
+
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+      .deck { height: auto; min-height: 100vh; }
+      .slide { min-height: calc(100vh - 118px); }
+      .grid2, .grid3, .grid4, .split, .split-top { grid-template-columns: 1fr; }
+      .progress-wrap { display: none; }
+      .brand-title { display: none; }
+    }
+
+    @media print {
+      body { overflow: visible; background: white; color: black; }
+      header, footer { display: none; }
+      .deck, .stage { display: block; height: auto; overflow: visible; }
+      .slide, .slide.active { display: block; height: auto; page-break-after: always; padding: .6in; }
+      .inner { min-height: auto; max-width: none; }
+      .card, .formula, pre, table, .teacher, .study, .activity, .warning, .svgbox { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <header>
+      <div class="brand">
+        <span class="pill">Beginner Regression</span>
+        <span class="brand-title">Mathematical, Statistical, and Python Guide - Teaching Deck</span>
+      </div>
+      <div class="progress-wrap"><div class="progress" id="progress"></div></div>
+      <div class="caption" id="counter">Slide 1</div>
+    </header>
+
+    <main class="stage">
+      <section class="slide active">
+        <div class="inner">
+          <h1>Regression from Zero to Research</h1>
+          <p class="lead">A beginner-friendly teaching presentation based on <code>Regression_Mathematical_Statistical_and_Python_Guide_Updated.md</code>.</p>
+          <div class="grid3">
+            <div class="card"><h3>Start level</h3><p>Elementary algebra, basic Python, and curiosity.</p></div>
+            <div class="card"><h3>Teaching style</h3><p>Picture first, formula second, code third.</p></div>
+            <div class="card"><h3>Goal</h3><p>Students can fit, diagnose, interpret, and question regression models.</p></div>
+          </div>
+          <div class="teacher"><span class="label">Teacher opening</span>Tell students: regression is not just a line. It is a disciplined way to ask how an outcome changes with predictors, while admitting uncertainty.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>How This Presentation Is Organized</h2>
+          <div class="grid3">
+            <div class="card"><h3>Part 0</h3><p>Beginner prerequisites: algebra, functions, probability, Python, and simulation.</p></div>
+            <div class="card"><h3>Part I</h3><p>Regression ideas: least squares, assumptions, inference, prediction, diagnostics, transformations, validation, regularization, logistic regression.</p></div>
+            <div class="card"><h3>Parts II-V</h3><p>From-scratch code, Python libraries, exercises, research practice, and how to read papers.</p></div>
+          </div>
+          <div class="study"><span class="label">Further study</span><a href="https://www.khanacademy.org/math/statistics-probability/describing-relationships-quantitative-data" target="_blank">Khan Academy: describing relationships in quantitative data</a> and <a href="https://www.statlearning.com/" target="_blank">An Introduction to Statistical Learning</a>.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>What Regression Tries To Do</h2>
+          <div class="split">
+            <div>
+              <p>Regression studies how an outcome varies with one or more predictors.</p>
+              <ul>
+                <li>Outcome: what we want to explain or predict.</li>
+                <li>Predictor: information used to explain or predict the outcome.</li>
+                <li>Noise: variation the model does not explain.</li>
+              </ul>
+            </div>
+            <div class="svgbox">
+              <svg viewBox="0 0 520 340" role="img" aria-label="Scatter plot with fitted line">
+                <line class="axis" x1="55" y1="285" x2="485" y2="285"/>
+                <line class="axis" x1="55" y1="285" x2="55" y2="35"/>
+                <line class="gridline" x1="55" y1="225" x2="485" y2="225"/>
+                <line class="gridline" x1="55" y1="165" x2="485" y2="165"/>
+                <line class="gridline" x1="55" y1="105" x2="485" y2="105"/>
+                <path class="line" d="M70 255 L470 65"/>
+                <circle class="point" cx="90" cy="248" r="7"/><circle class="point" cx="130" cy="226" r="7"/>
+                <circle class="point" cx="170" cy="217" r="7"/><circle class="point" cx="210" cy="174" r="7"/>
+                <circle class="point" cx="250" cy="178" r="7"/><circle class="point" cx="290" cy="130" r="7"/>
+                <circle class="point" cx="330" cy="138" r="7"/><circle class="point" cx="370" cy="92" r="7"/>
+                <circle class="point" cx="425" cy="82" r="7"/>
+                <text class="txt" x="205" y="46">Outcome tends to rise with predictor</text>
+                <text class="mutedtxt" x="225" y="322">Predictor X</text>
+                <text class="mutedtxt" x="8" y="160" transform="rotate(-90 18,160)">Outcome Y</text>
+              </svg>
+            </div>
+          </div>
+          <div class="teacher"><span class="label">Explain simply</span>A regression line summarizes a pattern. It does not claim every point is on the line.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>The Beginner Map: Six Knowledge Layers</h2>
+          <div class="grid3">
+            <div class="card"><h3>Substantive reasoning</h3><p>What does the question mean in the real world?</p></div>
+            <div class="card"><h3>Algebra</h3><p>Can we manipulate equations and transformations?</p></div>
+            <div class="card"><h3>Probability</h3><p>What changes across samples and what is random?</p></div>
+            <div class="card"><h3>Linear algebra</h3><p>How do many equations become one matrix equation?</p></div>
+            <div class="card"><h3>Optimization</h3><p>How do we find the best-fitting parameters?</p></div>
+            <div class="card"><h3>Workflow</h3><p>How do we avoid leakage, overclaiming, and irreproducibility?</p></div>
+          </div>
+          <div class="activity"><span class="label">Class check</span>Ask: which layer do you expect to be hardest for you? This helps you pace the class.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Variables, Parameters, Estimators, Estimates</h2>
+          <table>
+            <thead><tr><th>Term</th><th>Beginner meaning</th><th>Example</th></tr></thead>
+            <tbody>
+              <tr><td>Variable</td><td>A measured quantity that can change.</td><td>House size, price, age.</td></tr>
+              <tr><td>Parameter</td><td>An unknown fixed feature of the population model.</td><td>The true slope in the population.</td></tr>
+              <tr><td>Estimator</td><td>A rule that uses data to estimate a parameter.</td><td>Least-squares slope formula.</td></tr>
+              <tr><td>Estimate</td><td>The number produced in this sample.</td><td>Slope = 245 dollars per square foot.</td></tr>
+            </tbody>
+          </table>
+          <div class="warning"><span class="label">Common mistake</span>Students often call the software output "the truth." It is an estimate from one sample, not the population parameter itself.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Essential Algebra for Regression</h2>
+          <div class="grid2">
+            <div class="card">
+              <h3>Distributive law</h3>
+              <div class="formula">a(b + c) = ab + ac</div>
+              <p>Used when expanding fitted values and residuals.</p>
+            </div>
+            <div class="card">
+              <h3>Solving for a variable</h3>
+              <div class="formula">y = a + bx<br>x = (y - a) / b</div>
+              <p>Used to interpret fitted equations.</p>
+            </div>
+          </div>
+          <div class="activity"><span class="label">Practice</span>If <code>price = 50 + 2*size</code>, what size gives price 110? Answer: <code>(110 - 50)/2 = 30</code>.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Summation Notation</h2>
+          <p>Summation notation is just repeated addition written compactly.</p>
+          <div class="split">
+            <div class="card">
+              <div class="formula">sum from i=1 to n of x_i = x_1 + x_2 + ... + x_n</div>
+              <div class="formula">sum_i (a + b x_i) = n*a + b*sum_i x_i</div>
+            </div>
+            <div class="svgbox">
+              <svg viewBox="0 0 520 300">
+                <rect x="50" y="70" width="80" height="80" rx="8" fill="#1d2840" stroke="#22d3ee"/>
+                <rect x="155" y="70" width="80" height="80" rx="8" fill="#1d2840" stroke="#22d3ee"/>
+                <rect x="260" y="70" width="80" height="80" rx="8" fill="#1d2840" stroke="#22d3ee"/>
+                <rect x="365" y="70" width="80" height="80" rx="8" fill="#1d2840" stroke="#22d3ee"/>
+                <text class="txt" x="75" y="118">x1</text><text class="txt" x="180" y="118">x2</text>
+                <text class="txt" x="285" y="118">x3</text><text class="txt" x="390" y="118">x4</text>
+                <text class="txt" x="150" y="220">sum = x1 + x2 + x3 + x4</text>
+              </svg>
+            </div>
+          </div>
+          <div class="teacher"><span class="label">Teaching move</span>Replace symbols with four boxes. Then return to the formula after the picture is clear.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Functions and Transformations</h2>
+          <div class="grid3">
+            <div class="card"><h3>Function</h3><p>A rule that maps input to output: <code>y = f(x)</code>.</p></div>
+            <div class="card"><h3>Log</h3><p>Turns multiplication into addition. Useful for growth rates and skewed positive outcomes.</p></div>
+            <div class="card"><h3>Exponential</h3><p>Always positive. Important in logistic and count models.</p></div>
+          </div>
+          <div class="formula">log(a*b) = log(a) + log(b)<br>log(a^c) = c*log(a)</div>
+          <div class="study"><span class="label">Further study</span>Review functions and transformations before logistic regression; a beginner-friendly path starts with <a href="https://www.khanacademy.org/math/statistics-probability/describing-relationships-quantitative-data" target="_blank">Khan Academy statistics topics</a>.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Derivatives and Optimization</h2>
+          <div class="split">
+            <div>
+              <p>A derivative measures local rate of change. Optimization uses derivatives to find a minimum or maximum.</p>
+              <ul>
+                <li>First derivative: slope.</li>
+                <li>Second derivative: curvature.</li>
+                <li>Regression often minimizes a loss function.</li>
+              </ul>
+              <div class="formula">If f(x) = x^2, then f'(x) = 2x</div>
+            </div>
+            <div class="svgbox">
+              <svg viewBox="0 0 520 320">
+                <line class="axis" x1="55" y1="270" x2="480" y2="270"/>
+                <line class="axis" x1="260" y1="285" x2="260" y2="35"/>
+                <path d="M70 250 C130 180, 180 80, 260 75 C340 80, 390 180, 455 250" fill="none" stroke="#86efac" stroke-width="5"/>
+                <circle cx="260" cy="75" r="8" fill="#facc15"/>
+                <text class="txt" x="278" y="76">minimum</text>
+                <text class="mutedtxt" x="93" y="105">loss</text>
+                <text class="mutedtxt" x="390" y="294">parameter</text>
+              </svg>
+            </div>
+          </div>
+          <div class="teacher"><span class="label">Explain simply</span>Regression fitting is choosing parameter values that make prediction errors small.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Probability Foundations</h2>
+          <div class="grid2">
+            <div class="card">
+              <h3>Expected value</h3>
+              <p>The long-run average of a random variable.</p>
+              <div class="formula">E[X] = sum of x * P(X=x)</div>
+            </div>
+            <div class="card">
+              <h3>Variance</h3>
+              <p>How spread out values are around the expectation.</p>
+              <div class="formula">Var(X) = E[(X - E[X])^2]</div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>The central regression object</h3>
+            <div class="formula">E[Y | X = x]</div>
+            <p>This means the average outcome among cases represented by predictor value <code>x</code>.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Sample, Population, Signal, Noise</h2>
+          <div class="split">
+            <div class="card">
+              <ul>
+                <li>Population: the larger process or group we care about.</li>
+                <li>Sample: the observed data we actually have.</li>
+                <li>Signal: systematic pattern.</li>
+                <li>Noise: variation not explained by the model.</li>
+              </ul>
+            </div>
+            <div class="svgbox">
+              <svg viewBox="0 0 520 320">
+                <rect x="38" y="40" width="445" height="230" rx="18" fill="#111827" stroke="#34435f"/>
+                <text class="txt" x="178" y="75">Population</text>
+                <circle cx="105" cy="120" r="5" fill="#7dd3fc"/><circle cx="145" cy="170" r="5" fill="#7dd3fc"/>
+                <circle cx="220" cy="130" r="5" fill="#7dd3fc"/><circle cx="360" cy="210" r="5" fill="#7dd3fc"/>
+                <circle cx="405" cy="135" r="5" fill="#7dd3fc"/><circle cx="300" cy="95" r="5" fill="#7dd3fc"/>
+                <circle cx="190" cy="225" r="5" fill="#7dd3fc"/><circle cx="440" cy="235" r="5" fill="#7dd3fc"/>
+                <rect x="145" y="105" width="210" height="125" rx="12" fill="rgba(134,239,172,.15)" stroke="#86efac" stroke-width="3"/>
+                <text class="txt" x="194" y="173">Sample</text>
+              </svg>
+            </div>
+          </div>
+          <div class="warning"><span class="label">Key point</span>Statistical uncertainty comes from the fact that a sample is only one possible draw from a larger process.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Linear Algebra Without Fear</h2>
+          <p>Linear algebra lets us express many regression equations at once.</p>
+          <div class="grid3">
+            <div class="card"><h3>Vector</h3><p>An ordered list of numbers.</p><div class="formula">y = [y1, y2, y3]</div></div>
+            <div class="card"><h3>Matrix</h3><p>A rectangular table of numbers.</p><div class="formula">X = rows of observations, columns of predictors</div></div>
+            <div class="card"><h3>Dot product</h3><p>A weighted sum.</p><div class="formula">a dot b = sum_i a_i b_i</div></div>
+          </div>
+          <div class="formula">Matrix dimensions: (n x k)(k x p) = (n x p)</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Python Foundations for Regression</h2>
+          <div class="split-top">
+            <div>
+              <ul>
+                <li>Write functions that return values, not just print.</li>
+                <li>Validate dimensions and empty inputs.</li>
+                <li>Use tests with known answers.</li>
+                <li>Separate data preparation, model fitting, and reporting.</li>
+              </ul>
+            </div>
+            <pre><code>def mean(values):
+    values = [float(v) for v in values]
+    if not values:
+        raise ValueError("mean requires at least one value")
+    return sum(values) / len(values)</code></pre>
+          </div>
+          <div class="teacher"><span class="label">Classroom point</span>Regression software can hide calculations. Pure Python forces students to understand what every number means.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Numerical Error and Stability</h2>
+          <div class="grid2">
+            <div class="card">
+              <h3>Floating point reality</h3>
+              <p>Computers approximate most real numbers. Mathematically equal expressions may differ slightly in code.</p>
+            </div>
+            <div class="card">
+              <h3>Stable algorithms</h3>
+              <p>Some formulas are correct on paper but fragile on a finite-precision computer.</p>
+            </div>
+          </div>
+          <pre><code>def is_close(a, b, rel_tol=1e-9, abs_tol=1e-12):
+    return abs(a - b) <= max(
+        abs_tol,
+        rel_tol * max(abs(a), abs(b))
+    )</code></pre>
+          <div class="warning"><span class="label">Important</span>Normal equations are mathematically valid, but QR/SVD methods are often more numerically stable for least squares.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Simulation: Theory You Can Test</h2>
+          <p>A simulation creates data from a known process so students can see whether an estimator behaves as expected.</p>
+          <div class="split">
+            <div class="card">
+              <ol>
+                <li>Choose true parameters.</li>
+                <li>Generate predictors.</li>
+                <li>Add random noise.</li>
+                <li>Fit the model.</li>
+                <li>Repeat many times.</li>
+              </ol>
+            </div>
+            <div class="svgbox">
+              <svg viewBox="0 0 520 300">
+                <rect x="42" y="60" width="110" height="70" rx="8" fill="#1d2840" stroke="#93c5fd"/>
+                <rect x="205" y="60" width="110" height="70" rx="8" fill="#1d2840" stroke="#93c5fd"/>
+                <rect x="368" y="60" width="110" height="70" rx="8" fill="#1d2840" stroke="#93c5fd"/>
+                <text class="txt" x="64" y="102">Truth</text><text class="txt" x="235" y="102">Data</text><text class="txt" x="396" y="102">Fit</text>
+                <path d="M155 95 L200 95" stroke="#86efac" stroke-width="4"/><path d="M318 95 L363 95" stroke="#86efac" stroke-width="4"/>
+                <rect x="205" y="190" width="110" height="70" rx="8" fill="#1d2840" stroke="#facc15"/>
+                <text class="txt" x="229" y="232">Repeat</text>
+                <path d="M423 132 C410 185, 330 220, 318 223" stroke="#facc15" stroke-width="4" fill="none"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Simple Linear Regression</h2>
+          <div class="split">
+            <div>
+              <p>Simple linear regression uses one predictor to model the conditional mean of an outcome.</p>
+              <div class="formula">y_i = beta_0 + beta_1 x_i + error_i</div>
+              <ul>
+                <li><code>beta_0</code>: intercept.</li>
+                <li><code>beta_1</code>: slope.</li>
+                <li><code>error_i</code>: unexplained part.</li>
+              </ul>
+            </div>
+            <div class="svgbox">
+              <svg viewBox="0 0 520 340">
+                <line class="axis" x1="60" y1="285" x2="480" y2="285"/><line class="axis" x1="60" y1="285" x2="60" y2="40"/>
+                <path class="line" d="M85 250 L455 70"/>
+                <circle class="point" cx="90" cy="240" r="7"/><circle class="point" cx="150" cy="230" r="7"/><circle class="point" cx="210" cy="188" r="7"/>
+                <circle class="point" cx="270" cy="160" r="7"/><circle class="point" cx="330" cy="125" r="7"/><circle class="point" cx="390" cy="105" r="7"/>
+                <text class="txt" x="285" y="80">slope = rise/run</text>
+                <text class="mutedtxt" x="110" y="270">intercept is where line meets y-axis</text>
+              </svg>
+            </div>
+          </div>
+          <div class="study"><span class="label">Further study</span><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.linregress.html" target="_blank">SciPy linregress</a> calculates a simple least-squares regression and returns slope, intercept, R value, p-value, and standard errors.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Least Squares: Fit by Minimizing Errors</h2>
+          <p>Least squares chooses the line that minimizes the sum of squared residuals.</p>
+          <div class="split">
+            <div class="formula">residual_i = y_i - predicted_y_i<br>SSR = sum_i residual_i^2</div>
+            <div class="svgbox">
+              <svg viewBox="0 0 520 340">
+                <line class="axis" x1="55" y1="285" x2="485" y2="285"/><line class="axis" x1="55" y1="285" x2="55" y2="35"/>
+                <path class="line" d="M75 250 L455 70"/>
+                <circle class="point" cx="110" cy="220" r="7"/><line class="resid" x1="110" y1="220" x2="110" y2="233"/>
+                <circle class="point" cx="180" cy="230" r="7"/><line class="resid" x1="180" y1="230" x2="180" y2="200"/>
+                <circle class="point" cx="260" cy="145" r="7"/><line class="resid" x1="260" y1="145" x2="260" y2="160"/>
+                <circle class="point" cx="350" cy="155" r="7"/><line class="resid" x1="350" y1="155" x2="350" y2="118"/>
+                <circle class="point" cx="425" cy="78" r="7"/><line class="resid" x1="425" y1="78" x2="425" y2="84"/>
+                <text class="txt" x="74" y="48">vertical gaps are residuals</text>
+              </svg>
+            </div>
+          </div>
+          <div class="teacher"><span class="label">Explain</span>Squaring makes negative and positive errors both count as bad, and it penalizes large errors more heavily.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Slope and Intercept Formulas</h2>
+          <div class="grid2">
+            <div class="card">
+              <h3>Slope</h3>
+              <div class="formula">b1 = sum((x_i - xbar)(y_i - ybar)) / sum((x_i - xbar)^2)</div>
+              <p>Slope is covariance-like movement divided by predictor variation.</p>
+            </div>
+            <div class="card">
+              <h3>Intercept</h3>
+              <div class="formula">b0 = ybar - b1*xbar</div>
+              <p>The fitted line passes through the point of sample means.</p>
+            </div>
+          </div>
+          <div class="activity"><span class="label">Class exercise</span>With points (1,2), (2,4), (3,5), compute the slope and intercept by hand, then verify in Python.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Multiple Linear Regression</h2>
+          <p>Multiple regression uses several predictors at once.</p>
+          <div class="formula">y = beta_0 + beta_1*x1 + beta_2*x2 + ... + beta_k*xk + error</div>
+          <div class="grid2">
+            <div class="card">
+              <h3>Interpretation</h3>
+              <p>A coefficient is the expected change in outcome for a one-unit increase in that predictor, holding the other included predictors fixed.</p>
+            </div>
+            <div class="card">
+              <h3>Matrix form</h3>
+              <div class="formula">y = X beta + error<br>beta_hat = (X'X)^(-1) X'y</div>
+            </div>
+          </div>
+          <div class="study"><span class="label">Further study</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.lstsq.html" target="_blank">NumPy least squares</a> solves <code>a @ x = b</code> in the least-squares sense and reports solution, residuals, rank, and singular values.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Projection Geometry</h2>
+          <p>OLS projects the outcome vector onto the column space of the design matrix.</p>
+          <div class="split">
+            <div class="card">
+              <ul>
+                <li>Fitted values are the projection.</li>
+                <li>Residuals are the leftover vector.</li>
+                <li>Residuals are orthogonal to the model's column space.</li>
+              </ul>
+              <div class="formula">X' residuals = 0</div>
+            </div>
+            <div class="svgbox">
+              <svg viewBox="0 0 520 340">
+                <polygon class="shade" points="90,250 410,250 470,170 150,170"/>
+                <line x1="105" y1="248" x2="340" y2="190" stroke="#86efac" stroke-width="5"/>
+                <line x1="340" y1="190" x2="250" y2="75" stroke="#fb923c" stroke-width="4" stroke-dasharray="6 5"/>
+                <circle cx="250" cy="75" r="8" fill="#22d3ee"/>
+                <circle cx="340" cy="190" r="8" fill="#facc15"/>
+                <text class="txt" x="245" y="58">y</text>
+                <text class="txt" x="352" y="194">y_hat</text>
+                <text class="txt" x="166" y="282">column space of X</text>
+                <text class="mutedtxt" x="270" y="125">residual</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Regression Assumptions</h2>
+          <table>
+            <thead><tr><th>Assumption</th><th>Why students should care</th></tr></thead>
+            <tbody>
+              <tr><td>Correct functional form</td><td>The model should represent the main pattern reasonably.</td></tr>
+              <tr><td>No perfect multicollinearity</td><td>Coefficients must be identifiable.</td></tr>
+              <tr><td>Zero conditional mean</td><td>Needed for unbiased causal-style slope interpretation.</td></tr>
+              <tr><td>Homoskedasticity</td><td>Needed for classical standard error formulas.</td></tr>
+              <tr><td>Normality</td><td>Mainly helpful for exact small-sample inference.</td></tr>
+              <tr><td>Independence or modeled dependence</td><td>Needed because repeated/clustered data can understate uncertainty.</td></tr>
+            </tbody>
+          </table>
+          <div class="warning"><span class="label">Teaching caution</span>Do not teach assumptions as a checklist of magic words. Teach what breaks when each one fails.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Inference: Standard Errors and t Tests</h2>
+          <div class="grid2">
+            <div class="card">
+              <h3>Standard error</h3>
+              <p>How much an estimate would vary across repeated samples.</p>
+            </div>
+            <div class="card">
+              <h3>t statistic</h3>
+              <div class="formula">t = (estimate - null_value) / standard_error</div>
+              <p>Measures how many standard errors the estimate is from the null value.</p>
+            </div>
+          </div>
+          <div class="formula">95% confidence interval = estimate +/- critical_value * standard_error</div>
+          <div class="teacher"><span class="label">Plain language</span>A confidence interval is not a guarantee that one student's interval contains the truth. It is a procedure with long-run coverage under assumptions.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Significance Is Not Importance</h2>
+          <div class="split">
+            <div class="card">
+              <ul>
+                <li>A tiny effect can be statistically significant in a huge sample.</li>
+                <li>A meaningful effect can be non-significant in a small noisy sample.</li>
+                <li>Always report effect size, uncertainty, and practical context.</li>
+              </ul>
+            </div>
+            <div class="svgbox">
+              <svg viewBox="0 0 520 320">
+                <rect x="70" y="80" width="155" height="150" rx="10" fill="#1d2840" stroke="#22d3ee"/>
+                <rect x="295" y="80" width="155" height="150" rx="10" fill="#1d2840" stroke="#fb923c"/>
+                <text class="txt" x="90" y="118">Statistical</text><text class="txt" x="95" y="145">significance</text>
+                <text class="mutedtxt" x="92" y="185">Is it hard to explain</text><text class="mutedtxt" x="92" y="205">as random noise?</text>
+                <text class="txt" x="323" y="118">Substantive</text><text class="txt" x="330" y="145">importance</text>
+                <text class="mutedtxt" x="318" y="185">Is it large enough</text><text class="mutedtxt" x="318" y="205">to matter?</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Prediction vs Mean Response</h2>
+          <div class="grid2">
+            <div class="card">
+              <h3>Confidence interval for mean</h3>
+              <p>Uncertainty about the average outcome at a predictor value.</p>
+              <p class="small">Narrower because averages are more stable.</p>
+            </div>
+            <div class="card">
+              <h3>Prediction interval</h3>
+              <p>Uncertainty for one new individual's outcome.</p>
+              <p class="small">Wider because individuals vary around the mean.</p>
+            </div>
+          </div>
+          <div class="svgbox">
+            <svg viewBox="0 0 760 260">
+              <line class="axis" x1="60" y1="220" x2="700" y2="220"/><line class="axis" x1="60" y1="220" x2="60" y2="30"/>
+              <path class="line" d="M80 190 L680 65"/>
+              <path d="M80 175 C230 130, 450 88, 680 45" fill="none" stroke="#93c5fd" stroke-width="3"/>
+              <path d="M80 205 C230 170, 450 135, 680 85" fill="none" stroke="#93c5fd" stroke-width="3"/>
+              <path d="M80 145 C230 95, 450 50, 680 15" fill="none" stroke="#fb923c" stroke-width="3" stroke-dasharray="7 6"/>
+              <path d="M80 235 C230 205, 450 174, 680 115" fill="none" stroke="#fb923c" stroke-width="3" stroke-dasharray="7 6"/>
+              <text class="txt" x="430" y="44">prediction interval</text>
+              <text class="txt" x="425" y="105">mean confidence band</text>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Measuring Model Fit</h2>
+          <div class="grid2">
+            <div class="card">
+              <h3>R-squared</h3>
+              <p>Proportion of sample outcome variation explained by the fitted model.</p>
+              <div class="formula">R^2 = 1 - SSE/SST</div>
+            </div>
+            <div class="card">
+              <h3>Error metrics</h3>
+              <ul>
+                <li>MAE: average absolute error.</li>
+                <li>RMSE: square root of average squared error.</li>
+                <li>Use multiple metrics when possible.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="warning"><span class="label">Caution</span>A high R-squared does not prove causality, correctness, or future performance.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Residual Diagnostics</h2>
+          <p>Residual plots help reveal what the model missed.</p>
+          <div class="grid2">
+            <div class="svgbox">
+              <svg viewBox="0 0 520 300">
+                <line class="axis" x1="55" y1="150" x2="480" y2="150"/><line class="axis" x1="55" y1="260" x2="55" y2="40"/>
+                <circle class="point" cx="95" cy="134" r="6"/><circle class="point" cx="130" cy="171" r="6"/><circle class="point" cx="170" cy="142" r="6"/>
+                <circle class="point" cx="220" cy="160" r="6"/><circle class="point" cx="270" cy="132" r="6"/><circle class="point" cx="320" cy="168" r="6"/>
+                <circle class="point" cx="370" cy="145" r="6"/><circle class="point" cx="430" cy="158" r="6"/>
+                <text class="txt" x="135" y="52">Good: random cloud</text>
+              </svg>
+            </div>
+            <div class="svgbox">
+              <svg viewBox="0 0 520 300">
+                <line class="axis" x1="55" y1="150" x2="480" y2="150"/><line class="axis" x1="55" y1="260" x2="55" y2="40"/>
+                <circle class="point" cx="95" cy="105" r="6"/><circle class="point" cx="145" cy="125" r="6"/><circle class="point" cx="195" cy="150" r="6"/>
+                <circle class="point" cx="245" cy="175" r="6"/><circle class="point" cx="295" cy="205" r="6"/><circle class="point" cx="345" cy="190" r="6"/>
+                <circle class="point" cx="395" cy="135" r="6"/><circle class="point" cx="445" cy="90" r="6"/>
+                <text class="txt" x="118" y="52">Problem: pattern remains</text>
+              </svg>
+            </div>
+          </div>
+          <div class="study"><span class="label">Further study</span><a href="https://www.statsmodels.org/stable/examples/notebooks/generated/regression_diagnostics.html" target="_blank">statsmodels regression diagnostics</a> gives practical diagnostic examples.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Leverage, Outliers, and Cook's Distance</h2>
+          <div class="split">
+            <div class="card">
+              <ul>
+                <li>Outlier: unusual outcome value.</li>
+                <li>High leverage: unusual predictor value.</li>
+                <li>Influential point: changes the fitted model noticeably.</li>
+                <li>Cook's distance combines residual size and leverage.</li>
+              </ul>
+            </div>
+            <div class="svgbox">
+              <svg viewBox="0 0 520 320">
+                <line class="axis" x1="55" y1="270" x2="480" y2="270"/><line class="axis" x1="55" y1="270" x2="55" y2="40"/>
+                <path class="line" d="M75 230 L390 95"/>
+                <path class="badline" d="M75 250 L475 75"/>
+                <circle class="point" cx="95" cy="224" r="6"/><circle class="point" cx="150" cy="207" r="6"/><circle class="point" cx="205" cy="180" r="6"/>
+                <circle class="point" cx="260" cy="160" r="6"/><circle class="point" cx="315" cy="130" r="6"/>
+                <circle cx="455" cy="85" r="10" fill="#fb7185"/>
+                <text class="txt" x="330" y="55">high leverage</text>
+                <text class="mutedtxt" x="285" y="235">line changes if point is included</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Transformations and Nonlinear Terms</h2>
+          <div class="grid3">
+            <div class="card"><h3>Centering/scaling</h3><p>Makes coefficients and optimization easier to handle.</p></div>
+            <div class="card"><h3>Log transform</h3><p>Useful for positive skewed variables and multiplicative relationships.</p></div>
+            <div class="card"><h3>Polynomial/splines</h3><p>Allow curved relationships while regression remains linear in coefficients.</p></div>
+          </div>
+          <div class="svgbox">
+            <svg viewBox="0 0 760 260">
+              <line class="axis" x1="60" y1="220" x2="700" y2="220"/><line class="axis" x1="60" y1="220" x2="60" y2="30"/>
+              <path d="M80 205 C180 180, 260 80, 350 125 C455 175, 555 85, 680 65" fill="none" stroke="#86efac" stroke-width="5"/>
+              <circle class="point" cx="90" cy="202" r="6"/><circle class="point" cx="155" cy="184" r="6"/><circle class="point" cx="225" cy="112" r="6"/>
+              <circle class="point" cx="310" cy="105" r="6"/><circle class="point" cx="390" cy="145" r="6"/><circle class="point" cx="490" cy="150" r="6"/>
+              <circle class="point" cx="575" cy="95" r="6"/><circle class="point" cx="655" cy="68" r="6"/>
+              <text class="txt" x="245" y="44">Regression can model curves</text>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Categorical Variables and Interactions</h2>
+          <div class="grid2">
+            <div class="card">
+              <h3>Categorical variables</h3>
+              <p>Convert groups into indicator columns, often called dummy variables.</p>
+              <div class="formula">group_B = 1 if group is B, else 0</div>
+            </div>
+            <div class="card">
+              <h3>Interactions</h3>
+              <p>Allow one predictor's effect to depend on another predictor.</p>
+              <div class="formula">y = b0 + b1*x + b2*z + b3*(x*z)</div>
+            </div>
+          </div>
+          <div class="study"><span class="label">Further study</span><a href="https://pandas.pydata.org/docs/reference/api/pandas.get_dummies.html" target="_blank">pandas.get_dummies</a> documents common categorical encoding used before regression.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Validation and Data Leakage</h2>
+          <div class="split">
+            <div class="card">
+              <ul>
+                <li>Train set: fit model and choose preprocessing.</li>
+                <li>Validation/cross-validation: compare model choices.</li>
+                <li>Test set: final untouched evaluation.</li>
+                <li>Leakage: information from outside the training data sneaks into training.</li>
+              </ul>
+            </div>
+            <div class="svgbox">
+              <svg viewBox="0 0 520 300">
+                <rect x="55" y="95" width="250" height="90" rx="10" fill="#1d2840" stroke="#86efac" stroke-width="3"/>
+                <rect x="325" y="95" width="135" height="90" rx="10" fill="#1d2840" stroke="#fb923c" stroke-width="3"/>
+                <text class="txt" x="130" y="148">Train</text><text class="txt" x="365" y="148">Test</text>
+                <path d="M320 45 C265 75, 265 200, 320 235" fill="none" stroke="#fb7185" stroke-width="4" stroke-dasharray="7 6"/>
+                <text class="txt" x="180" y="47">no leakage across boundary</text>
+              </svg>
+            </div>
+          </div>
+          <div class="study"><span class="label">Further study</span><a href="https://scikit-learn.org/stable/modules/cross_validation.html" target="_blank">scikit-learn cross-validation guide</a> explains estimator evaluation and cross-validation workflows.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Bias-Variance Trade-off</h2>
+          <div class="grid2">
+            <div class="card">
+              <h3>High bias</h3>
+              <p>Model is too simple. It misses systematic structure.</p>
+            </div>
+            <div class="card">
+              <h3>High variance</h3>
+              <p>Model is too sensitive to the sample. It follows noise.</p>
+            </div>
+          </div>
+          <div class="svgbox">
+            <svg viewBox="0 0 760 270">
+              <line class="axis" x1="65" y1="220" x2="700" y2="220"/><line class="axis" x1="65" y1="220" x2="65" y2="35"/>
+              <path d="M85 185 C210 145, 315 100, 420 115 C540 130, 620 85, 680 70" fill="none" stroke="#22d3ee" stroke-width="4"/>
+              <path d="M85 190 L680 70" fill="none" stroke="#fb923c" stroke-width="4" stroke-dasharray="7 6"/>
+              <path d="M85 190 C145 90, 185 235, 250 120 C315 10, 390 230, 480 105 C560 15, 620 130, 680 70" fill="none" stroke="#fb7185" stroke-width="4"/>
+              <text class="txt" x="95" y="50">too simple</text><text class="txt" x="330" y="45">reasonable</text><text class="txt" x="555" y="45">too wiggly</text>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Regularization: Ridge, Lasso, Elastic Net</h2>
+          <p>Regularization adds a penalty to reduce overfitting and stabilize coefficients.</p>
+          <table>
+            <thead><tr><th>Method</th><th>Penalty idea</th><th>Effect</th></tr></thead>
+            <tbody>
+              <tr><td>Ridge</td><td>Penalizes squared coefficient size</td><td>Shrinks coefficients, usually keeps all predictors.</td></tr>
+              <tr><td>Lasso</td><td>Penalizes absolute coefficient size</td><td>Can set some coefficients exactly to zero.</td></tr>
+              <tr><td>Elastic net</td><td>Mixes ridge and lasso</td><td>Useful with correlated predictors.</td></tr>
+            </tbody>
+          </table>
+          <div class="formula">loss = fit_error + penalty_strength * coefficient_penalty</div>
+          <div class="study"><span class="label">Further study</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html" target="_blank">scikit-learn LinearRegression</a> is the baseline API; then compare with Ridge/Lasso classes in the same library.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Logistic Regression</h2>
+          <p>Logistic regression models a probability for a binary outcome.</p>
+          <div class="split">
+            <div class="card">
+              <div class="formula">p = 1 / (1 + exp(-(b0 + b1*x)))</div>
+              <ul>
+                <li>Output stays between 0 and 1.</li>
+                <li>Coefficients act on log-odds.</li>
+                <li>Classification needs a threshold.</li>
+              </ul>
+            </div>
+            <div class="svgbox">
+              <svg viewBox="0 0 520 320">
+                <line class="axis" x1="60" y1="260" x2="480" y2="260"/><line class="axis" x1="60" y1="260" x2="60" y2="50"/>
+                <path d="M75 245 C160 242, 210 230, 260 158 C310 85, 365 70, 465 65" fill="none" stroke="#86efac" stroke-width="5"/>
+                <line x1="60" y1="155" x2="480" y2="155" stroke="#facc15" stroke-width="2" stroke-dasharray="7 6"/>
+                <text class="txt" x="365" y="82">probability</text><text class="mutedtxt" x="76" y="150">0.5 threshold</text>
+              </svg>
+            </div>
+          </div>
+          <div class="study"><span class="label">Further study</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html" target="_blank">scikit-learn LogisticRegression</a> documents the predictive API and penalty options.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Regression and Causal Claims</h2>
+          <p>Regression alone does not prove cause and effect.</p>
+          <div class="split">
+            <div class="card">
+              <ul>
+                <li>Prediction: can we forecast Y?</li>
+                <li>Association: how does Y vary with X?</li>
+                <li>Causation: what would happen to Y if X were changed?</li>
+              </ul>
+              <p>Those are different questions.</p>
+            </div>
+            <div class="svgbox">
+              <svg viewBox="0 0 520 320">
+                <circle cx="105" cy="160" r="46" fill="#1d2840" stroke="#22d3ee" stroke-width="3"/>
+                <circle cx="270" cy="80" r="46" fill="#1d2840" stroke="#facc15" stroke-width="3"/>
+                <circle cx="405" cy="160" r="46" fill="#1d2840" stroke="#86efac" stroke-width="3"/>
+                <text class="txt" x="85" y="166">X</text><text class="txt" x="250" y="86">Z</text><text class="txt" x="385" y="166">Y</text>
+                <path d="M145 145 L360 145" stroke="#86efac" stroke-width="4" marker-end="url(#arrow)"/>
+                <path d="M250 116 L138 143" stroke="#facc15" stroke-width="4" marker-end="url(#arrow)"/>
+                <path d="M292 116 L378 139" stroke="#facc15" stroke-width="4" marker-end="url(#arrow)"/>
+                <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#dbeafe"/></marker></defs>
+                <text class="mutedtxt" x="175" y="235">Z may confound X and Y</text>
+              </svg>
+            </div>
+          </div>
+          <div class="warning"><span class="label">Causal caution</span>Bad controls and omitted variables can make coefficients misleading.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>From-Scratch Python Workflow</h2>
+          <div class="grid2">
+            <div class="card">
+              <h3>Why do it?</h3>
+              <ul>
+                <li>Understand every number in the output.</li>
+                <li>Learn dimension checks.</li>
+                <li>See where numerical problems occur.</li>
+                <li>Build confidence before using libraries.</li>
+              </ul>
+            </div>
+            <pre><code>def simple_linear_regression(x, y):
+    xbar = mean(x)
+    ybar = mean(y)
+    numerator = sum((xi-xbar)*(yi-ybar)
+                    for xi, yi in zip(x, y))
+    denominator = sum((xi-xbar)**2 for xi in x)
+    slope = numerator / denominator
+    intercept = ybar - slope*xbar
+    return intercept, slope</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Library Workflow: Who Does What?</h2>
+          <table>
+            <thead><tr><th>Library</th><th>Best role in regression teaching</th></tr></thead>
+            <tbody>
+              <tr><td>NumPy</td><td>Arrays and linear algebra.</td></tr>
+              <tr><td>pandas</td><td>Data cleaning, missing values, categories, feature construction.</td></tr>
+              <tr><td>statsmodels</td><td>Statistical inference, summaries, standard errors, diagnostics.</td></tr>
+              <tr><td>scikit-learn</td><td>Prediction pipelines, validation, preprocessing, regularized models.</td></tr>
+              <tr><td>matplotlib</td><td>Scatter plots, residual plots, diagnostic visuals.</td></tr>
+            </tbody>
+          </table>
+          <div class="study"><span class="label">Further study</span>Use <a href="https://www.statsmodels.org/stable/generated/statsmodels.regression.linear_model.OLS.html" target="_blank">statsmodels OLS</a> for inference-oriented regression and <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.scatter.html" target="_blank">Matplotlib scatter</a> for core visualizations.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>End-to-End Regression Checklist</h2>
+          <div class="grid2">
+            <div class="card">
+              <ol>
+                <li>State the question.</li>
+                <li>Understand how data were generated.</li>
+                <li>Audit missing values and units.</li>
+                <li>Explore without overfitting.</li>
+                <li>Define a simple baseline.</li>
+                <li>Split data or design validation.</li>
+              </ol>
+            </div>
+            <div class="card">
+              <ol start="7">
+                <li>Build preprocessing inside a pipeline.</li>
+                <li>Fit and diagnose residuals.</li>
+                <li>Evaluate with more than one metric.</li>
+                <li>Test sensitivity.</li>
+                <li>Interpret only within the data range.</li>
+                <li>Preserve reproducibility.</li>
+              </ol>
+            </div>
+          </div>
+          <div class="activity"><span class="label">Class use</span>Make students use this checklist before they are allowed to report a coefficient.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Common Mistakes and Corrections</h2>
+          <table>
+            <thead><tr><th>Mistake</th><th>Correction</th></tr></thead>
+            <tbody>
+              <tr><td>Using R-squared as the only measure of quality</td><td>Also examine residuals, validation metrics, and purpose.</td></tr>
+              <tr><td>Interpreting coefficients causally by default</td><td>Separate prediction, association, and causal questions.</td></tr>
+              <tr><td>Preprocessing before train/test split</td><td>Fit preprocessing on training data only.</td></tr>
+              <tr><td>Ignoring outliers and leverage</td><td>Inspect influence and report sensitivity.</td></tr>
+              <tr><td>Trusting software output blindly</td><td>Check assumptions, data, and numerical warnings.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Research-Level Extensions</h2>
+          <div class="grid3">
+            <div class="card"><h3>Weighted/GLS</h3><p>Handle unequal variances or correlated errors.</p></div>
+            <div class="card"><h3>Robust covariance</h3><p>Improve uncertainty estimates under heteroskedasticity or clustering.</p></div>
+            <div class="card"><h3>Bootstrap</h3><p>Use resampling to approximate sampling uncertainty.</p></div>
+            <div class="card"><h3>Missing data</h3><p>Understand missingness mechanisms before deleting rows.</p></div>
+            <div class="card"><h3>Survey weights</h3><p>Respect sampling design and finite populations.</p></div>
+            <div class="card"><h3>Research transparency</h3><p>Preregister, version code, and report robustness.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>How to Read a Regression Paper</h2>
+          <div class="grid2">
+            <div class="card">
+              <ol>
+                <li>Orientation: what question is asked?</li>
+                <li>Estimand: what quantity is targeted?</li>
+                <li>Data generation: how were data collected?</li>
+                <li>Model and computation: what was fitted?</li>
+              </ol>
+            </div>
+            <div class="card">
+              <ol start="5">
+                <li>Diagnostics and robustness: what could fail?</li>
+                <li>Reproduction: can the result be rebuilt?</li>
+                <li>Critique and extension: what would improve it?</li>
+              </ol>
+            </div>
+          </div>
+          <div class="teacher"><span class="label">Teaching move</span>Give students one empirical paper and ask them to fill this seven-pass template, not to understand every equation on the first read.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Suggested Learning Sequence</h2>
+          <table>
+            <thead><tr><th>Stage</th><th>Student goal</th><th>Class artifact</th></tr></thead>
+            <tbody>
+              <tr><td>1. Intuition</td><td>Explain regression using pictures and words.</td><td>Annotated scatter plot.</td></tr>
+              <tr><td>2. Derivation</td><td>Compute slope/intercept by hand.</td><td>One-page derivation.</td></tr>
+              <tr><td>3. Uncertainty</td><td>Interpret standard error and interval.</td><td>Coefficient table explanation.</td></tr>
+              <tr><td>4. From-scratch coding</td><td>Implement simple regression.</td><td>Pure-Python script with tests.</td></tr>
+              <tr><td>5. Libraries</td><td>Use pandas/statsmodels/sklearn responsibly.</td><td>Notebook with diagnostics.</td></tr>
+              <tr><td>6. Project</td><td>Answer a real question with caveats.</td><td>Short regression report.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Further Study Links</h2>
+          <div class="grid2">
+            <div class="card">
+              <h3>Concepts and textbooks</h3>
+              <ul>
+                <li><a href="https://www.khanacademy.org/math/statistics-probability/describing-relationships-quantitative-data" target="_blank">Khan Academy: quantitative relationships</a></li>
+                <li><a href="https://www.statlearning.com/" target="_blank">An Introduction to Statistical Learning</a></li>
+                <li><a href="https://www.statsmodels.org/stable/examples/notebooks/generated/ols.html" target="_blank">statsmodels OLS example notebook</a></li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Python practice</h3>
+              <ul>
+                <li><a href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.lstsq.html" target="_blank">NumPy least-squares solver</a></li>
+                <li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.linregress.html" target="_blank">SciPy simple linear regression</a></li>
+                <li><a href="https://scikit-learn.org/stable/modules/cross_validation.html" target="_blank">scikit-learn cross-validation guide</a></li>
+                <li><a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.scatter.html" target="_blank">Matplotlib scatter plots</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="warning"><span class="label">For beginners</span>Do not start with every library at once. Start with pictures, then formulas, then pure Python, then statsmodels/sklearn.</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="inner">
+          <h2>Exit Ticket</h2>
+          <ol>
+            <li>What is the difference between a parameter, estimator, and estimate?</li>
+            <li>What does a residual measure?</li>
+            <li>Why does least squares square the residuals?</li>
+            <li>What does "holding other variables fixed" mean in multiple regression?</li>
+            <li>Why is a test set not allowed to influence model choices?</li>
+            <li>Why does regression not automatically prove causation?</li>
+          </ol>
+          <div class="activity"><span class="label">Use in class</span>Collect answers in the last five minutes. Use common wrong answers to start the next lecture.</div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="controls">
+        <button id="prev" type="button">Previous</button>
+        <button id="next" type="button">Next</button>
+      </div>
+      <div>Use <span class="kbd">Left</span> / <span class="kbd">Right</span>, <span class="kbd">Home</span>, <span class="kbd">End</span>. Print to PDF for handouts.</div>
+    </footer>
+  </div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll(".slide"));
+    const counter = document.getElementById("counter");
+    const progress = document.getElementById("progress");
+    const prev = document.getElementById("prev");
+    const next = document.getElementById("next");
+    let index = 0;
+
+    function render() {
+      slides.forEach((slide, i) => slide.classList.toggle("active", i === index));
+      counter.textContent = `Slide ${index + 1} / ${slides.length}`;
+      progress.style.width = `${((index + 1) / slides.length) * 100}%`;
+      prev.disabled = index === 0;
+      next.disabled = index === slides.length - 1;
+    }
+
+    function go(delta) {
+      index = Math.max(0, Math.min(slides.length - 1, index + delta));
+      render();
+    }
+
+    prev.addEventListener("click", () => go(-1));
+    next.addEventListener("click", () => go(1));
+    document.addEventListener("keydown", event => {
+      if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") {
+        event.preventDefault();
+        go(1);
+      }
+      if (event.key === "ArrowLeft" || event.key === "PageUp") {
+        event.preventDefault();
+        go(-1);
+      }
+      if (event.key === "Home") {
+        event.preventDefault();
+        index = 0;
+        render();
+      }
+      if (event.key === "End") {
+        event.preventDefault();
+        index = slides.length - 1;
+        render();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
