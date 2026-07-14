@@ -1806,4 +1806,367 @@ if __name__ == "__main__":
 
 ---
 
-*Section 9 quantifies the computational complexity and memory behavior of both implementations: the $\mathcal{O}(m)$-per-iteration sparse PageRank versus the $\mathcal{O}(n \cdot k_{\text{nn}} \cdot k)$ spectral embedding pipeline, the cache access pattern differences between CSR SpMV and dense DGEMV, and the numerical condition number of the normalized Laplacian on power-law degree graphs.*
+# Chapter 6: Graph Spaces & Spectral Clustering
+## Section 9: Complexity Analysis
+
+> **What this section measures.** Stage 1 and Stage 2 solve two different eigenproblems on two different matrix representations: PageRank's power iteration on a sparse, column-stochastic Google Matrix, and spectral clustering's bottom-$k$ eigenvectors of a sparse normalized Laplacian via Lanczos iteration. Both are, at heart, the same "repeatedly multiply by a matrix" primitive from Section 7 — but the sparsity pattern and the number of eigenvectors needed change the cost profile substantially.
+
+---
+
+### 9.1 PageRank: Per-Iteration and Total Cost
+
+Section 7.1.1's Google Matrix $\mathbf{G} = d\mathbf{M} + (1-d)/n \cdot \mathbf{1}\mathbf{1}^\top$ is never formed explicitly in Stage 1 — the dense rank-one teleportation term would cost $\mathcal{O}(n^2)$ to store. Instead, each power-iteration step is computed as a sparse matrix-vector product against $\mathbf{M}$ (cost proportional to the number of edges $m$, since $\mathbf{M}$ has exactly $m$ non-zero entries) plus a scalar broadcast of the teleportation term:
+
+$$\boldsymbol{\pi}^{(t+1)} = d\,\mathbf{M}\boldsymbol{\pi}^{(t)} + \frac{1-d}{n}\mathbf{1}, \qquad \text{cost per step} = \mathcal{O}(m + n)$$
+
+Section 7.1.4's power-method convergence proof showed the iterate converges geometrically at rate $d$ (the damping factor) — so reaching $\epsilon$-accuracy requires:
+
+$$k(\epsilon) = \mathcal{O}\!\left(\frac{\log(1/\epsilon)}{\log(1/d)}\right) \text{ iterations}, \qquad T_{\text{PageRank}} = \mathcal{O}\!\left((m+n) \cdot \log(1/\epsilon) / \log(1/d)\right)$$
+
+For the standard damping factor $d = 0.85$, this converges in on the order of $50$-$100$ iterations regardless of $n$ — the same qualitative pattern as Chapter 5's condition-number-governed convergence rate, except here the "condition number" is fixed by the damping factor rather than by the data.
+
+### 9.2 Spectral Clustering: The Cost of Eigenvectors, Not Just Eigenvalues
+
+Stage 2 builds a $k_{\text{nn}}$-nearest-neighbor sparse graph (Section 8), giving the Laplacian $\mathcal{O}(n \cdot k_{\text{nn}})$ non-zero entries, then calls ARPACK's Lanczos iteration to extract the bottom $k$ eigenvectors of $\mathbf{L}_{\text{sym}}$. Each Lanczos step is dominated by one sparse matrix-vector product, costing $\mathcal{O}(n \cdot k_{\text{nn}})$; the number of Lanczos steps needed to resolve $k$ eigenvectors to convergence scales with $k$ and with the inverse spectral gap (Section 7.3.5):
+
+$$T_{\text{spectral}} = \mathcal{O}\!\left(n \cdot k_{\text{nn}} \cdot k \cdot \frac{1}{\lambda_{k+1} - \lambda_k}\right)$$
+
+The spectral gap $\lambda_{k+1} - \lambda_k$ plays exactly the role $1 - 1/\kappa$ played in Chapter 5's gradient descent analysis: a large, well-separated gap (a graph with $k$ genuinely distinct clusters) converges quickly; a small gap (ambiguous cluster structure, or a poor choice of $k$) forces many more Lanczos iterations for the same accuracy.
+
+### 9.3 Memory: Sparse CSR Versus Dense, and the Condition Number of $\mathbf{L}_{\text{sym}}$
+
+Stage 1's adjacency dictionary stores exactly $\mathcal{O}(m)$ entries — no wasted space for absent edges. Stage 2's Compressed Sparse Row (CSR) format stores $\mathcal{O}(n \cdot k_{\text{nn}})$ non-zeros using three flat arrays (data, column indices, row pointers) — the same "contiguous array over pointer-chasing" discipline as a decision tree's array-backed Stage 2 and the tensor chapter's `FlatArray`, applied to a graph instead of a dense grid.
+
+**Power-law degree graphs are numerically delicate.** Real-world networks (the web graph, social networks, citation networks) typically have power-law degree distributions: a small number of hub nodes with enormous degree, and a long tail of low-degree nodes. The symmetric normalized Laplacian's degree-normalization $\mathbf{D}^{-1/2}\mathbf{L}\mathbf{D}^{-1/2}$ divides by $\sqrt{d_i}$ for every node $i$ — for a degree-1 node adjacent to a degree-$10^6$ hub, this normalization step involves dividing by numbers that differ by three orders of magnitude, which is exactly the kind of ill-conditioning the condition-number analysis of Chapter 5 (Section 7.7) warned about. This is the concrete, numerical reason production spectral clustering libraries (Section 10) default to the symmetric normalized Laplacian rather than the unnormalized one — the normalization that fixes the ill-conditioning is not optional for real-world graphs.
+
+---
+
+## Section 10: Industrial Perspective
+
+> **From these two engines to production graph systems.** Stage 1 and Stage 2 implement the exact mechanisms that power web-scale search ranking and modern graph analytics libraries.
+
+---
+
+### 10.1 PageRank at Web Scale
+
+Google's original PageRank implementation ran power iteration over a graph with billions of nodes and tens of billions of edges — far beyond what a single machine's memory can hold. Production implementations distribute the sparse matrix-vector product of Section 9.1 across a cluster (the same MapReduce-style computation pattern popularized by Google's own 2004 paper), partitioning $\mathbf{M}$'s rows across machines so that each worker only needs the columns of $\boldsymbol{\pi}$ corresponding to its partition's in-neighbors.
+
+### 10.2 scikit-learn's `SpectralClustering` and `networkx`
+
+`sklearn.cluster.SpectralClustering` implements exactly Stage 2's pipeline — building an affinity graph, forming the normalized Laplacian, and calling ARPACK (via `scipy.sparse.linalg.eigsh`) for the bottom-$k$ eigenvectors — with additional affinity options (precomputed kernel matrices, RBF affinity) beyond Stage 2's $k$-nearest-neighbor graph. `networkx` provides the general-purpose graph data structures and a pure-Python PageRank implementation useful for prototyping on graphs small enough to fit Stage 1's approach, while production analytics platforms (Neo4j's Graph Data Science library, Apache Spark's GraphX) reimplement the same algorithms over distributed or on-disk graph storage for the billion-edge regime Section 10.1 describes.
+
+### 10.3 Graph Neural Networks: Learning Instead of Deriving the Embedding
+
+Spectral clustering (Section 7.3) hand-derives a graph embedding from the Laplacian's eigenvectors. **Graph Neural Networks** (GNNs) replace this fixed, derived embedding with a *learned* one: each node's representation is updated by aggregating its neighbors' representations through a trainable function, repeated over several layers — a direct generalization of the spectral embedding's "smoothness over the graph" idea (Section 7.2.2's quadratic form), but with the aggregation function learned from data via the backpropagation machinery of Chapter 2, rather than fixed as an eigendecomposition.
+
+### 10.4 Monitoring PageRank and Spectral Clustering in Production
+
+Production PageRank pipelines monitor the **L1 convergence residual** ($\|\boldsymbol{\pi}^{(t+1)} - \boldsymbol{\pi}^{(t)}\|_1$, Section 7's convergence criterion) across iterations to detect when a graph update (new pages, new links) has changed the ranking enough to warrant a full recomputation rather than an incremental update. Production spectral clustering pipelines monitor the **spectral gap** ($\lambda_{k+1} - \lambda_k$, Section 9.2) as a diagnostic for whether $k$ was chosen well — a vanishing gap is a direct signal that the data does not actually support $k$ well-separated clusters.
+
+---
+
+## Section 11: Common Mistakes
+
+---
+
+### Mistake 1: Dangling Nodes Silently Break the Stochastic Matrix
+
+**Description.** A **dangling node** is a node with no outgoing edges (a page that links to nothing). Its column in $\mathbf{M}$ is entirely zero rather than summing to 1, which breaks the column-stochastic property Section 7.1.3's Perron-Frobenius argument depends on.
+
+**Why it is insidious.** Power iteration still runs and produces numbers, but probability mass silently leaks out of the system at every dangling node, and $\boldsymbol{\pi}^{(t)}$ no longer sums to 1 — a bug that is invisible unless you explicitly check the sum.
+
+**Fix.** Stage 1's sink-mass redistribution step (Section 8) explicitly redistributes a dangling node's mass uniformly across all nodes at every iteration — always verify `sum(pi.values())` stays at 1.0 within tolerance after fitting.
+
+---
+
+### Mistake 2: Choosing $k$ for Spectral Clustering Without Looking at the Spectral Gap
+
+**Description.** Treating $k$ (the number of clusters) as a hyperparameter to grid-search purely on downstream task performance, without ever inspecting the sorted Laplacian eigenvalues.
+
+**Why it is insidious.** Section 7.3.5 established that a well-chosen $k$ corresponds to a large gap between $\lambda_k$ and $\lambda_{k+1}$. A grid search can still return *a* value of $k$ that scores acceptably on some metric even when no natural gap exists — silently reporting an over-confident cluster structure that the graph's spectrum does not actually support.
+
+**Fix.** Always plot the sorted eigenvalues (the "eigengap plot" or "scree plot" for graphs) before trusting a chosen $k$, exactly as Section 9.2 recommends monitoring the spectral gap in production.
+
+---
+
+### Mistake 3: Running Spectral Clustering on a Disconnected Graph
+
+**Description.** Section 7.2.3 proved that the multiplicity of the Laplacian's zero eigenvalue equals the number of connected components. If the input graph has $c > 1$ connected components, the bottom $c$ eigenvalues are all exactly zero, and the "Fiedler vector" (Section 7.3) is degenerate — any vector in the zero-eigenspace is an equally valid solution, and the choice among them is arbitrary and unstable.
+
+**Why it is insidious.** The algorithm still runs and returns cluster labels that look plausible, but they are an artifact of whichever arbitrary basis the eigensolver happened to return for the degenerate eigenspace, not a meaningful reflection of graph structure within each connected component.
+
+**Fix.** Always check the number of connected components (or equivalently, the number of near-zero eigenvalues) before interpreting a spectral clustering result, and consider clustering each connected component separately if $c > 1$.
+
+```python
+# BROKEN: assumes the graph is connected without checking
+result = spectral_clustering_engine.fit(X, k=3)
+
+# FIXED: check the number of near-zero eigenvalues first
+n_near_zero = sum(1 for eigval in result.eigenvalues if eigval < 1e-8)
+if n_near_zero > 1:
+    raise ValueError(
+        f"Graph has {n_near_zero} connected components; "
+        "cluster each component separately or increase k_nn to connect the graph."
+    )
+```
+
+---
+
+### Mistake 4: Confusing the Unnormalized and Normalized Laplacian
+
+**Description.** Section 7.2.1 introduced three Laplacian variants ($\mathbf{L}$, $\mathbf{L}_{\text{sym}}$, $\mathbf{L}_{\text{rw}}$). Using the unnormalized $\mathbf{L}$ on a graph with a highly skewed (power-law) degree distribution, rather than $\mathbf{L}_{\text{sym}}$, can produce clusters dominated by degree rather than genuine community structure — a high-degree hub's neighbors can be pulled into a single cluster purely because of the hub's large degree, not because they are structurally similar to each other.
+
+**Fix.** Default to $\mathbf{L}_{\text{sym}}$ (Stage 2's default) for any graph with heterogeneous node degrees — which, per Section 9.3, is most real-world graphs.
+
+---
+
+### Mistake 5: Treating PageRank Scores as Probabilities of Being Visited "Now"
+
+**Description.** Interpreting a node's PageRank score as "the probability a random surfer is at this page at this moment" rather than its correct meaning: the stationary (long-run average) probability under the random-surfer model of Section 5.1, after infinitely many steps.
+
+**Why it is insidious.** For graphs that change over time (the actual web), a stale PageRank vector computed before recent structural changes can be meaningfully wrong for "current" ranking purposes, even though it was computed correctly for the graph snapshot it was fit on. This is a data-freshness problem layered on top of an otherwise-correct algorithm, not a bug in the PageRank computation itself.
+
+---
+
+## Section 12: Exercises
+
+This part turns Sections 7-11 into four graduated tiers of practice: **Conceptual (C)** -> **Derivation (D)** -> **Pure-Python coding (P)** -> **Library (L)**.
+
+### Conceptual Questions
+
+**PageRank**
+
+- **C1.** Why must the damping factor $d$ be strictly less than 1 for the Google Matrix to guarantee a unique stationary distribution (Section 7.1.3)?
+- **C2.** Why does a dangling node (Section 11, Mistake 1) break the column-stochastic property, and why does this matter for the Perron-Frobenius argument?
+
+**Graph Laplacian and Spectral Clustering**
+
+- **C3.** Why does the Laplacian quadratic form $\mathbf{f}^\top\mathbf{L}\mathbf{f}$ measure "smoothness" of $\mathbf{f}$ over the graph (Section 7.2.2)?
+- **C4.** Why does the multiplicity of the zero eigenvalue equal the number of connected components (Section 7.2.3)?
+- **C5.** Why is minimizing RatioCut over discrete cluster assignments NP-hard, and what does relaxing it to a continuous Rayleigh quotient buy us (Section 7.3.3)?
+
+### Derivation Exercises
+
+**PageRank**
+
+- **D1.** Derive the Google Matrix's column-stochastic property from the definitions of $\mathbf{M}$ and the teleportation term (Section 7.1.2).
+- **D2.** Using the Perron-Frobenius theorem's conditions (Section 7.1.3), show why the Google Matrix (unlike the raw link matrix $\mathbf{M}$ alone) always satisfies them.
+
+**Graph Laplacian and Spectral Clustering**
+
+- **D3.** Prove the Laplacian quadratic form identity $\mathbf{f}^\top\mathbf{L}\mathbf{f} = \frac{1}{2}\sum_{ij}A_{ij}(f_i-f_j)^2$ (Section 7.2.2) starting from $\mathbf{L} = \mathbf{D} - \mathbf{A}$.
+- **D4.** Starting from the RatioCut objective, derive the reduction to the quadratic form $\mathbf{f}^\top\mathbf{L}\mathbf{f}$ subject to $\mathbf{f}^\top\mathbf{1}=0$ (Section 7.3.2), and explain why the Fiedler vector is the solution to the relaxed problem.
+
+### Pure-Python Coding Exercises
+
+- **P1.** Extend Stage 1's PageRank to accept a personalization vector (teleporting back to a fixed subset of nodes rather than uniformly), and verify it recovers the standard PageRank when the personalization vector is uniform.
+- **P2.** Implement the unnormalized Laplacian $\mathbf{L}$ and random-walk Laplacian $\mathbf{L}_{\text{rw}}$ variants alongside Stage 2's $\mathbf{L}_{\text{sym}}$, and verify Mistake 4's claim: cluster a synthetic power-law-degree graph with all three and compare cluster quality.
+- **P3.** Implement the connected-components check from Section 11, Mistake 3, and verify it correctly identifies the number of components on a graph you construct with 3 disjoint pieces.
+- **P4.** Implement an eigengap plot function that takes a sorted eigenvalue array and returns the value of $k$ maximizing $\lambda_{k+1} - \lambda_k$, and verify it recovers the true number of clusters on a synthetic dataset with known cluster count.
+
+### Library Exercises
+
+- **L1.** Fit `networkx.pagerank` and Stage 1's pure-Python PageRank on the same directed graph and compare the resulting rank vectors.
+- **L2.** Fit `sklearn.cluster.SpectralClustering` and Stage 2's engine on the same two-interlocking-rings dataset and compare cluster label agreement (adjusted Rand index).
+- **L3.** Use `scipy.sparse.linalg.eigsh` directly to extract the bottom-$k$ eigenvectors of a Laplacian you construct by hand, bypassing Stage 2's wrapper, and confirm identical results.
+- **L4.** Compare `sklearn.cluster.SpectralClustering`'s `affinity="rbf"` option against Stage 2's $k$-nearest-neighbor affinity on data where the two produce visibly different clusters, and explain why.
+
+---
+
+## Section 13: Mini Project — Community Detection in a Synthetic Social Network
+
+### Overview
+
+This project generates a synthetic graph with known community structure (a stochastic block model: densely connected within groups, sparsely connected between groups), then uses PageRank to identify influential nodes within each community and spectral clustering to recover the community structure without being told it in advance.
+
+### Full Implementation
+
+```python
+# mini_project_community_detection.py
+"""
+Mini Project: Community detection and influence ranking in a synthetic
+social network, using both engines built in this chapter.
+
+Generates a stochastic block model graph (three communities, dense
+within-group edges, sparse between-group edges), then:
+  1. Runs Stage 2 spectral clustering to recover the three communities
+     without being told the true group assignments.
+  2. Runs Stage 1 PageRank to rank nodes by influence within the recovered
+     graph structure.
+  3. Reports clustering accuracy against the known ground truth and the
+     top-ranked node in each recovered community.
+"""
+from __future__ import annotations
+
+import random
+
+
+def make_stochastic_block_model(
+    n_per_block: int = 20,
+    n_blocks: int = 3,
+    p_within: float = 0.3,
+    p_between: float = 0.02,
+    seed: int = 0,
+) -> tuple[dict, list[int]]:
+    """
+    Build a directed adjacency-dict graph with known block (community)
+    structure. Node ids are strings ("0", "1", ...), matching this
+    chapter's NodeId = str convention (Section 8, Stage 1) exactly —
+    pagerank_power_iteration's internal bookkeeping assumes string ids
+    and will silently re-key an integer-keyed graph otherwise.
+    """
+    rng = random.Random(seed)
+    n = n_per_block * n_blocks
+    true_labels = [i // n_per_block for i in range(n)]
+    adjacency: dict[str, list[str]] = {str(i): [] for i in range(n)}
+
+    for i in range(n):
+        for j in range(n):
+            if i == j:
+                continue
+            same_block = true_labels[i] == true_labels[j]
+            p = p_within if same_block else p_between
+            if rng.random() < p:
+                adjacency[str(i)].append(str(j))
+
+    return adjacency, true_labels
+
+
+def adjacency_rate(true_labels: list[int], predicted_labels: list[int]) -> float:
+    """
+    Cluster agreement rate up to a permutation of cluster labels: for each
+    pair of nodes, check whether "same true block" agrees with "same
+    predicted cluster." A simple, dependency-free substitute for the
+    adjusted Rand index used in Exercise L2.
+    """
+    n = len(true_labels)
+    agreements = 0
+    total_pairs = 0
+    for i in range(n):
+        for j in range(i + 1, n):
+            same_true = true_labels[i] == true_labels[j]
+            same_pred = predicted_labels[i] == predicted_labels[j]
+            agreements += 1 if same_true == same_pred else 0
+            total_pairs += 1
+    return agreements / total_pairs
+
+
+def run_community_detection() -> None:
+    print("=" * 70)
+    print("Mini Project: Community Detection via PageRank and Spectral Clustering")
+    print("=" * 70)
+
+    adjacency, true_labels = make_stochastic_block_model(
+        n_per_block=20, n_blocks=3, p_within=0.3, p_between=0.02, seed=0
+    )
+    n = len(true_labels)
+    print(f"\nGenerated graph: {n} nodes, 3 communities, "
+          f"{sum(len(v) for v in adjacency.values())} directed edges")
+
+    # --- Stage 1: PageRank for influence ranking ---
+    # Both stages live in the single Section 8 module; save it alongside
+    # this script as chapter8_graph_engine.py to run this project.
+    from chapter8_graph_engine import pagerank_power_iteration  # Section 8, Stage 1
+
+    rank_result = pagerank_power_iteration(adjacency, damping=0.85, tolerance=1e-10)
+    ranked_nodes = sorted(rank_result.ranks.items(), key=lambda kv: kv[1], reverse=True)
+    print("\nTop 5 most influential nodes overall (by PageRank):")
+    for node, score in ranked_nodes[:5]:
+        print(f"  node {node:>3s} (true community {true_labels[int(node)]})  score={score:.5f}")
+
+    # --- Stage 2: Spectral clustering for community recovery ---
+    # The Stage 2 engine's high-level fit_predict() builds its own k-NN graph
+    # from raw feature vectors, but this project already *has* a graph (the
+    # social network itself) rather than points in space — so we drive its
+    # lower-level static pipeline stages directly on our own adjacency matrix
+    # instead of going through fit_predict().
+    from chapter8_graph_engine import SpectralClusteringEngine  # Section 8, Stage 2
+    import numpy as np
+    from scipy.sparse import csr_matrix
+
+    # Build a symmetric sparse adjacency from the directed social graph
+    # (treat any edge in either direction as a connection).
+    adjacency_matrix = np.zeros((n, n))
+    for i_str, neighbors in adjacency.items():
+        i = int(i_str)
+        for j_str in neighbors:
+            j = int(j_str)
+            adjacency_matrix[i, j] = 1.0
+            adjacency_matrix[j, i] = 1.0
+    sparse_adjacency = csr_matrix(adjacency_matrix)
+
+    n_clusters = 3
+    laplacian = SpectralClusteringEngine.normalized_laplacian(sparse_adjacency)
+    eigenvalues, eigenvectors = SpectralClusteringEngine.bottom_eigenvectors(laplacian, n_clusters)
+    embedding = SpectralClusteringEngine.row_normalize(eigenvectors)
+
+    engine = SpectralClusteringEngine(n_clusters=n_clusters)
+    kmeans_result = engine.kmeans(embedding, n_clusters)
+
+    accuracy = adjacency_rate(true_labels, list(kmeans_result.labels))
+    print(f"\nSpectral clustering pairwise agreement with ground truth: {accuracy:.3f}")
+    print(f"Spectral gap (lambda_3 - lambda_2): {eigenvalues[2] - eigenvalues[1]:.4f}")
+
+    assert accuracy > 0.85, (
+        f"expected spectral clustering to recover the block structure with high "
+        f"pairwise agreement, got {accuracy:.3f}"
+    )
+    print("\nMini project passed: spectral clustering recovered the community structure.")
+    print("=" * 70)
+
+
+if __name__ == "__main__":
+    run_community_detection()
+```
+
+---
+
+## Section 14: Summary
+
+Chapter 6 extended machine learning beyond flat Euclidean feature vectors into the relational structure of a graph. Two algorithms, both derived from the same "eigenvectors of a structured matrix" principle of Section 7, address two different questions: PageRank asks "which nodes are most important?", answered by the stationary distribution of a random walk (the Perron-Frobenius theorem guaranteeing that answer is unique); spectral clustering asks "which nodes belong together?", answered by the low-frequency eigenvectors of the graph Laplacian (the Fiedler vector's RatioCut relaxation providing the theoretical bridge from an NP-hard discrete partition problem to tractable continuous linear algebra).
+
+Section 8 implemented both completely — a pure-Python sparse PageRank engine with explicit dangling-node handling, and a NumPy/SciPy spectral clustering engine built on ARPACK's Lanczos iteration — both verified against the exact theorems Section 7 proved. Section 9 showed the two algorithms have complementary cost profiles: PageRank's convergence rate is fixed by the damping factor regardless of graph structure, while spectral clustering's convergence depends entirely on the data's own spectral gap. Section 11 catalogued failure modes unique to graph algorithms that have no direct analogue in the earlier, non-graph chapters: dangling nodes, disconnected components producing degenerate eigenspaces, and the specific numerical fragility of degree normalization on power-law graphs.
+
+---
+
+## Section 15: Further Reading
+
+**[1] Lawrence Page and Sergey Brin — "The PageRank Citation Ranking: Bringing Order to the Web" (Stanford InfoLab Technical Report, 1998)**
+
+The original PageRank paper, introducing the random-surfer model and the damping factor derived in Section 7.1.
+
+**[2] Miroslav Fiedler — "Algebraic Connectivity of Graphs" (*Czechoslovak Mathematical Journal*, 23(2):298–305, 1973)**
+
+The paper introducing the eigenvalue now called algebraic connectivity and its eigenvector, the Fiedler vector (Section 7.3), decades before spectral clustering was formalized as a machine learning method.
+
+**[3] Jianbo Shi and Jitendra Malik — "Normalized Cuts and Image Segmentation" (*IEEE TPAMI*, 22(8):888–905, 2000)**
+
+Introduces the normalized cut criterion and connects it to the generalized eigenvalue problem for the random-walk Laplacian $\mathbf{L}_{\text{rw}}$ (Section 7.2.1), with image segmentation as the primary application.
+
+**[4] Andrew Ng, Michael Jordan, and Yair Weiss — "On Spectral Clustering: Analysis and an Algorithm" (*NeurIPS*, 2002)**
+
+Formalizes the spectral clustering algorithm implemented in Stage 2 — embed via the top/bottom-$k$ Laplacian eigenvectors, then run $k$-means in the embedded space — and provides the perturbation-theoretic analysis of when it succeeds.
+
+**[5] Ulrike von Luxburg — "A Tutorial on Spectral Clustering" (*Statistics and Computing*, 17(4):395–416, 2007)**
+
+The standard, highly readable reference tying together the graph Laplacian variants, RatioCut and normalized cut objectives, and the practical considerations (choice of affinity graph, choice of $k$) this chapter's Section 11 draws on directly.
+
+---
+
+## Section 16: Research Directions
+
+### 16.1 Graph Neural Networks and Learned Message Passing
+
+Section 10.3 introduced GNNs as a learned generalization of the fixed spectral embedding. An active research question is understanding exactly when a learned aggregation function outperforms the closed-form Laplacian eigenvectors of Section 7.3 — and when it does not, since GNNs are also known to suffer from **oversmoothing** (node representations becoming indistinguishable after too many message-passing layers), a phenomenon with a direct mathematical connection to the same Laplacian smoothing quadratic form (Section 7.2.2) that spectral clustering exploits deliberately.
+
+### 16.2 Scalable Spectral Methods for Billion-Edge Graphs
+
+Section 9.2's Lanczos-based eigensolver scales to graphs with $\mathcal{O}(10^5)$-$\mathcal{O}(10^6)$ nodes on a single machine; web-scale and social-network graphs exceed this by several orders of magnitude. Research on **randomized and sketching-based spectral methods** (extending the randomized SVD ideas from Chapter 5's research directions to the graph Laplacian) trades exact eigenvectors for approximate ones computable via a small number of sparse matrix-vector products, extending spectral clustering's reach toward the scale PageRank's distributed implementation (Section 10.1) already operates at.
+
+### 16.3 Dynamic and Temporal Graphs
+
+Section 11's Mistake 5 noted that PageRank scores are only valid for the graph snapshot they were computed on. Real-world graphs (social networks, citation networks, the web) change continuously. **Temporal graph learning** studies how to update a PageRank or spectral embedding incrementally as edges are added or removed, without recomputing the full power iteration or eigendecomposition from scratch — an active research area with direct production relevance given Section 10.1's cluster-scale recomputation cost.
+
+### 16.4 Beyond Simple Graphs: Hypergraphs and Multi-Layer Networks
+
+Sections 7 and 8 assume a single graph with one edge type per pair of nodes. Many real systems are better modeled as **hypergraphs** (an edge can connect more than two nodes at once — a group email, a co-authored paper) or **multi-layer networks** (multiple distinct edge types between the same node set — a social network with both "follows" and "messages" relationships). Generalizing the Laplacian quadratic form and the Perron-Frobenius argument to these richer structures, while preserving the same tractability that makes spectral clustering and PageRank practical, is an active research frontier.

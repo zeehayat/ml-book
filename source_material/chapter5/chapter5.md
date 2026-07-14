@@ -153,7 +153,7 @@ In 1990, Scott Deerwester, Susan Dumais, and colleagues at Bell Communications R
 
 In 1991, Matthew Turk and Alex Pentland at MIT published "Eigenfaces for Recognition," applying PCA to the pixel matrices of face images. The principal components of a face dataset are themselves face-shaped images — the "eigenfaces" — and any individual face can be represented as a linear combination of a small number of eigenfaces. Recognition became a nearest-neighbor search in eigenface coordinate space. Eigenfaces demonstrated that PCA could extract perceptually meaningful structure from raw high-dimensional signals, not just from tabular measurement data.
 
-The Netflix Prize competition (2006–2009) and its $1 million prize for improving movie recommendation accuracy drove the largest-ever industrial deployment of matrix factorization. Simon Funk's famous online SGD-based matrix factorization (a variant of truncated SVD) demonstrated that large-scale low-rank matrix completion could be solved efficiently in the streaming setting. The techniques developed during the Netflix Prize directly influenced the design of recommendation systems in every major streaming platform — and they are structural ancestors of the attention mechanism's inner-product structure in Chapter 9's Transformer architecture.
+The Netflix Prize competition (2006–2009) and its $1 million prize for improving movie recommendation accuracy drove the largest-ever industrial deployment of matrix factorization. Simon Funk's famous online SGD-based matrix factorization (a variant of truncated SVD) demonstrated that large-scale low-rank matrix completion could be solved efficiently in the streaming setting. The techniques developed during the Netflix Prize directly influenced the design of recommendation systems in every major streaming platform — and they are structural ancestors of the inner-product structure at the heart of the attention mechanism in modern Transformer architectures.
 
 ---
 
@@ -2160,8 +2160,11 @@ def run_all_checks() -> None:
     Call this function to confirm that all implementations in this chapter
     produce correct numerical results before proceeding to downstream use.
     """
-    # Stage 1 imports from the Stage 1 module in a real project;
-    # here we call _run_stage1_checks() if co-located in the same file.
+    # Save Stage 1's code as stage1_pca_power_iteration.py alongside this
+    # file to run both suites together; _run_stage1_checks is defined there.
+    from stage1_pca_power_iteration import _run_stage1_checks
+
+    _run_stage1_checks()
     _run_stage2_checks()
 
 
@@ -3637,7 +3640,7 @@ The literature on dimensionality reduction, matrix factorization, and numerical 
 
 **Jolliffe, I. T. (2002). *Principal Component Analysis*, 2nd Edition. Springer Series in Statistics.**
 
-The definitive treatment of PCA in its statistical formulation. Jolliffe covers the variance-maximization derivation (Chapters 1–2), the relationship between PCA and factor analysis (Chapter 7), the connection to canonical correlation analysis (Chapter 10), and a comprehensive survey of how PCA appears in regression, cluster analysis, quality control, and environmental science. The second edition adds coverage of non-linear generalizations (kernel PCA, Section 15.3) and robust PCA (Section 10.4). Required reading for anyone who needs to reason about the statistical properties of principal components — their sampling distributions under multivariate Gaussianity, the bias of estimated eigenvalues, and the confidence intervals for explained variance fractions.
+The definitive treatment of PCA in its statistical formulation. Jolliffe covers the variance-maximization derivation early on, the relationship between PCA and factor analysis, and the connection to canonical correlation analysis in later chapters, alongside a comprehensive survey of how PCA appears in regression, cluster analysis, quality control, and environmental science. The second edition adds coverage of non-linear generalizations (kernel PCA, Section 15.3) and robust PCA (Section 10.4). Required reading for anyone who needs to reason about the statistical properties of principal components — their sampling distributions under multivariate Gaussianity, the bias of estimated eigenvalues, and the confidence intervals for explained variance fractions.
 
 ---
 
@@ -3649,7 +3652,7 @@ The landmark paper that established Randomized SVD as a production algorithm. Se
 
 **Trefethen, L. N. and Bau, D. (1997). *Numerical Linear Algebra*. SIAM.**
 
-The graduate-level reference for the numerical algorithms that underpin all production SVD implementations. Chapter 4 (QR Factorization), Chapter 5 (Gram-Schmidt Orthogonalization and Instability), and Chapters 31–36 (Eigenvalue Problems and SVD) are directly relevant. Trefethen and Bau present the Golub-Kahan bidiagonalization algorithm in Lecture 31, the Householder reflections that drive it in Lectures 10–11, and a rigorous treatment of floating-point backward stability in Lecture 14. The book's defining virtue is its insistence on connecting mathematical properties to numerical behavior: it does not just tell you that the SVD is numerically stable — it proves why (backward stability of Householder reflections), and why the covariance normal equations are not (condition number squaring, Lecture 18).
+The graduate-level reference for the numerical algorithms that underpin all production SVD implementations. Its early lectures on QR factorization and Gram-Schmidt orthogonalization and instability, and Lectures 31–36 on eigenvalue problems and the SVD, are directly relevant. Trefethen and Bau present the Golub-Kahan bidiagonalization algorithm in Lecture 31, the Householder reflections that drive it in Lectures 10–11, and a rigorous treatment of floating-point backward stability in Lecture 14. The book's defining virtue is its insistence on connecting mathematical properties to numerical behavior: it does not just tell you that the SVD is numerically stable — it proves why (backward stability of Householder reflections), and why the covariance normal equations are not (condition number squaring, Lecture 18).
 
 ---
 

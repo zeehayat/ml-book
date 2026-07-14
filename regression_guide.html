@@ -668,6 +668,138 @@
       color: #0d9488;
       text-decoration: underline solid;
     }
+
+    .cross-link {
+      color: var(--accent);
+      text-decoration: underline dotted;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .cross-link:hover {
+      color: #0d9488;
+      text-decoration: underline solid;
+    }
+
+    .cross-link {
+      color: var(--accent);
+      text-decoration: underline dotted;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .cross-link:hover {
+      color: #0d9488;
+      text-decoration: underline solid;
+    }
+
+    .cross-link {
+      color: var(--accent);
+      text-decoration: underline dotted;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .cross-link:hover {
+      color: #0d9488;
+      text-decoration: underline solid;
+    }
+
+    .cross-link {
+      color: var(--accent);
+      text-decoration: underline dotted;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .cross-link:hover {
+      color: #0d9488;
+      text-decoration: underline solid;
+    }
+
+    .cross-link {
+      color: var(--accent);
+      text-decoration: underline dotted;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .cross-link:hover {
+      color: #0d9488;
+      text-decoration: underline solid;
+    }
+
+    .cross-link {
+      color: var(--accent);
+      text-decoration: underline dotted;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .cross-link:hover {
+      color: #0d9488;
+      text-decoration: underline solid;
+    }
+
+    .cross-link {
+      color: var(--accent);
+      text-decoration: underline dotted;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .cross-link:hover {
+      color: #0d9488;
+      text-decoration: underline solid;
+    }
+
+    .cross-link {
+      color: var(--accent);
+      text-decoration: underline dotted;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .cross-link:hover {
+      color: #0d9488;
+      text-decoration: underline solid;
+    }
+
+    .cross-link {
+      color: var(--accent);
+      text-decoration: underline dotted;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .cross-link:hover {
+      color: #0d9488;
+      text-decoration: underline solid;
+    }
+
+    .cross-link {
+      color: var(--accent);
+      text-decoration: underline dotted;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .cross-link:hover {
+      color: #0d9488;
+      text-decoration: underline solid;
+    }
+
+    .cross-link {
+      color: var(--accent);
+      text-decoration: underline dotted;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .cross-link:hover {
+      color: #0d9488;
+      text-decoration: underline solid;
+    }
+
+    .cross-link {
+      color: var(--accent);
+      text-decoration: underline dotted;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .cross-link:hover {
+      color: #0d9488;
+      text-decoration: underline solid;
+    }
 </style>
 </head>
 <body>
@@ -20549,7 +20681,7 @@ python ch03_mini_project.py
 </code></pre>
 <p><strong>Reading the diagram.</strong> Each bootstrap sample is drawn independently with replacement from the full training set. Trees trained on different samples will disagree on individual predictions. The key insight is that their disagreements are largely uncorrelated: one tree may overfit to a cluster of outliers in its sample, but those outliers are unlikely to dominate every other tree's sample as well. Averaging or taking majority vote over K trees reduces the prediction variance roughly in proportion to K, while the expected prediction (the bias) remains at the average of each tree's expected prediction — which is close to the optimal prediction if individual trees are not systematically biased. The feature subsampling (using only sqrt(D) features at each split rather than all D features) further decorrelates the trees, ensuring the ensemble is not dominated by one or two extremely predictive features appearing identically in every tree.</p>
 <hr/>
-<p><em>This concludes Sections 1 through 6 of Chapter 6. Section 7 (Mathematical Foundations: Primal and Dual SVM, Kernel Derivations, Entropy and Information Gain) proceeds in <code>ch04_section7.md</code>.</em></p>
+<p><em>This concludes Sections 1 through 6 of Chapter 6. Section 7 (Mathematical Foundations: Primal and Dual SVM, Kernel Derivations, Entropy and Information Gain) follows next.</em></p>
 <hr/>
 
 <h4 id="section-7-mathematical-foundations">Section 7: Mathematical Foundations</h4>
@@ -20691,11 +20823,312 @@ $$\text{Ridge:} \quad \min</em>{\mathbf{w}} E(\mathbf{w}) \quad \text{subject to
 <hr/>
 
 <h4 id="section-8-implementation">Section 8: Implementation</h4>
-<p>This section translates the mathematical machinery of Section 7 into two executable stages. Stage 1 implements a fully recursive decision tree using nothing but Python's standard library — every split scored by explicit loops, every node stored as a Python object, every traversal following object references. This transparency makes the tree-building algorithm easy to trace and debug, at the cost of performance. Stage 2 replaces the inner-loop machinery with vectorized NumPy operations and, critically, replaces Python object pointers with contiguous integer-index arrays. After training, the entire tree lives in five compact NumPy arrays. Inference walks integer offsets rather than Python object references, which reduces pointer chasing and gives the CPU's prefetcher predictable access patterns through the flat buffer discussed in Section 6.</p>
-<p>Both stages share a common mathematical foundation: the entropy impurity and information gain defined in Section 7 drive every split decision. The structural difference between the stages is purely representational — the same data partition decisions, expressed first as recursive Python objects and then as contiguous arrays.</p>
+<p>This section translates the mathematical machinery of Section 7 into three executable stages, covering both models the chapter has derived. Stage 1B implements the soft-margin, kernelized SVM dual problem from Section 7.1 using simplified Sequential Minimal Optimization (SMO) — pure Python, zero third-party dependencies. Stage 1 then implements a fully recursive decision tree, also using nothing but Python's standard library — every split scored by explicit loops, every node stored as a Python object, every traversal following object references. This transparency makes both algorithms easy to trace and debug, at the cost of performance. Stage 2 replaces the tree's inner-loop machinery with vectorized NumPy operations and, critically, replaces Python object pointers with contiguous integer-index arrays. After training, the entire tree lives in five compact NumPy arrays. Inference walks integer offsets rather than Python object references, which reduces pointer chasing and gives the CPU's prefetcher predictable access patterns through the flat buffer discussed in Section 6.</p>
+<p>All three stages share Section 7's mathematical foundation: the SVM stage solves the dual quadratic program (1.2) subject to its KKT box constraint, and the tree stages are driven by the entropy impurity and information gain of Section 7.2. The structural difference between the two tree stages is purely representational — the same data partition decisions, expressed first as recursive Python objects and then as contiguous arrays.</p>
+<hr/>
+<h4 id="stage-1b-kernelized-svm-via-simplified-smo">Stage 1B: Kernelized SVM via Simplified SMO</h4>
+<h5 id="design-contract">Design Contract</h5>
+<p>Section 7.1.2 derived the soft-margin SVM dual problem as a quadratic program in the Lagrange multipliers $\alpha_i$:</p>
+<p>$$\max_{\boldsymbol{\alpha}} \sum_{i=1}^N \alpha_i - \frac{1}{2} \sum_{i=1}^N \sum_{j=1}^N \alpha_i \alpha_j y_i y_j K(\mathbf{x}<em>i, \mathbf{x}_j) \qquad \text{s.t. } 0 \le \alpha_i \le C,\ \sum</em>{i=1}^N \alpha_i y_i = 0$$</p>
+<p>A general-purpose QP solver could solve this directly, but <strong>Sequential Minimal Optimization (SMO)</strong>, introduced by John Platt in 1998, exploits the problem's specific structure: the equality constraint $\sum \alpha_i y_i = 0$ means no single $\alpha_i$ can be updated in isolation without breaking it, but <em>two</em> multipliers can always be updated jointly while holding the rest fixed, and the resulting two-variable sub-problem has a closed-form solution. Repeating this pairwise update until every $\alpha_i$ satisfies the Karush-Kuhn-Tucker conditions within tolerance solves the full QP without ever forming or inverting an $N \times N$ matrix.</p>
+<ul>
+<li><strong><code>SimplifiedSMO_SVC</code></strong> — the SVM learner. Stores the fitted $\alpha_i$, the bias $b$, and the indices of the support vectors (points with $\alpha_i &gt; 0$).</li>
+<li><strong><code>linear_kernel</code></strong> and <strong><code>rbf_kernel</code></strong> — two Mercer kernels from Section 7.1.3. The linear kernel is $K(\mathbf{x},\mathbf{z}) = \mathbf{x}^\top\mathbf{z}$; the RBF (Gaussian) kernel is $K(\mathbf{x},\mathbf{z}) = \exp(-\gamma|\mathbf{x}-\mathbf{z}|^2)$, which implicitly maps into an infinite-dimensional feature space without ever constructing its coordinates.</li>
+<li><strong><code>fit</code></strong> — the simplified SMO loop: for each $i$ whose KKT conditions are violated beyond <code>tol</code>, pick a random partner $j$, solve the pair's 2-variable sub-problem in closed form (clipping to the box $[L, H]$ derived from $y_i, y_j$, and $C$), and update $b$ from whichever multiplier remains strictly inside $(0, C)$.</li>
+<li><strong><code>margin_width</code></strong> — for the linear kernel only, recovers $\mathbf{w} = \sum_i \alpha_i y_i \mathbf{x}_i$ (Section 7.1.2's stationarity condition) and returns the geometric margin $2/|\mathbf{w}|$.</li>
+</ul>
+<h5 id="why-two-random-points-not-gradient-descent">Why Two Random Points, Not Gradient Descent</h5>
+<p>Unlike the regression engines of Chapter 5, the SVM dual cannot be optimized by plain gradient descent on the $\alpha_i$ one at a time: the equality constraint $\sum_i \alpha_i y_i = 0$ would immediately be violated by a single-coordinate update. SMO's insight is to always move in constraint-preserving pairs — increasing $\alpha_i$ by exactly enough that decreasing $\alpha_j$ (with a sign determined by $y_i, y_j$) keeps the sum at zero. This is why the update touches two indices at once and why, geometrically, it is often visualized as sliding along the equality constraint's hyperplane rather than taking an unconstrained downhill step.</p>
+<h5 id="stage-1b-code">Stage 1B Code</h5>
+<pre><code class="language-python">"""
+Stage 1B: Soft-margin kernel SVM via simplified Sequential Minimal
+Optimization (SMO), pure Python, zero third-party dependencies.
+
+Solves exactly the dual problem derived in Section 7.1.2:
+
+    max_alpha  sum(alpha_i) - 0.5 * sum_ij alpha_i alpha_j y_i y_j K(x_i, x_j)
+    subject to 0 &lt;= alpha_i &lt;= C  and  sum(alpha_i y_i) = 0
+
+using Platt's simplified SMO: repeatedly pick a pair (i, j), solve the
+resulting 2-variable sub-problem in closed form, and update until the
+KKT conditions are satisfied within tolerance or max_passes is reached.
+"""
+from __future__ import annotations
+
+import math
+import random
+
+
+Vector = list
+Matrix = list
+
+
+def linear_kernel(x: Vector, z: Vector) -&gt; float:
+    return sum(xi * zi for xi, zi in zip(x, z))
+
+
+def rbf_kernel(gamma: float):
+    def _kernel(x: Vector, z: Vector) -&gt; float:
+        sq_dist = sum((xi - zi) ** 2 for xi, zi in zip(x, z))
+        return math.exp(-gamma * sq_dist)
+    return _kernel
+
+
+class SimplifiedSMO_SVC:
+    """
+    Soft-margin, kernelized binary SVM classifier fit by simplified SMO.
+
+    Attributes (set after fit()):
+        alpha:            Lagrange multipliers, one per training example.
+        support_indices:  Indices i where alpha_i &gt; tolerance (support vectors).
+        b:                Fitted bias / threshold.
+    """
+
+    def __init__(
+        self,
+        C: float = 1.0,
+        kernel=None,
+        tol: float = 1e-3,
+        max_passes: int = 20,
+        max_iter: int = 2000,
+        random_state: int | None = None,
+    ) -&gt; None:
+        if C &lt;= 0:
+            raise ValueError(f"C must be positive, got {C}")
+        self.C = C
+        self.kernel = kernel if kernel is not None else linear_kernel
+        self.tol = tol
+        self.max_passes = max_passes
+        self.max_iter = max_iter
+        self.random_state = random_state
+
+        self.X: Matrix | None = None
+        self.y: Vector | None = None
+        self.alpha: Vector | None = None
+        self.b: float = 0.0
+        self.support_indices: list[int] = []
+
+    def _decision_value(self, x: Vector) -&gt; float:
+        total = self.b
+        for idx in self.support_indices:
+            total += self.alpha[idx] * self.y[idx] * self.kernel(self.X[idx], x)
+        return total
+
+    def fit(self, X: Matrix, y: Vector) -&gt; "SimplifiedSMO_SVC":
+        if len(X) != len(y):
+            raise ValueError("X and y must have the same number of rows")
+        if not all(label in (-1, 1) for label in y):
+            raise ValueError("labels must be encoded as -1 or +1")
+
+        rng = random.Random(self.random_state)
+        n = len(X)
+        self.X = X
+        self.y = y
+        alpha = [0.0] * n
+        b = 0.0
+
+        # Precompute the full kernel (Gram) matrix once. O(n^2) memory and
+        # time — fine for the small, from-scratch verification examples this
+        # chapter uses; Stage 2 would replace this with a vectorized NumPy
+        # kernel matrix computed via broadcasting.
+        K = [[self.kernel(X[i], X[j]) for j in range(n)] for i in range(n)]
+
+        passes = 0
+        n_iter = 0
+        while passes &lt; self.max_passes and n_iter &lt; self.max_iter:
+            num_changed = 0
+            for i in range(n):
+                E_i = (
+                    sum(alpha[k] * y[k] * K[k][i] for k in range(n)) + b
+                ) - y[i]
+
+                if (y[i] * E_i &lt; -self.tol and alpha[i] &lt; self.C) or (
+                    y[i] * E_i &gt; self.tol and alpha[i] &gt; 0
+                ):
+                    j = i
+                    while j == i:
+                        j = rng.randrange(n)
+
+                    E_j = (
+                        sum(alpha[k] * y[k] * K[k][j] for k in range(n)) + b
+                    ) - y[j]
+
+                    alpha_i_old, alpha_j_old = alpha[i], alpha[j]
+
+                    if y[i] != y[j]:
+                        L = max(0.0, alpha[j] - alpha[i])
+                        H = min(self.C, self.C + alpha[j] - alpha[i])
+                    else:
+                        L = max(0.0, alpha[i] + alpha[j] - self.C)
+                        H = min(self.C, alpha[i] + alpha[j])
+                    if L == H:
+                        continue
+
+                    eta = 2 * K[i][j] - K[i][i] - K[j][j]
+                    if eta &gt;= 0:
+                        # Kernel matrix not negative definite along this
+                        # direction (can happen with numerical edge cases);
+                        # skip this pair rather than risk moving uphill.
+                        continue
+
+                    alpha_j_new = alpha[j] - (y[j] * (E_i - E_j)) / eta
+                    alpha_j_new = min(H, max(L, alpha_j_new))
+
+                    if abs(alpha_j_new - alpha_j_old) &lt; 1e-7:
+                        continue
+
+                    alpha_i_new = alpha_i_old + y[i] * y[j] * (alpha_j_old - alpha_j_new)
+
+                    b1 = (
+                        b - E_i
+                        - y[i] * (alpha_i_new - alpha_i_old) * K[i][i]
+                        - y[j] * (alpha_j_new - alpha_j_old) * K[i][j]
+                    )
+                    b2 = (
+                        b - E_j
+                        - y[i] * (alpha_i_new - alpha_i_old) * K[i][j]
+                        - y[j] * (alpha_j_new - alpha_j_old) * K[j][j]
+                    )
+                    if 0 &lt; alpha_i_new &lt; self.C:
+                        b = b1
+                    elif 0 &lt; alpha_j_new &lt; self.C:
+                        b = b2
+                    else:
+                        b = (b1 + b2) / 2.0
+
+                    alpha[i], alpha[j] = alpha_i_new, alpha_j_new
+                    num_changed += 1
+
+                n_iter += 1
+                if n_iter &gt;= self.max_iter:
+                    break
+
+            passes = passes + 1 if num_changed == 0 else 0
+
+        self.alpha = alpha
+        self.b = b
+        self.support_indices = [i for i in range(n) if alpha[i] &gt; 1e-6]
+        return self
+
+    def decision_function(self, X: Matrix) -&gt; Vector:
+        return [self._decision_value(x) for x in X]
+
+    def predict(self, X: Matrix) -&gt; Vector:
+        return [1 if v &gt;= 0 else -1 for v in self.decision_function(X)]
+
+    def margin_width(self) -&gt; float:
+        """
+        For a *linear* kernel only: the geometric margin is 2 / ||w||,
+        where w = sum(alpha_i y_i x_i) (Section 7.1.2's stationarity
+        condition). Raises for non-linear kernels, where no explicit w exists.
+        """
+        if self.kernel is not linear_kernel:
+            raise ValueError("margin_width() is only defined for the linear kernel")
+        n_features = len(self.X[0])
+        w = [0.0] * n_features
+        for idx in self.support_indices:
+            coef = self.alpha[idx] * self.y[idx]
+            for k in range(n_features):
+                w[k] += coef * self.X[idx][k]
+        norm_w = math.sqrt(sum(wk * wk for wk in w))
+        return 2.0 / norm_w if norm_w &gt; 0 else float("inf")
+
+
+# ---------------------------------------------------------------------------
+# Verification suite
+# ---------------------------------------------------------------------------
+
+def _assert_close(actual: float, expected: float, tol: float = 0.05, msg: str = "") -&gt; None:
+    assert abs(actual - expected) &lt; tol, f"{msg}: expected {expected}, got {actual}"
+
+
+def _verify_linearly_separable() -&gt; None:
+    """
+    Two well-separated 2D clusters. True separating hyperplane is x1=0.
+    Verifies: perfect training accuracy, and a support-vector count small
+    relative to n (the defining property of an SVM versus, say, a k-NN
+    classifier that implicitly uses every point).
+    """
+    rng = random.Random(0)
+    X, y = [], []
+    for _ in range(20):
+        X.append([2.0 + rng.gauss(0, 0.3), rng.gauss(0, 0.3)])
+        y.append(1)
+    for _ in range(20):
+        X.append([-2.0 + rng.gauss(0, 0.3), rng.gauss(0, 0.3)])
+        y.append(-1)
+
+    model = SimplifiedSMO_SVC(C=1.0, kernel=linear_kernel, random_state=1).fit(X, y)
+    preds = model.predict(X)
+    accuracy = sum(1 for p, t in zip(preds, y) if p == t) / len(y)
+    assert accuracy == 1.0, f"expected perfect separation, got accuracy={accuracy}"
+    assert 0 &lt; len(model.support_indices) &lt; len(X), (
+        f"expected a proper subset of points to be support vectors, got {len(model.support_indices)}/{len(X)}"
+    )
+    print(f"  [PASS] linearly separable: accuracy={accuracy:.2f}, "
+          f"support vectors={len(model.support_indices)}/{len(X)}, "
+          f"margin={model.margin_width():.3f}")
+
+
+def _verify_box_constraint() -&gt; None:
+    """Every alpha_i must satisfy the KKT box constraint 0 &lt;= alpha_i &lt;= C."""
+    rng = random.Random(2)
+    X = [[rng.gauss(0, 1), rng.gauss(0, 1)] for _ in range(30)]
+    y = [1 if x[0] + x[1] &gt; 0 else -1 for x in X]
+    C = 0.5
+    model = SimplifiedSMO_SVC(C=C, kernel=linear_kernel, random_state=2).fit(X, y)
+    assert all(-1e-6 &lt;= a &lt;= C + 1e-6 for a in model.alpha), "box constraint 0&lt;=alpha&lt;=C violated"
+    dual_sum = sum(a * yi for a, yi in zip(model.alpha, y))
+    _assert_close(dual_sum, 0.0, tol=0.05, msg="equality constraint sum(alpha_i y_i)=0")
+    print(f"  [PASS] box constraint respected for all alpha_i, sum(alpha*y)={dual_sum:.4f}")
+
+
+def _verify_rbf_kernel_xor() -&gt; None:
+    """
+    The classic XOR-style problem: linearly INSEPARABLE, but separable with
+    an RBF (Gaussian) kernel via the kernel trick of Section 7.1.3. A linear
+    kernel should fail to do much better than chance; the RBF kernel should
+    recover near-perfect training accuracy.
+    """
+    rng = random.Random(3)
+    X, y = [], []
+    for cx, cy_, label in [(1, 1, 1), (-1, -1, 1), (1, -1, -1), (-1, 1, -1)]:
+        for _ in range(10):
+            X.append([cx + rng.gauss(0, 0.25), cy_ + rng.gauss(0, 0.25)])
+            y.append(label)
+
+    linear_model = SimplifiedSMO_SVC(C=1.0, kernel=linear_kernel, random_state=3).fit(X, y)
+    linear_acc = sum(1 for p, t in zip(linear_model.predict(X), y) if p == t) / len(y)
+
+    rbf_model = SimplifiedSMO_SVC(C=1.0, kernel=rbf_kernel(gamma=1.0), random_state=3).fit(X, y)
+    rbf_acc = sum(1 for p, t in zip(rbf_model.predict(X), y) if p == t) / len(y)
+
+    assert rbf_acc &gt; linear_acc, (
+        f"expected RBF kernel to outperform linear on XOR-style data: "
+        f"rbf_acc={rbf_acc}, linear_acc={linear_acc}"
+    )
+    assert rbf_acc &gt;= 0.9, f"expected RBF accuracy &gt;= 0.9, got {rbf_acc}"
+    print(f"  [PASS] kernel trick: linear_acc={linear_acc:.2f}, rbf_acc={rbf_acc:.2f}")
+
+
+def run_svm_verification() -&gt; None:
+    print("=" * 60)
+    print("Stage 1B: Simplified-SMO SVM — Verification Suite")
+    print("=" * 60)
+    _verify_linearly_separable()
+    _verify_box_constraint()
+    _verify_rbf_kernel_xor()
+    print("=" * 60)
+    print("All SVM checks passed.")
+    print("=" * 60)
+
+
+if __name__ == "__main__":
+    run_svm_verification()
+</code></pre>
 <hr/>
 <h4 id="stage-1-pure-python-recursive-decision-tree">Stage 1: Pure Python Recursive Decision Tree</h4>
-<h5 id="design-contract">Design Contract</h5>
+<h5 id="design-contract_1">Design Contract</h5>
 <p>The Stage 1 engine represents the complete spectrum of design decisions in the simplest possible form:</p>
 <ul>
 <li><strong><code>PurePythonDecisionTree</code></strong> — the top-level learner. Accepts nested Python lists for <code>X</code> (features) and <code>y</code> (targets). Supports both classification (entropy or Gini criterion) and regression (variance reduction).</li>
@@ -21665,9 +22098,290 @@ if __name__ == "__main__":
 </tbody>
 </table>
 <p>The critical architectural shift is the separation of <strong>build time</strong> and <strong>inference time</strong> representations. During <code>fit</code>, the Stage 2 tree is still built recursively (tree induction is inherently sequential by depth levels and cannot be meaningfully parallelized across levels). But the build process accumulates results in Python lists (<code>_feature_list</code>, <code>_threshold_list</code>, etc.) and converts them to NumPy arrays only once at the end, via <code>_finalize_arrays</code>. The inference engine <code>predict</code> then sees only the five compact arrays — not a graph of Python objects — and processes an entire batch of test examples in a tight vectorized loop.</p>
-<p>This is the same representational pattern used by scikit-learn's <code>DecisionTreeClassifier</code> internally: the Python <code>fit()</code> API and the C-backed <code>Tree</code> object that stores the flat arrays are separate concerns. Stage 2 implements that separation in pure Python and NumPy, making the mechanism transparent before Stage 3 wraps it with PyTorch's tree ensemble utilities and Stage 4 adds serialization, concurrent inference workers, and production monitoring.</p>
+<p>This is the same representational pattern used by scikit-learn's <code>DecisionTreeClassifier</code> internally: the Python <code>fit()</code> API and the C-backed <code>Tree</code> object that stores the flat arrays are separate concerns. Stage 2 implements that separation in pure Python and NumPy, making the mechanism transparent — Section 10 connects it directly to how production tree ensembles and libsvm-family SVM solvers are actually built.</p>
 <hr/>
-<p><em>Section 8 complete. Section 9 (Complexity Analysis) quantifies the $O(N \cdot D \cdot N \log N)$ training cost, the $O(D)$ inference depth walk, and the cache-miss penalty reduction achieved by the flat-array layout versus pointer-linked nodes.</em></p><div class="box warn"><strong>Chapter 6 Practical Test:</strong><p>For a dataset with binary labels [1, 1, 0, 0, 0], calculate the Shannon entropy in bits by hand.</p><details class="deep-dive"><summary>View Answer Key &amp; Explanation</summary><div class="deep-dive-body"><p><strong>Shannon Entropy Calculation:</strong></p>
+
+<h4 id="section-9-complexity-analysis">Section 9: Complexity Analysis</h4>
+<blockquote>
+<p><strong>What this section measures.</strong> Section 8 built two genuinely different algorithms — a kernel method solved by pairwise coordinate ascent, and a recursive partitioning method solved by exhaustive greedy search. Their costs scale with different quantities entirely: the SVM's cost scales with the number of <em>support vectors</em> and the kernel's cost per evaluation; the tree's cost scales with the number of <em>candidate splits</em> examined at every node. Understanding both is what lets you predict, before training even starts, whether a dataset is a good fit for one model or the other.</p>
+</blockquote>
+<hr/>
+<h5 id="91-decision-tree-training-complexity">9.1 Decision Tree Training Complexity</h5>
+<p>Consider building one tree on $N$ training examples with $D$ features. At the root, <code>_find_best_split</code> (Section 8) considers every feature column; for each of the $D$ features, it must examine every candidate threshold between adjacent sorted values, scoring each one — sorting one column costs $\mathcal{O}(N \log N)$, and scanning it to accumulate weighted child impurities costs a further $\mathcal{O}(N)$. One node's split search therefore costs:</p>
+<p>$$\mathcal{O}(D \cdot N \log N) \quad \text{per node}$$</p>
+<p>A tree built by Stage 1's unoptimized, no-shared-work algorithm re-sorts every feature column at every node from scratch (a real inefficiency Section 11 returns to). In the worst case — a maximally unbalanced tree, such as one built on already-sorted, monotonically increasing data — the tree can have $\mathcal{O}(N)$ internal nodes rather than the $\mathcal{O}(\log N)$ nodes of a balanced tree. Multiplying the per-node cost by the number of nodes gives the total training cost:</p>
+<p>$$T_{\text{tree}} = \mathcal{O}(N) \text{ nodes} \times \mathcal{O}(D \cdot N \log N) \text{ per node} = \mathcal{O}(N^2 \cdot D \log N)$$</p>
+<p>For a <em>balanced</em> tree of depth $\mathcal{O}(\log N)$ with $\mathcal{O}(N)$ total nodes across all levels combined (the sum of nodes across $\log N$ levels, each level partitioning the same $N$ points, is still $\mathcal{O}(N)$ node-visits per level, times $\mathcal{O}(\log N)$ levels), the bound is the same order: $\mathcal{O}(N \cdot D \log N)$ per level, $\mathcal{O}(\log N)$ levels, giving $\mathcal{O}(N \cdot D \cdot \log^2 N)$ — strictly better than the unbalanced case, which is why controlling tree depth (Section 11) is a performance concern as well as a regularization one.</p>
+<p><strong>Inference</strong> at prediction time walks exactly one root-to-leaf path per test example, comparing one feature against one threshold at each internal node:</p>
+<p>$$T_{\text{tree, inference}} = \mathcal{O}(\text{depth}) \quad \text{per example}$$</p>
+<p>which is $\mathcal{O}(\log N)$ for a balanced tree and $\mathcal{O}(N)$ in the degenerate worst case — the same balanced-versus-unbalanced distinction as training.</p>
+<hr/>
+<h5 id="92-svm-training-complexity-cost-per-smo-pass">9.2 SVM Training Complexity: Cost Per SMO Pass</h5>
+<p>Each pass of Stage 1B's simplified SMO loop (Section 8) iterates over all $N$ examples, and for each one whose KKT conditions are violated, computes the error term $E_i = \sum_k \alpha_k y_k K(\mathbf{x}_k, \mathbf{x}_i) + b - y_i$ — a sum over (in the worst case) all $N$ training points. A single pass over all $i$ therefore costs:</p>
+<p>$$T_{\text{SMO, one pass}} = \mathcal{O}(N^2)$$</p>
+<p><em>if</em> the kernel matrix $K$ is precomputed once (as Stage 1B does); computing that $N \times N$ kernel matrix up front costs $\mathcal{O}(N^2 \cdot D)$ (one $\mathcal{O}(D)$ kernel evaluation per pair). Simplified SMO's random-pair heuristic (rather than Platt's full second-choice heuristic) requires more passes to converge in practice — the <code>max_passes</code> parameter in Stage 1B controls this trade-off directly. Overall training cost is therefore:</p>
+<p>$$T_{\text{SVM}} = \mathcal{O}(N^2 \cdot D) \quad \text{(kernel matrix)} \;+\; \mathcal{O}(\text{passes} \times N^2) \quad \text{(SMO iterations)}$$</p>
+<p><strong>The support vector count controls inference cost.</strong> Section 8's verification (<code>_verify_linearly_separable</code>) found only 3 support vectors out of 40 training points — the defining sparsity property of the max-margin solution (Section 7.1.2's KKT conditions force $\alpha_i = 0$ for every point that is not on or inside the margin). At prediction time, <code>decision_function</code> only sums over the support vectors, not all $N$ training points:</p>
+<p>$$T_{\text{SVM, inference}} = \mathcal{O}(N_{sv} \cdot D) \quad \text{per example}, \qquad N_{sv} \le N$$</p>
+<p>A dataset with a small, well-separated margin produces few support vectors and fast inference; a noisy, heavily overlapping dataset can drive $N_{sv}$ close to $N$, at which point the SVM's inference cost approaches that of a Naive method that compares every test point against every training point — the same $\mathcal{O}(N)$-per-query cost pattern as k-nearest-neighbors.</p>
+<hr/>
+<h5 id="93-memory-footprint-pointers-versus-contiguous-arrays">9.3 Memory Footprint: Pointers Versus Contiguous Arrays</h5>
+<p>The Stage 1 vs. Stage 2 comparison table (Section 8) already contrasts pointer-chasing versus contiguous arrays qualitatively. Quantitatively: a Stage 1 <code>Node</code> object, as a Python dataclass, carries CPython's per-object overhead (a type pointer, a reference count, and per-field storage) — typically 56+ bytes of overhead <em>before</em> any of the node's actual data (<code>feature_index</code>, <code>threshold</code>, <code>prediction</code>) is counted, and its <code>left</code>/<code>right</code> children are heap pointers that can point anywhere in memory. Stage 2's five parallel NumPy arrays store the same information as packed, fixed-width <code>int32</code>/<code>float64</code> values with zero per-node object overhead, and — critically — a node's children are stored at <em>predictable, computable array offsets</em>, which is what lets the hardware prefetcher (introduced in the tensor-anatomy chapter's memory model) speculatively load the next node before it is even requested.</p>
+<p>The SVM's memory footprint is dominated by the precomputed kernel matrix: $\mathcal{O}(N^2)$ <code>float64</code> values, or $8N^2$ bytes. For $N = 10{,}000$, this is $800$ MB — already a serious constraint, and the direct motivation for the <em>shrinking heuristic</em> and kernel-cache-eviction strategies used by production solvers (Section 10).</p>
+<hr/>
+<h4 id="section-10-industrial-perspective">Section 10: Industrial Perspective</h4>
+<blockquote>
+<p><strong>From these two from-scratch engines to the real thing.</strong> Stage 1B and Stage 1/2 implement the exact mechanisms — SMO's pairwise dual updates, and recursive greedy splitting — that production libraries use. This section maps each concept onto its production-scale counterpart.</p>
+</blockquote>
+<hr/>
+<h5 id="101-scikit-learns-decisiontreeclassifier-the-same-five-arrays-in-c">10.1 scikit-learn's <code>DecisionTreeClassifier</code>: The Same Five Arrays, in C</h5>
+<p>Section 8's Stage 2 tree already converges on the internal representation <code>scikit-learn</code> uses: <code>sklearn.tree._tree.Tree</code> stores <code>children_left</code>, <code>children_right</code>, <code>feature</code>, <code>threshold</code>, and <code>value</code> as flat, fixed-size arrays — the same five arrays Stage 2's <code>_finalize_arrays</code> produces, just implemented in Cython for compiled-speed splitting rather than NumPy-vectorized Python. <code>export_text()</code> and <code>plot_tree()</code> both work by walking these arrays exactly the way Stage 2's <code>predict</code> does.</p>
+<h5 id="102-libsvm-and-liblinear-the-production-smo-solvers">10.2 libsvm and liblinear: The Production SMO Solvers</h5>
+<p>scikit-learn's <code>SVC</code> wraps <strong>libsvm</strong> (Chang &amp; Lin, 2011), which implements the <em>full</em> SMO algorithm Platt (1998) described — not the simplified random-pair heuristic of Stage 1B, but a second-order working-set selection heuristic that chooses the <em>most KKT-violating pair</em> at each step rather than a random one, converging in dramatically fewer iterations on large datasets. For purely linear kernels, scikit-learn's <code>LinearSVC</code> instead wraps <strong>liblinear</strong> (Fan et al., 2008), which solves the <em>primal</em> problem directly using coordinate descent — avoiding the $\mathcal{O}(N^2)$ kernel matrix of Section 9.2 entirely, since a linear kernel never needs the kernel trick in the first place.</p>
+<h5 id="103-the-kernel-cache-and-the-shrinking-heuristic">10.3 The Kernel Cache and the Shrinking Heuristic</h5>
+<p>Section 9.3 identified the $\mathcal{O}(N^2)$ kernel matrix as the SVM's dominant memory cost. Production solvers never materialize the full matrix: libsvm maintains a fixed-size <strong>kernel cache</strong> (an LRU cache of recently used kernel-matrix rows), recomputing evicted entries on demand rather than storing all $N^2$ values simultaneously. The <strong>shrinking heuristic</strong> goes further, temporarily removing training points whose $\alpha_i$ has been at a bound ($0$ or $C$) for many iterations from consideration entirely — betting that a point deep inside its class's region will stay there, and only checking that bet periodically.</p>
+<h5 id="104-random-forests-and-gradient-boosting-composing-many-trees">10.4 Random Forests and Gradient Boosting: Composing Many Trees</h5>
+<p>A single decision tree (Stage 1/2) is a high-variance, low-bias model — Section 11 shows it can memorize training data perfectly given enough depth. Production tree-based systems almost never deploy a single tree; they compose many:</p>
+<ul>
+<li><strong>Random forests</strong> (Breiman, 2001) train many trees on bootstrap-resampled data, each considering only a random subset of features at every split, then average their predictions — trading a small amount of bias for a large reduction in variance, since the trees' errors are decorrelated.</li>
+<li><strong>Gradient boosting</strong> (Friedman, 2001; implemented at scale by XGBoost, LightGBM, and CatBoost) trains trees <em>sequentially</em>, each new tree fit to the residual errors of the ensemble so far, turning many weak, shallow trees into one strong predictor.</li>
+</ul>
+<p>Both extensions reuse Stage 1/2's exact split-finding machinery — <code>_find_best_split</code> and the entropy/variance impurity of Section 7.2 — as their inner loop, called once per tree in the ensemble.</p>
+<h5 id="105-feature-scaling-in-production-pipelines">10.5 Feature Scaling in Production Pipelines</h5>
+<p>Section 11.2 demonstrates that SVMs are highly sensitive to feature scale while decision trees are entirely insensitive to it. Production pipelines encode this directly: a <code>Pipeline([("scaler", StandardScaler()), ("svm", SVC())])</code> is close to mandatory for SVMs, while <code>Pipeline([("tree", DecisionTreeClassifier())])</code> needs no scaling step at all — one of the few places a model choice changes what preprocessing is <em>required</em> rather than merely helpful.</p>
+<h5 id="106-monitoring-and-observability">10.6 Monitoring and Observability</h5>
+<p>Production tree ensembles report <strong>feature importances</strong> (the total impurity decrease attributable to each feature, summed across every split in every tree) as a first-class, cheap-to-compute diagnostic — directly derived from the information gain formula of Section 7.2. Production SVM deployments monitor the <strong>support vector ratio</strong> ($N_{sv} / N$) as an early-warning signal: a ratio that creeps upward over successive retraining runs indicates the margin is degrading — the classes are becoming less separable, often because of data drift — well before accuracy metrics show a visible decline.</p>
+<hr/>
+<h4 id="section-11-common-mistakes">Section 11: Common Mistakes</h4>
+<p>Both algorithms in this chapter fail silently in specific, predictable ways. This section catalogs the most consequential.</p>
+<hr/>
+<h5 id="mistake-1-an-unbounded-decision-tree-memorizes-the-training-data">Mistake 1: An Unbounded Decision Tree Memorizes the Training Data</h5>
+<p><strong>Description.</strong> <code>PurePythonDecisionTree</code> (Section 8), grown without a <code>max_depth</code> or a minimum-samples-per-leaf stopping rule, will keep splitting until every leaf is perfectly pure — including leaves containing a single noisy outlier.</p>
+<p><strong>Why it is insidious.</strong> Training accuracy reaches 100%, which looks like success. Test accuracy is often dramatically worse, because the tree has memorized noise specific to the training sample rather than the underlying signal (the overfitting failure mode Section 3 introduced).</p>
+<p><strong>Fix.</strong> Set an explicit <code>max_depth</code>, <code>min_samples_split</code>, or <code>min_samples_leaf</code> stopping condition, and choose its value via cross-validation — exactly analogous to choosing <code>weight_decay</code> for the regression engines of Chapter 5.</p>
+<hr/>
+<h5 id="mistake-2-feeding-an-svm-unscaled-features">Mistake 2: Feeding an SVM Unscaled Features</h5>
+<p><strong>Description.</strong> The SVM dual objective (Section 7.1.2) and every kernel in Section 8 depend on inner products or distances between feature vectors. If one feature ranges over $[0, 10^6]$ and another over $[0, 1]$, the large-scale feature dominates every kernel evaluation, and the fitted hyperplane effectively ignores the small-scale feature entirely.</p>
+<p><strong>Why it is insidious.</strong> The model still trains and produces predictions — there is no error, no warning, just a systematically worse decision boundary than the data supports. Unlike decision trees (which split one feature at a time and are entirely scale-invariant), SVMs are exactly as scale-sensitive as the ridge regression of Chapter 5, and for the same underlying reason (Section 10.5).</p>
+<p><strong>Fix.</strong> Standardize every feature (zero mean, unit variance) before fitting — never after.</p>
+<pre><code class="language-python"># BROKEN: raw feature scales of vastly different magnitude
+X = [[income_in_dollars, age_in_years] for income_in_dollars, age_in_years in raw_data]
+model = SimplifiedSMO_SVC(kernel=rbf_kernel(gamma=1.0)).fit(X, y)
+# income (scale ~10^4-10^5) completely dominates the RBF distance over age (scale ~10-100)
+
+# FIXED: standardize each column to zero mean, unit variance first
+def standardize(X):
+    n_features = len(X[0])
+    means = [sum(row[j] for row in X) / len(X) for j in range(n_features)]
+    stds = [
+        (sum((row[j] - means[j]) ** 2 for row in X) / len(X)) ** 0.5
+        for j in range(n_features)
+    ]
+    return [[(row[j] - means[j]) / stds[j] for j in range(n_features)] for row in X]
+
+X_scaled = standardize(X)
+model = SimplifiedSMO_SVC(kernel=rbf_kernel(gamma=1.0)).fit(X_scaled, y)
+</code></pre>
+<hr/>
+<h5 id="mistake-3-confusing-c-and-gamma">Mistake 3: Confusing <code>C</code> and <code>gamma</code></h5>
+<p><strong>Description.</strong> The SVM's <code>C</code> parameter (Section 7.1.1) controls the trade-off between margin width and margin violations — it is a <em>regularization</em> strength, structurally identical to Chapter 5's <code>weight_decay</code>, except inverted: <strong>large</strong> <code>C</code> means <em>less</em> regularization (fewer violations tolerated, narrower margin, more overfitting risk), while <strong>small</strong> <code>C</code> means <em>more</em> regularization. The RBF kernel's <code>gamma</code> (Section 8) is an entirely separate knob controlling how far a single training point's influence reaches — large <code>gamma</code> means influence decays quickly with distance (a wiggly, overfit-prone boundary), small <code>gamma</code> means influence reaches far (a smoother, underfit-prone boundary).</p>
+<p><strong>Why it is insidious.</strong> Both parameters can independently push the model toward overfitting or underfitting, and their effects can partially cancel or compound — a grid search that fixes one while tuning the other can land on a misleading conclusion. Always tune <code>C</code> and <code>gamma</code> together, on a 2D grid, not as two independent 1D searches.</p>
+<hr/>
+<h5 id="mistake-4-re-sorting-every-feature-at-every-tree-node">Mistake 4: Re-Sorting Every Feature at Every Tree Node</h5>
+<p><strong>Description.</strong> Section 9.1 noted that Stage 1's <code>_find_best_split</code> re-sorts every feature column from scratch at every node, rather than maintaining a presorted index structure that only needs to be partitioned (not re-sorted) as the tree grows.</p>
+<p><strong>Why it is insidious.</strong> The unoptimized $\mathcal{O}(N^2 \cdot D \log N)$ total training cost derived in Section 9.1 is entirely attributable to this redundant re-sorting; production implementations (Section 10.1) presort each feature once and maintain the sorted order incrementally across the recursion, reducing total training cost to $\mathcal{O}(N \cdot D \log N)$. This is a performance bug, not a correctness bug — Stage 1's predictions are identical either way — but it is precisely the kind of complexity gap that makes a from-scratch implementation impractical beyond small, illustrative datasets.</p>
+<hr/>
+<h5 id="mistake-5-trusting-smos-max_passes-without-checking-convergence">Mistake 5: Trusting SMO's <code>max_passes</code> Without Checking Convergence</h5>
+<p><strong>Description.</strong> Section 8's Stage 1B loop terminates when <code>max_passes</code> consecutive full passes produce no change, or when <code>max_iter</code> total updates are exhausted — whichever comes first. On a dataset where the classes are not well-separated (a large intrinsic Bayes error), SMO can hit <code>max_iter</code> before the KKT conditions have actually converged, silently returning a partially-optimized $\boldsymbol{\alpha}$.</p>
+<p><strong>Why it is insidious.</strong> The returned model still produces predictions with no error message. The tell-tale sign is if the box-constraint verification from Section 8 (<code>sum(alpha_i * y_i)</code> should equal zero, within numerical tolerance) fails to hold closely, or if increasing <code>max_iter</code> measurably changes the decision boundary.</p>
+<p><strong>Fix.</strong> Always check the equality constraint's residual after fitting, and increase <code>max_passes</code>/<code>max_iter</code> if it has not converged near zero, exactly as Section 8's own <code>_verify_box_constraint</code> test does.</p>
+<hr/>
+<h4 id="section-12-exercises">Section 12: Exercises</h4>
+<p>This part turns Sections 7-11 into four graduated tiers of practice, the same structure used throughout this handbook: <strong>Conceptual (C)</strong> -&gt; <strong>Derivation (D)</strong> -&gt; <strong>Pure-Python coding (P)</strong> -&gt; <strong>Library (L)</strong>. Work a topic through all four tiers before moving to the next topic.</p>
+<h5 id="conceptual-questions">Conceptual Questions</h5>
+<p><strong>Support Vector Machines</strong></p>
+<ul>
+<li><strong>C1.</strong> Why does maximizing the margin correspond to minimizing $|\mathbf{w}|_2^2$ in the primal objective (Section 7.1.1)?</li>
+<li><strong>C2.</strong> What does the box constraint $0 \le \alpha_i \le C$ (Section 7.1.2) mean for a training point that is far from the decision boundary, on the correct side?</li>
+<li><strong>C3.</strong> Why can the SVM dual be expressed entirely in terms of kernel evaluations $K(\mathbf{x}_i,\mathbf{x}_j)$, never the raw feature vectors directly (Section 7.1.3)?</li>
+</ul>
+<p><strong>Decision Trees</strong></p>
+<ul>
+<li><strong>C4.</strong> Why is Shannon entropy maximized when a node's classes are perfectly balanced, and zero when a node is pure?</li>
+<li><strong>C5.</strong> Why does an unconstrained decision tree always achieve 100% training accuracy (assuming no two identical feature vectors have different labels)?</li>
+</ul>
+<p><strong>Regularization and Model Comparison</strong></p>
+<ul>
+<li><strong>C6.</strong> Why does the L1 penalty's non-differentiability at zero (Section 7.3.1) produce sparse solutions, while the smooth L2 penalty does not?</li>
+<li><strong>C7.</strong> Why are decision trees invariant to feature scaling, while both SVMs and ridge/lasso regression are not?</li>
+</ul>
+<h5 id="derivation-exercises">Derivation Exercises</h5>
+<p><strong>Support Vector Machines</strong></p>
+<ul>
+<li><strong>D1.</strong> Starting from the primal Lagrangian (Section 7.1.2), re-derive the stationarity condition $\mathbf{w} = \sum_i \alpha_i y_i \mathbf{x}_i$ and explain why this means $\mathbf{w}$ is always a linear combination of the training points.</li>
+<li><strong>D2.</strong> Show that the dual objective's quadratic term $-\frac{1}{2}\sum_{ij}\alpha_i\alpha_j y_i y_j \mathbf{x}<em>i^\top\mathbf{x}_j$ can be written as $-\frac{1}{2}\boldsymbol{\alpha}^\top Q \boldsymbol{\alpha}$ for a matrix $Q$ with $Q</em>{ij} = y_i y_j K(\mathbf{x}_i,\mathbf{x}_j)$, and explain why $Q$ must be positive semidefinite for the dual to be a well-posed maximization.</li>
+<li><strong>D3.</strong> For two points $i,j$ with $y_i \ne y_j$, derive the box $[L,H]$ used in Stage 1B's clipping step from the equality constraint $\sum_k \alpha_k y_k = 0$.</li>
+</ul>
+<p><strong>Decision Trees</strong></p>
+<ul>
+<li><strong>D4.</strong> Derive the information gain formula's maximum possible value for a binary classification problem, and state the class distribution that achieves it.</li>
+<li><strong>D5.</strong> For a regression tree, show algebraically that minimizing the weighted within-child variance (Section 7.2.2) is equivalent to maximizing between-child variance, for a fixed parent variance.</li>
+</ul>
+<h5 id="pure-python-coding-exercises">Pure-Python Coding Exercises</h5>
+<ul>
+<li><strong>P1.</strong> Implement Platt's full second-order working-set selection heuristic (Section 10.2) in place of Stage 1B's random-pair selection, and measure how many fewer passes it needs to converge on the same dataset.</li>
+<li><strong>P2.</strong> Add a polynomial kernel, $K(\mathbf{x},\mathbf{z}) = (\mathbf{x}^\top\mathbf{z} + c)^d$, to <code>svm_smo.py</code> and verify it separates a dataset with a curved (non-RBF-friendly) decision boundary.</li>
+<li><strong>P3.</strong> Implement <code>min_samples_leaf</code> and <code>max_depth</code> stopping conditions for <code>PurePythonDecisionTree</code> and verify, on a noisy synthetic dataset, that a shallow tree generalizes better than an unconstrained one.</li>
+<li><strong>P4.</strong> Implement a minimal random forest by training $T$ decision trees on bootstrap resamples of the training data with random feature subsets, and verify its test accuracy exceeds any single constituent tree's.</li>
+<li><strong>P5.</strong> Add a kernel cache (Section 10.3) to <code>SimplifiedSMO_SVC</code> that stores only the most recently used $k$ rows of the kernel matrix, and verify it produces identical fitted $\alpha$ values to the full-matrix version while using less peak memory.</li>
+</ul>
+<h5 id="library-exercises">Library Exercises</h5>
+<ul>
+<li><strong>L1.</strong> Fit <code>sklearn.svm.SVC</code> and Stage 1B's <code>SimplifiedSMO_SVC</code> on the same small dataset and compare the learned support vectors and decision boundaries.</li>
+<li><strong>L2.</strong> Fit <code>sklearn.tree.DecisionTreeClassifier</code> at several <code>max_depth</code> values and plot training versus test accuracy to visualize the overfitting curve directly.</li>
+<li><strong>L3.</strong> Use <code>sklearn.ensemble.RandomForestClassifier</code> and inspect <code>feature_importances_</code>; compare the ranking to which features Stage 1's <code>_find_best_split</code> selects most often at the root across many bootstrap resamples.</li>
+<li><strong>L4.</strong> Use <code>GridSearchCV</code> to jointly tune <code>C</code> and <code>gamma</code> for an RBF <code>SVC</code> (Section 11, Mistake 3) and visualize the 2D validation-accuracy grid.</li>
+<li><strong>L5.</strong> Compare <code>sklearn.svm.LinearSVC</code> (liblinear, primal) against <code>sklearn.svm.SVC(kernel="linear")</code> (libsvm, dual) on a large dataset and measure the wall-clock training time difference predicted by Section 10.2.</li>
+</ul>
+<hr/>
+<h4 id="section-13-mini-project-comparing-decision-boundaries-trees-linear-svm-and-kernel-svm">Section 13: Mini Project — Comparing Decision Boundaries: Trees, Linear SVM, and Kernel SVM</h4>
+<h5 id="overview">Overview</h5>
+<p>This project trains all three models built in this chapter — the pure-Python decision tree, the linear-kernel SVM, and the RBF-kernel SVM — on the same synthetic dataset, and quantifies exactly how their decision boundaries differ.</p>
+<h5 id="full-implementation">Full Implementation</h5>
+<pre><code class="language-python"># mini_project_boundary_comparison.py
+"""
+Mini Project: Comparing decision boundaries across model families.
+
+Trains a PurePythonDecisionTree, a linear-kernel SimplifiedSMO_SVC, and an
+RBF-kernel SimplifiedSMO_SVC on the same two-moons-style dataset (a classic
+non-linearly-separable benchmark), then reports:
+  1. Training and test accuracy for all three models.
+  2. Support vector counts for both SVM variants.
+  3. A coarse text-based rendering of each model's decision regions, so the
+     qualitative shape difference is visible without a plotting library.
+"""
+from __future__ import annotations
+
+import math
+import random
+
+from svm_smo import SimplifiedSMO_SVC, linear_kernel, rbf_kernel
+
+
+def make_two_moons(n_samples: int = 120, noise: float = 0.15, seed: int = 0):
+    """A two-interleaving-crescents dataset: not linearly separable."""
+    rng = random.Random(seed)
+    n_per_class = n_samples // 2
+    X, y = [], []
+    for i in range(n_per_class):
+        angle = math.pi * i / n_per_class
+        X.append([math.cos(angle) + rng.gauss(0, noise), math.sin(angle) + rng.gauss(0, noise)])
+        y.append(1)
+    for i in range(n_per_class):
+        angle = math.pi * i / n_per_class
+        X.append([1 - math.cos(angle) + rng.gauss(0, noise), 0.5 - math.sin(angle) + rng.gauss(0, noise)])
+        y.append(-1)
+    combined = list(zip(X, y))
+    rng.shuffle(combined)
+    X, y = zip(*combined)
+    return list(X), list(y)
+
+
+def accuracy(preds, labels) -&gt; float:
+    return sum(1 for p, t in zip(preds, labels) if p == t) / len(labels)
+
+
+def render_decision_regions(predict_fn, x_range, y_range, resolution=40) -&gt; str:
+    """Coarse ASCII rendering of a 2D decision function's sign over a grid."""
+    lines = []
+    for gy in range(resolution, -1, -1):
+        y_val = y_range[0] + (y_range[1] - y_range[0]) * gy / resolution
+        row_chars = []
+        for gx in range(resolution + 1):
+            x_val = x_range[0] + (x_range[1] - x_range[0]) * gx / resolution
+            pred = predict_fn([[x_val, y_val]])[0]
+            row_chars.append("#" if pred == 1 else ".")
+        lines.append("".join(row_chars))
+    return "\n".join(lines)
+
+
+def run_comparison() -&gt; None:
+    print("=" * 70)
+    print("Mini Project: Decision Boundary Comparison")
+    print("=" * 70)
+
+    X, y = make_two_moons(n_samples=120, noise=0.15, seed=0)
+    n_train = 90
+    X_train, X_test = X[:n_train], X[n_train:]
+    y_train, y_test = y[:n_train], y[n_train:]
+
+    # --- Decision Tree ---
+    from stage1_decision_tree import PurePythonDecisionTree  # Section 8, Stage 1
+
+    tree = PurePythonDecisionTree(task="classification", max_depth=5)
+    tree.fit(X_train, y_train)
+    tree_train_acc = accuracy([tree.predict_one(x) for x in X_train], y_train)
+    tree_test_acc = accuracy([tree.predict_one(x) for x in X_test], y_test)
+    print(f"\nDecision Tree      : train_acc={tree_train_acc:.3f}  test_acc={tree_test_acc:.3f}")
+
+    # --- Linear SVM ---
+    linear_svm = SimplifiedSMO_SVC(C=1.0, kernel=linear_kernel, random_state=0).fit(X_train, y_train)
+    lin_train_acc = accuracy(linear_svm.predict(X_train), y_train)
+    lin_test_acc = accuracy(linear_svm.predict(X_test), y_test)
+    print(f"Linear SVM         : train_acc={lin_train_acc:.3f}  test_acc={lin_test_acc:.3f}  "
+          f"support_vectors={len(linear_svm.support_indices)}/{n_train}")
+
+    # --- RBF SVM ---
+    rbf_svm = SimplifiedSMO_SVC(C=1.0, kernel=rbf_kernel(gamma=2.0), random_state=0).fit(X_train, y_train)
+    rbf_train_acc = accuracy(rbf_svm.predict(X_train), y_train)
+    rbf_test_acc = accuracy(rbf_svm.predict(X_test), y_test)
+    print(f"RBF SVM            : train_acc={rbf_train_acc:.3f}  test_acc={rbf_test_acc:.3f}  "
+          f"support_vectors={len(rbf_svm.support_indices)}/{n_train}")
+
+    print("\nRBF SVM decision regions ('#' = class +1, '.' = class -1):")
+    print(render_decision_regions(rbf_svm.predict, x_range=(-1.5, 2.5), y_range=(-1.5, 1.5)))
+
+    assert rbf_test_acc &gt;= lin_test_acc, (
+        "expected the RBF kernel to handle the non-linearly-separable two-moons "
+        "data at least as well as a linear decision boundary"
+    )
+    print("\nMini project passed: RBF kernel matches or outperforms the linear kernel.")
+    print("=" * 70)
+
+
+if __name__ == "__main__":
+    run_comparison()
+</code></pre>
+<hr/>
+<h4 id="section-14-summary">Section 14: Summary</h4>
+<p>Chapter 6 built two structurally different responses to the same limitation: ordinary linear models (Chapter 5) can only separate data with a hyperplane, and many real decision boundaries are not hyperplanes. The Support Vector Machine response keeps the linear separator but lifts the data implicitly into a higher-dimensional space via the kernel trick (Section 7.1.3), solving a convex dual quadratic program whose solution is sparse in the support vectors. The decision tree response abandons linearity altogether, recursively partitioning the feature space using information-theoretic split criteria (Section 7.2). Both responses share the same discipline against overfitting — margin maximization for the SVM, depth/leaf-size limits for the tree — which Section 7.3's L1/L2 analysis showed is the same underlying idea as Chapter 5's regularization, expressed in a different geometry each time.</p>
+<p>Section 8 implemented both models completely from scratch: a simplified-SMO kernel SVM and a two-stage (pure-Python, then NumPy-vectorized) decision tree, each verified against the exact mathematics Section 7 derived. Section 9 showed the two models have entirely different complexity profiles — the SVM's cost is driven by the number of support vectors and the kernel matrix's $\mathcal{O}(N^2)$ footprint, while the tree's cost is driven by the number of candidate splits examined per node. Section 10 connected both engines to their production counterparts (libsvm/liblinear, and Cython-backed scikit-learn trees, extended to random forests and gradient boosting), and Section 11 catalogued the specific, silent ways both models fail: unbounded trees memorize noise, and SVMs are exquisitely sensitive to unscaled features in a way trees simply are not.</p>
+<hr/>
+<h4 id="section-15-further-reading">Section 15: Further Reading</h4>
+<p><strong>[1] Vladimir N. Vapnik — <em>The Nature of Statistical Learning Theory</em> (Springer, 1995)</strong></p>
+<p>The foundational text on statistical learning theory and the Support Vector Machine, written by the method's co-inventor. Covers VC dimension and structural risk minimization (Section 4's historical context) in full rigor.</p>
+<p><strong>[2] Corinna Cortes and Vladimir Vapnik — "Support-Vector Networks" (<em>Machine Learning</em>, 20(3):273–297, 1995)</strong></p>
+<p>The paper introducing the soft-margin SVM with slack variables and the regularization parameter $C$ — precisely the primal objective derived in Section 7.1.1.</p>
+<p><strong>[3] John C. Platt — "Sequential Minimal Optimization: A Fast Algorithm for Training Support Vector Machines" (Microsoft Research Technical Report MSR-TR-98-14, 1998)</strong></p>
+<p>The original SMO paper. Stage 1B's simplified loop is a direct simplification of this algorithm; reading the original clarifies the full second-order working-set heuristic that Exercise P1 asks you to implement.</p>
+<p><strong>[4] J. Ross Quinlan — "Induction of Decision Trees" (<em>Machine Learning</em>, 1(1):81–106, 1986)</strong></p>
+<p>The ID3 algorithm and the original derivation of information-gain-based splitting (Section 7.2.1), by the researcher whose later C4.5 and See5 systems became the standard reference decision tree implementations for a generation of practitioners.</p>
+<p><strong>[5] Leo Breiman — "Random Forests" (<em>Machine Learning</em>, 45(1):5–32, 2001)</strong></p>
+<p>Introduces the random forest algorithm referenced in Section 10.4: bootstrap aggregation combined with random feature subsampling at each split, reducing variance without materially increasing bias.</p>
+<p><strong>[6] Jerome H. Friedman — "Greedy Function Approximation: A Gradient Boosting Machine" (<em>Annals of Statistics</em>, 29(5):1189–1232, 2001)</strong></p>
+<p>The paper formalizing gradient boosting as functional gradient descent over an ensemble of weak learners — the theoretical basis for XGBoost, LightGBM, and CatBoost (Section 10.4).</p>
+<p><strong>[7] Trevor Hastie, Robert Tibshirani, and Jerome Friedman — <em>The Elements of Statistical Learning</em> (2nd ed., Springer, 2009; freely available online)</strong></p>
+<p>Chapters on support vector machines and tree-based methods connect this chapter's derivations directly to the broader statistical learning theory literature, including a treatment of the bias-variance implications of both model families.</p>
+<hr/>
+<h4 id="section-16-research-directions">Section 16: Research Directions</h4>
+<h5 id="161-kernel-methods-beyond-the-svm">16.1 Kernel Methods Beyond the SVM</h5>
+<p>The kernel trick (Section 7.1.3) is not specific to classification margins — kernel ridge regression, kernel <a class="cross-link" href="#chapter-7-dimensionality-reduction-latent-spaces" target="_blank">PCA (Chapter 7 SVD &amp; PCA)</a>, and Gaussian processes all replace an inner product with a Mercer kernel using the identical mathematical substitution. An active research question is designing kernels for structured, non-vector data (graphs, strings, sets) where no natural feature vector $\mathbf{x} \in \mathbb{R}^D$ exists at all — the kernel function becomes the primary object of design, rather than a convenience layered on top of existing features.</p>
+<h5 id="162-differentiable-decision-trees-and-neural-symbolic-hybrids">16.2 Differentiable Decision Trees and Neural-Symbolic Hybrids</h5>
+<p>Section 7.2's split criteria are inherently non-differentiable (a hard threshold comparison), which is precisely why decision trees cannot be trained by the gradient descent methods of Chapter 5. <strong>Soft decision trees</strong> and <strong>neural decision forests</strong> replace the hard threshold with a smooth <a class="cross-link" href="#chapter-9-foundations-of-neural-spaces-perceptrons-activation-functions" target="_blank">sigmoid (Chapter 9 Neural Spaces)</a> gating function, making the whole structure differentiable and trainable end-to-end alongside a neural network — trading away the sharp, human-readable splits of Section 8's implementation for gradient-based trainability.</p>
+<h5 id="163-the-double-descent-phenomenon-in-ensemble-methods">16.3 The Double Descent Phenomenon in Ensemble Methods</h5>
+<p>Section 11's Mistake 1 treats "more tree depth" as monotonically increasing overfitting risk — the classical bias-variance trade-off. Recent empirical work (Belkin et al., 2019) has shown that sufficiently over-parameterized ensembles (very large random forests, or gradient-boosted ensembles with very many trees) can exhibit <strong>double descent</strong>: test error rises with capacity as classical theory predicts, then <em>falls again</em> past an interpolation threshold. Reconciling this with the classical statistical learning theory of Section 16's foundational references (and Section 4's VC-dimension history) is an active area of research.</p>
+<h5 id="164-support-vector-machines-at-modern-scale">16.4 Support Vector Machines at Modern Scale</h5>
+<p>Section 9.2's $\mathcal{O}(N^2)$ kernel-matrix cost makes exact kernel SVMs impractical much past $N \sim 10^5$-$10^6$ examples — far below the scale of modern deep learning datasets. Research on <strong>random features</strong> (Rahimi &amp; Recht, 2007) and the <strong>Nyström method</strong> approximates a kernel matrix with a low-rank factorization computed from a random subset of points, trading a small, controllable approximation error for a training cost that scales linearly rather than quadratically in $N$ — extending the reach of the exact mathematics derived in Section 7.1 to datasets orders of magnitude larger than this chapter's from-scratch implementation can handle directly.</p><div class="box warn"><strong>Chapter 6 Practical Test:</strong><p>For a dataset with binary labels [1, 1, 0, 0, 0], calculate the Shannon entropy in bits by hand.</p><details class="deep-dive"><summary>View Answer Key &amp; Explanation</summary><div class="deep-dive-body"><p><strong>Shannon Entropy Calculation:</strong></p>
 <ul>
 <li>p(1) = 2/5 = 0.4.</li>
 <li>p(0) = 3/5 = 0.6.</li>
@@ -21766,7 +22480,7 @@ if __name__ == "__main__":
 <p>The transition from pure mathematics to practical machine learning applications unfolded across three decades.</p>
 <p>In 1990, Scott Deerwester, Susan Dumais, and colleagues at Bell Communications Research published "Indexing by Latent Semantic Analysis," which applied the truncated SVD to the term-document matrix of a text corpus. The resulting low-dimensional vectors captured semantic similarity: documents about related topics were close in the latent space even if they shared no exact vocabulary. Latent Semantic Analysis was the first demonstration that a purely algebraic matrix factorization could capture genuine semantic structure in language — a conceptual ancestor of every modern word embedding and transformer architecture.</p>
 <p>In 1991, Matthew Turk and Alex Pentland at MIT published "Eigenfaces for Recognition," applying PCA to the pixel matrices of face images. The principal components of a face dataset are themselves face-shaped images — the "eigenfaces" — and any individual face can be represented as a linear combination of a small number of eigenfaces. Recognition became a nearest-neighbor search in eigenface coordinate space. Eigenfaces demonstrated that PCA could extract perceptually meaningful structure from raw high-dimensional signals, not just from tabular measurement data.</p>
-<p>The Netflix Prize competition (2006–2009) and its $1 million prize for improving movie recommendation accuracy drove the largest-ever industrial deployment of matrix factorization. Simon Funk's famous online SGD-based matrix factorization (a variant of truncated SVD) demonstrated that large-scale low-rank matrix completion could be solved efficiently in the streaming setting. The techniques developed during the Netflix Prize directly influenced the design of recommendation systems in every major streaming platform — and they are structural ancestors of the attention mechanism's inner-product structure in Chapter 11's Transformer architecture.</p>
+<p>The Netflix Prize competition (2006–2009) and its $1 million prize for improving movie recommendation accuracy drove the largest-ever industrial deployment of matrix factorization. Simon Funk's famous online SGD-based matrix factorization (a variant of truncated SVD) demonstrated that large-scale low-rank matrix completion could be solved efficiently in the streaming setting. The techniques developed during the Netflix Prize directly influenced the design of recommendation systems in every major streaming platform — and they are structural ancestors of the inner-product structure at the heart of the attention mechanism in modern Transformer architectures.</p>
 <hr/>
 <h4 id="section-5-intuition">Section 5: Intuition</h4>
 <h5 id="the-shadow-that-captures-the-most-shape">The Shadow That Captures the Most Shape</h5>
@@ -23608,8 +24322,11 @@ def run_all_checks() -&gt; None:
     Call this function to confirm that all implementations in this chapter
     produce correct numerical results before proceeding to downstream use.
     """
-    # Stage 1 imports from the Stage 1 module in a real project;
-    # here we call _run_stage1_checks() if co-located in the same file.
+    # Save Stage 1's code as stage1_pca_power_iteration.py alongside this
+    # file to run both suites together; _run_stage1_checks is defined there.
+    from stage1_pca_power_iteration import _run_stage1_checks
+
+    _run_stage1_checks()
     _run_stage2_checks()
 
 
@@ -24953,13 +25670,13 @@ if __name__ == "__main__":
 <p>The literature on dimensionality reduction, matrix factorization, and numerical linear algebra is vast. The following references are the canonical entry points organized by depth and focus.</p>
 <hr/>
 <p><strong>Jolliffe, I. T. (2002). <em>Principal Component Analysis</em>, 2nd Edition. Springer Series in Statistics.</strong></p>
-<p>The definitive treatment of PCA in its statistical formulation. Jolliffe covers the variance-maximization derivation (Chapters 1–2), the relationship between PCA and factor analysis (Chapter 9), the connection to canonical correlation analysis (Chapter 12), and a comprehensive survey of how PCA appears in regression, cluster analysis, quality control, and environmental science. The second edition adds coverage of non-linear generalizations (kernel PCA, Section 15.3) and robust PCA (Section 10.4). Required reading for anyone who needs to reason about the statistical properties of principal components — their sampling distributions under multivariate Gaussianity, the bias of estimated eigenvalues, and the confidence intervals for explained variance fractions.</p>
+<p>The definitive treatment of PCA in its statistical formulation. Jolliffe covers the variance-maximization derivation early on, the relationship between PCA and factor analysis, and the connection to canonical correlation analysis in later chapters, alongside a comprehensive survey of how PCA appears in regression, cluster analysis, quality control, and environmental science. The second edition adds coverage of non-linear generalizations (kernel PCA, Section 15.3) and robust PCA (Section 10.4). Required reading for anyone who needs to reason about the statistical properties of principal components — their sampling distributions under multivariate Gaussianity, the bias of estimated eigenvalues, and the confidence intervals for explained variance fractions.</p>
 <hr/>
 <p><strong>Halko, N., Martinsson, P.-G., and Tropp, J. A. (2011). Finding Structure with Randomness: Probabilistic Algorithms for Constructing Approximate Matrix Decompositions. <em>SIAM Review</em>, 53(2), 217–288.</strong></p>
 <p>The landmark paper that established Randomized SVD as a production algorithm. Section 10.2 of this chapter followed the algorithm and error bounds from Halko et al. directly. The paper covers the full theoretical framework: Johnson-Lindenstrauss dimension reduction, the subspace iteration algorithm for improving approximation quality beyond a single random projection, structured random matrices (subsampled random Fourier transforms) that reduce the cost of the projection step from $\mathcal{O}(NDk)$ to $\mathcal{O}(ND\log k)$, and GPU-friendly implementations. The Supplementary Material includes tight error bound proofs. Freely available at: <code>arxiv.org/abs/0909.4061</code>.</p>
 <hr/>
 <p><strong>Trefethen, L. N. and Bau, D. (1997). <em>Numerical Linear Algebra</em>. SIAM.</strong></p>
-<p>The graduate-level reference for the numerical algorithms that underpin all production SVD implementations. Chapter 6 (QR Factorization), Chapter 7 (Gram-Schmidt Orthogonalization and Instability), and Chapters 31–36 (Eigenvalue Problems and SVD) are directly relevant. Trefethen and Bau present the Golub-Kahan bidiagonalization algorithm in Lecture 31, the Householder reflections that drive it in Lectures 10–11, and a rigorous treatment of floating-point backward stability in Lecture 14. The book's defining virtue is its insistence on connecting mathematical properties to numerical behavior: it does not just tell you that the SVD is numerically stable — it proves why (backward stability of Householder reflections), and why the covariance normal equations are not (condition number squaring, Lecture 18).</p>
+<p>The graduate-level reference for the numerical algorithms that underpin all production SVD implementations. Its early lectures on QR factorization and Gram-Schmidt orthogonalization and instability, and Lectures 31–36 on eigenvalue problems and the SVD, are directly relevant. Trefethen and Bau present the Golub-Kahan bidiagonalization algorithm in Lecture 31, the Householder reflections that drive it in Lectures 10–11, and a rigorous treatment of floating-point backward stability in Lecture 14. The book's defining virtue is its insistence on connecting mathematical properties to numerical behavior: it does not just tell you that the SVD is numerically stable — it proves why (backward stability of Householder reflections), and why the covariance normal equations are not (condition number squaring, Lecture 18).</p>
 <hr/>
 <p><strong>Golub, G. H. and Van Loan, C. F. (2013). <em>Matrix Computations</em>, 4th Edition. Johns Hopkins University Press.</strong></p>
 <p>The comprehensive engineering reference for matrix algorithms. For practitioners who need the FLOP counts, blocking strategies, and BLAS call patterns behind the <code>np.linalg.svd</code> implementation, Sections 8.6 (Golub-Reinsch SVD Algorithm) and 8.3 (Symmetric Eigenvalue Problem) are the canonical source. The section on the Divide-and-Conquer SVD (Section 8.6.4) explains why <code>full_matrices=False</code> calls are significantly faster than <code>full_matrices=True</code> for tall matrices. Chapter 4 (Matrix Analysis) covers condition numbers and their behavior under matrix multiplication — the theoretical foundation for Section 10.1 of this chapter.</p>
@@ -26699,7 +27416,282 @@ if __name__ == "__main__":
 </tbody>
 </table>
 <hr/>
-<p><em>Section 9 quantifies the computational complexity and memory behavior of both implementations: the $\mathcal{O}(m)$-per-iteration sparse PageRank versus the $\mathcal{O}(n \cdot k_{\text{nn}} \cdot k)$ spectral embedding pipeline, the cache access pattern differences between CSR SpMV and dense DGEMV, and the numerical condition number of the normalized Laplacian on power-law degree graphs.</em></p><div class="box warn"><strong>Chapter 8 Practical Test:</strong><p>For a path graph with 3 nodes connected sequentially (1-2 and 2-3), construct the adjacency matrix A, degree matrix D, and unnormalized Laplacian matrix L.</p><details class="deep-dive"><summary>View Answer Key &amp; Explanation</summary><div class="deep-dive-body"><p><strong>Graph Matrices:</strong></p>
+
+<h4 id="section-9-complexity-analysis">Section 9: Complexity Analysis</h4>
+<blockquote>
+<p><strong>What this section measures.</strong> Stage 1 and Stage 2 solve two different eigenproblems on two different matrix representations: PageRank's power iteration on a sparse, column-stochastic Google Matrix, and spectral clustering's bottom-$k$ eigenvectors of a sparse normalized Laplacian via Lanczos iteration. Both are, at heart, the same "repeatedly multiply by a matrix" primitive from Section 7 — but the sparsity pattern and the number of eigenvectors needed change the cost profile substantially.</p>
+</blockquote>
+<hr/>
+<h5 id="91-pagerank-per-iteration-and-total-cost">9.1 PageRank: Per-Iteration and Total Cost</h5>
+<p>Section 7.1.1's Google Matrix $\mathbf{G} = d\mathbf{M} + (1-d)/n \cdot \mathbf{1}\mathbf{1}^\top$ is never formed explicitly in Stage 1 — the dense rank-one teleportation term would cost $\mathcal{O}(n^2)$ to store. Instead, each power-iteration step is computed as a sparse matrix-vector product against $\mathbf{M}$ (cost proportional to the number of edges $m$, since $\mathbf{M}$ has exactly $m$ non-zero entries) plus a scalar broadcast of the teleportation term:</p>
+<p>$$\boldsymbol{\pi}^{(t+1)} = d\,\mathbf{M}\boldsymbol{\pi}^{(t)} + \frac{1-d}{n}\mathbf{1}, \qquad \text{cost per step} = \mathcal{O}(m + n)$$</p>
+<p>Section 7.1.4's power-method convergence proof showed the iterate converges geometrically at rate $d$ (the damping factor) — so reaching $\epsilon$-accuracy requires:</p>
+<p>$$k(\epsilon) = \mathcal{O}!\left(\frac{\log(1/\epsilon)}{\log(1/d)}\right) \text{ iterations}, \qquad T_{\text{PageRank}} = \mathcal{O}!\left((m+n) \cdot \log(1/\epsilon) / \log(1/d)\right)$$</p>
+<p>For the standard damping factor $d = 0.85$, this converges in on the order of $50$-$100$ iterations regardless of $n$ — the same qualitative pattern as Chapter 7's condition-number-governed convergence rate, except here the "condition number" is fixed by the damping factor rather than by the data.</p>
+<h5 id="92-spectral-clustering-the-cost-of-eigenvectors-not-just-eigenvalues">9.2 Spectral Clustering: The Cost of Eigenvectors, Not Just Eigenvalues</h5>
+<p>Stage 2 builds a $k_{\text{nn}}$-nearest-neighbor sparse graph (Section 8), giving the Laplacian $\mathcal{O}(n \cdot k_{\text{nn}})$ non-zero entries, then calls ARPACK's Lanczos iteration to extract the bottom $k$ eigenvectors of $\mathbf{L}<em>{\text{sym}}$. Each Lanczos step is dominated by one sparse matrix-vector product, costing $\mathcal{O}(n \cdot k</em>{\text{nn}})$; the number of Lanczos steps needed to resolve $k$ eigenvectors to convergence scales with $k$ and with the inverse spectral gap (Section 7.3.5):</p>
+<p>$$T_{\text{spectral}} = \mathcal{O}!\left(n \cdot k_{\text{nn}} \cdot k \cdot \frac{1}{\lambda_{k+1} - \lambda_k}\right)$$</p>
+<p>The spectral gap $\lambda_{k+1} - \lambda_k$ plays exactly the role $1 - 1/\kappa$ played in Chapter 7's gradient descent analysis: a large, well-separated gap (a graph with $k$ genuinely distinct clusters) converges quickly; a small gap (ambiguous cluster structure, or a poor choice of $k$) forces many more Lanczos iterations for the same accuracy.</p>
+<h5 id="93-memory-sparse-csr-versus-dense-and-the-condition-number-of-mathbfl_textsym">9.3 Memory: Sparse CSR Versus Dense, and the Condition Number of $\mathbf{L}_{\text{sym}}$</h5>
+<p>Stage 1's adjacency dictionary stores exactly $\mathcal{O}(m)$ entries — no wasted space for absent edges. Stage 2's Compressed Sparse Row (CSR) format stores $\mathcal{O}(n \cdot k_{\text{nn}})$ non-zeros using three flat arrays (data, column indices, row pointers) — the same "contiguous array over pointer-chasing" discipline as a <a class="cross-link" href="#chapter-6-non-linear-spaces-regularization" target="_blank">decision tree (Chapter 6 SVMs &amp; Trees)</a>'s array-backed Stage 2 and the tensor chapter's <code>FlatArray</code>, applied to a graph instead of a dense grid.</p>
+<p><strong>Power-law degree graphs are numerically delicate.</strong> Real-world networks (the web graph, social networks, citation networks) typically have power-law degree distributions: a small number of hub nodes with enormous degree, and a long tail of low-degree nodes. The symmetric normalized Laplacian's degree-normalization $\mathbf{D}^{-1/2}\mathbf{L}\mathbf{D}^{-1/2}$ divides by $\sqrt{d_i}$ for every node $i$ — for a degree-1 node adjacent to a degree-$10^6$ hub, this normalization step involves dividing by numbers that differ by three orders of magnitude, which is exactly the kind of ill-conditioning the condition-number analysis of Chapter 7 (Section 7.7) warned about. This is the concrete, numerical reason production spectral clustering libraries (Section 10) default to the symmetric normalized Laplacian rather than the unnormalized one — the normalization that fixes the ill-conditioning is not optional for real-world graphs.</p>
+<hr/>
+<h4 id="section-10-industrial-perspective">Section 10: Industrial Perspective</h4>
+<blockquote>
+<p><strong>From these two engines to production graph systems.</strong> Stage 1 and Stage 2 implement the exact mechanisms that power web-scale search ranking and modern graph analytics libraries.</p>
+</blockquote>
+<hr/>
+<h5 id="101-pagerank-at-web-scale">10.1 PageRank at Web Scale</h5>
+<p>Google's original PageRank implementation ran power iteration over a graph with billions of nodes and tens of billions of edges — far beyond what a single machine's memory can hold. Production implementations distribute the sparse matrix-vector product of Section 9.1 across a cluster (the same MapReduce-style computation pattern popularized by Google's own 2004 paper), partitioning $\mathbf{M}$'s rows across machines so that each worker only needs the columns of $\boldsymbol{\pi}$ corresponding to its partition's in-neighbors.</p>
+<h5 id="102-scikit-learns-spectralclustering-and-networkx">10.2 scikit-learn's <code>SpectralClustering</code> and <code>networkx</code></h5>
+<p><code>sklearn.cluster.SpectralClustering</code> implements exactly Stage 2's pipeline — building an affinity graph, forming the normalized Laplacian, and calling ARPACK (via <code>scipy.sparse.linalg.eigsh</code>) for the bottom-$k$ eigenvectors — with additional affinity options (precomputed kernel matrices, RBF affinity) beyond Stage 2's $k$-nearest-neighbor graph. <code>networkx</code> provides the general-purpose graph data structures and a pure-Python PageRank implementation useful for prototyping on graphs small enough to fit Stage 1's approach, while production analytics platforms (Neo4j's Graph Data Science library, Apache Spark's GraphX) reimplement the same algorithms over distributed or on-disk graph storage for the billion-edge regime Section 10.1 describes.</p>
+<h5 id="103-graph-neural-networks-learning-instead-of-deriving-the-embedding">10.3 Graph Neural Networks: Learning Instead of Deriving the Embedding</h5>
+<p>Spectral clustering (Section 7.3) hand-derives a graph embedding from the Laplacian's eigenvectors. <strong>Graph Neural Networks</strong> (GNNs) replace this fixed, derived embedding with a <em>learned</em> one: each node's representation is updated by aggregating its neighbors' representations through a trainable function, repeated over several layers — a direct generalization of the spectral embedding's "smoothness over the graph" idea (Section 7.2.2's quadratic form), but with the aggregation function learned from data via the <a class="cross-link" href="#chapter-4-the-core-optimization-engine-automatic-differentiation" target="_blank">backpropagation (Chapter 4 Autograd Engine)</a> machinery of Chapter 4, rather than fixed as an eigendecomposition.</p>
+<h5 id="104-monitoring-pagerank-and-spectral-clustering-in-production">10.4 Monitoring PageRank and Spectral Clustering in Production</h5>
+<p>Production PageRank pipelines monitor the <strong>L1 convergence residual</strong> ($|\boldsymbol{\pi}^{(t+1)} - \boldsymbol{\pi}^{(t)}|<em>1$, Section 7's convergence criterion) across iterations to detect when a graph update (new pages, new links) has changed the ranking enough to warrant a full recomputation rather than an incremental update. Production spectral clustering pipelines monitor the <strong>spectral gap</strong> ($\lambda</em>{k+1} - \lambda_k$, Section 9.2) as a diagnostic for whether $k$ was chosen well — a vanishing gap is a direct signal that the data does not actually support $k$ well-separated clusters.</p>
+<hr/>
+<h4 id="section-11-common-mistakes">Section 11: Common Mistakes</h4>
+<hr/>
+<h5 id="mistake-1-dangling-nodes-silently-break-the-stochastic-matrix">Mistake 1: Dangling Nodes Silently Break the Stochastic Matrix</h5>
+<p><strong>Description.</strong> A <strong>dangling node</strong> is a node with no outgoing edges (a page that links to nothing). Its column in $\mathbf{M}$ is entirely zero rather than summing to 1, which breaks the column-stochastic property Section 7.1.3's Perron-Frobenius argument depends on.</p>
+<p><strong>Why it is insidious.</strong> Power iteration still runs and produces numbers, but probability mass silently leaks out of the system at every dangling node, and $\boldsymbol{\pi}^{(t)}$ no longer sums to 1 — a bug that is invisible unless you explicitly check the sum.</p>
+<p><strong>Fix.</strong> Stage 1's sink-mass redistribution step (Section 8) explicitly redistributes a dangling node's mass uniformly across all nodes at every iteration — always verify <code>sum(pi.values())</code> stays at 1.0 within tolerance after fitting.</p>
+<hr/>
+<h5 id="mistake-2-choosing-k-for-spectral-clustering-without-looking-at-the-spectral-gap">Mistake 2: Choosing $k$ for Spectral Clustering Without Looking at the Spectral Gap</h5>
+<p><strong>Description.</strong> Treating $k$ (the number of clusters) as a hyperparameter to grid-search purely on downstream task performance, without ever inspecting the sorted Laplacian eigenvalues.</p>
+<p><strong>Why it is insidious.</strong> Section 7.3.5 established that a well-chosen $k$ corresponds to a large gap between $\lambda_k$ and $\lambda_{k+1}$. A grid search can still return <em>a</em> value of $k$ that scores acceptably on some metric even when no natural gap exists — silently reporting an over-confident cluster structure that the graph's spectrum does not actually support.</p>
+<p><strong>Fix.</strong> Always plot the sorted eigenvalues (the "eigengap plot" or "scree plot" for graphs) before trusting a chosen $k$, exactly as Section 9.2 recommends monitoring the spectral gap in production.</p>
+<hr/>
+<h5 id="mistake-3-running-spectral-clustering-on-a-disconnected-graph">Mistake 3: Running Spectral Clustering on a Disconnected Graph</h5>
+<p><strong>Description.</strong> Section 7.2.3 proved that the multiplicity of the Laplacian's zero eigenvalue equals the number of connected components. If the input graph has $c &gt; 1$ connected components, the bottom $c$ eigenvalues are all exactly zero, and the "Fiedler vector" (Section 7.3) is degenerate — any vector in the zero-eigenspace is an equally valid solution, and the choice among them is arbitrary and unstable.</p>
+<p><strong>Why it is insidious.</strong> The algorithm still runs and returns cluster labels that look plausible, but they are an artifact of whichever arbitrary basis the eigensolver happened to return for the degenerate eigenspace, not a meaningful reflection of graph structure within each connected component.</p>
+<p><strong>Fix.</strong> Always check the number of connected components (or equivalently, the number of near-zero eigenvalues) before interpreting a spectral clustering result, and consider clustering each connected component separately if $c &gt; 1$.</p>
+<pre><code class="language-python"># BROKEN: assumes the graph is connected without checking
+result = spectral_clustering_engine.fit(X, k=3)
+
+# FIXED: check the number of near-zero eigenvalues first
+n_near_zero = sum(1 for eigval in result.eigenvalues if eigval &lt; 1e-8)
+if n_near_zero &gt; 1:
+    raise ValueError(
+        f"Graph has {n_near_zero} connected components; "
+        "cluster each component separately or increase k_nn to connect the graph."
+    )
+</code></pre>
+<hr/>
+<h5 id="mistake-4-confusing-the-unnormalized-and-normalized-laplacian">Mistake 4: Confusing the Unnormalized and Normalized Laplacian</h5>
+<p><strong>Description.</strong> Section 7.2.1 introduced three Laplacian variants ($\mathbf{L}$, $\mathbf{L}<em>{\text{sym}}$, $\mathbf{L}</em>{\text{rw}}$). Using the unnormalized $\mathbf{L}$ on a graph with a highly skewed (power-law) degree distribution, rather than $\mathbf{L}_{\text{sym}}$, can produce clusters dominated by degree rather than genuine community structure — a high-degree hub's neighbors can be pulled into a single cluster purely because of the hub's large degree, not because they are structurally similar to each other.</p>
+<p><strong>Fix.</strong> Default to $\mathbf{L}_{\text{sym}}$ (Stage 2's default) for any graph with heterogeneous node degrees — which, per Section 9.3, is most real-world graphs.</p>
+<hr/>
+<h5 id="mistake-5-treating-pagerank-scores-as-probabilities-of-being-visited-now">Mistake 5: Treating PageRank Scores as Probabilities of Being Visited "Now"</h5>
+<p><strong>Description.</strong> Interpreting a node's PageRank score as "the probability a random surfer is at this page at this moment" rather than its correct meaning: the stationary (long-run average) probability under the random-surfer model of Section 5.1, after infinitely many steps.</p>
+<p><strong>Why it is insidious.</strong> For graphs that change over time (the actual web), a stale PageRank vector computed before recent structural changes can be meaningfully wrong for "current" ranking purposes, even though it was computed correctly for the graph snapshot it was fit on. This is a data-freshness problem layered on top of an otherwise-correct algorithm, not a bug in the PageRank computation itself.</p>
+<hr/>
+<h4 id="section-12-exercises">Section 12: Exercises</h4>
+<p>This part turns Sections 7-11 into four graduated tiers of practice: <strong>Conceptual (C)</strong> -&gt; <strong>Derivation (D)</strong> -&gt; <strong>Pure-Python coding (P)</strong> -&gt; <strong>Library (L)</strong>.</p>
+<h5 id="conceptual-questions">Conceptual Questions</h5>
+<p><strong>PageRank</strong></p>
+<ul>
+<li><strong>C1.</strong> Why must the damping factor $d$ be strictly less than 1 for the Google Matrix to guarantee a unique stationary distribution (Section 7.1.3)?</li>
+<li><strong>C2.</strong> Why does a dangling node (Section 11, Mistake 1) break the column-stochastic property, and why does this matter for the Perron-Frobenius argument?</li>
+</ul>
+<p><strong>Graph Laplacian and Spectral Clustering</strong></p>
+<ul>
+<li><strong>C3.</strong> Why does the Laplacian quadratic form $\mathbf{f}^\top\mathbf{L}\mathbf{f}$ measure "smoothness" of $\mathbf{f}$ over the graph (Section 7.2.2)?</li>
+<li><strong>C4.</strong> Why does the multiplicity of the zero eigenvalue equal the number of connected components (Section 7.2.3)?</li>
+<li><strong>C5.</strong> Why is minimizing RatioCut over discrete cluster assignments NP-hard, and what does relaxing it to a continuous Rayleigh quotient buy us (Section 7.3.3)?</li>
+</ul>
+<h5 id="derivation-exercises">Derivation Exercises</h5>
+<p><strong>PageRank</strong></p>
+<ul>
+<li><strong>D1.</strong> Derive the Google Matrix's column-stochastic property from the definitions of $\mathbf{M}$ and the teleportation term (Section 7.1.2).</li>
+<li><strong>D2.</strong> Using the Perron-Frobenius theorem's conditions (Section 7.1.3), show why the Google Matrix (unlike the raw link matrix $\mathbf{M}$ alone) always satisfies them.</li>
+</ul>
+<p><strong>Graph Laplacian and Spectral Clustering</strong></p>
+<ul>
+<li><strong>D3.</strong> Prove the Laplacian quadratic form identity $\mathbf{f}^\top\mathbf{L}\mathbf{f} = \frac{1}{2}\sum_{ij}A_{ij}(f_i-f_j)^2$ (Section 7.2.2) starting from $\mathbf{L} = \mathbf{D} - \mathbf{A}$.</li>
+<li><strong>D4.</strong> Starting from the RatioCut objective, derive the reduction to the quadratic form $\mathbf{f}^\top\mathbf{L}\mathbf{f}$ subject to $\mathbf{f}^\top\mathbf{1}=0$ (Section 7.3.2), and explain why the Fiedler vector is the solution to the relaxed problem.</li>
+</ul>
+<h5 id="pure-python-coding-exercises">Pure-Python Coding Exercises</h5>
+<ul>
+<li><strong>P1.</strong> Extend Stage 1's PageRank to accept a personalization vector (teleporting back to a fixed subset of nodes rather than uniformly), and verify it recovers the standard PageRank when the personalization vector is uniform.</li>
+<li><strong>P2.</strong> Implement the unnormalized Laplacian $\mathbf{L}$ and random-walk Laplacian $\mathbf{L}<em>{\text{rw}}$ variants alongside Stage 2's $\mathbf{L}</em>{\text{sym}}$, and verify Mistake 4's claim: cluster a synthetic power-law-degree graph with all three and compare cluster quality.</li>
+<li><strong>P3.</strong> Implement the connected-components check from Section 11, Mistake 3, and verify it correctly identifies the number of components on a graph you construct with 3 disjoint pieces.</li>
+<li><strong>P4.</strong> Implement an eigengap plot function that takes a sorted eigenvalue array and returns the value of $k$ maximizing $\lambda_{k+1} - \lambda_k$, and verify it recovers the true number of clusters on a synthetic dataset with known cluster count.</li>
+</ul>
+<h5 id="library-exercises">Library Exercises</h5>
+<ul>
+<li><strong>L1.</strong> Fit <code>networkx.pagerank</code> and Stage 1's pure-Python PageRank on the same directed graph and compare the resulting rank vectors.</li>
+<li><strong>L2.</strong> Fit <code>sklearn.cluster.SpectralClustering</code> and Stage 2's engine on the same two-interlocking-rings dataset and compare cluster label agreement (adjusted Rand index).</li>
+<li><strong>L3.</strong> Use <code>scipy.sparse.linalg.eigsh</code> directly to extract the bottom-$k$ eigenvectors of a Laplacian you construct by hand, bypassing Stage 2's wrapper, and confirm identical results.</li>
+<li><strong>L4.</strong> Compare <code>sklearn.cluster.SpectralClustering</code>'s <code>affinity="rbf"</code> option against Stage 2's $k$-nearest-neighbor affinity on data where the two produce visibly different clusters, and explain why.</li>
+</ul>
+<hr/>
+<h4 id="section-13-mini-project-community-detection-in-a-synthetic-social-network">Section 13: Mini Project — Community Detection in a Synthetic Social Network</h4>
+<h5 id="overview">Overview</h5>
+<p>This project generates a synthetic graph with known community structure (a stochastic block model: densely connected within groups, sparsely connected between groups), then uses PageRank to identify influential nodes within each community and spectral clustering to recover the community structure without being told it in advance.</p>
+<h5 id="full-implementation">Full Implementation</h5>
+<pre><code class="language-python"># mini_project_community_detection.py
+"""
+Mini Project: Community detection and influence ranking in a synthetic
+social network, using both engines built in this chapter.
+
+Generates a stochastic block model graph (three communities, dense
+within-group edges, sparse between-group edges), then:
+  1. Runs Stage 2 spectral clustering to recover the three communities
+     without being told the true group assignments.
+  2. Runs Stage 1 PageRank to rank nodes by influence within the recovered
+     graph structure.
+  3. Reports clustering accuracy against the known ground truth and the
+     top-ranked node in each recovered community.
+"""
+from __future__ import annotations
+
+import random
+
+
+def make_stochastic_block_model(
+    n_per_block: int = 20,
+    n_blocks: int = 3,
+    p_within: float = 0.3,
+    p_between: float = 0.02,
+    seed: int = 0,
+) -&gt; tuple[dict, list[int]]:
+    """
+    Build a directed adjacency-dict graph with known block (community)
+    structure. Node ids are strings ("0", "1", ...), matching this
+    chapter's NodeId = str convention (Section 8, Stage 1) exactly —
+    pagerank_power_iteration's internal bookkeeping assumes string ids
+    and will silently re-key an integer-keyed graph otherwise.
+    """
+    rng = random.Random(seed)
+    n = n_per_block * n_blocks
+    true_labels = [i // n_per_block for i in range(n)]
+    adjacency: dict[str, list[str]] = {str(i): [] for i in range(n)}
+
+    for i in range(n):
+        for j in range(n):
+            if i == j:
+                continue
+            same_block = true_labels[i] == true_labels[j]
+            p = p_within if same_block else p_between
+            if rng.random() &lt; p:
+                adjacency[str(i)].append(str(j))
+
+    return adjacency, true_labels
+
+
+def adjacency_rate(true_labels: list[int], predicted_labels: list[int]) -&gt; float:
+    """
+    Cluster agreement rate up to a permutation of cluster labels: for each
+    pair of nodes, check whether "same true block" agrees with "same
+    predicted cluster." A simple, dependency-free substitute for the
+    adjusted Rand index used in Exercise L2.
+    """
+    n = len(true_labels)
+    agreements = 0
+    total_pairs = 0
+    for i in range(n):
+        for j in range(i + 1, n):
+            same_true = true_labels[i] == true_labels[j]
+            same_pred = predicted_labels[i] == predicted_labels[j]
+            agreements += 1 if same_true == same_pred else 0
+            total_pairs += 1
+    return agreements / total_pairs
+
+
+def run_community_detection() -&gt; None:
+    print("=" * 70)
+    print("Mini Project: Community Detection via PageRank and Spectral Clustering")
+    print("=" * 70)
+
+    adjacency, true_labels = make_stochastic_block_model(
+        n_per_block=20, n_blocks=3, p_within=0.3, p_between=0.02, seed=0
+    )
+    n = len(true_labels)
+    print(f"\nGenerated graph: {n} nodes, 3 communities, "
+          f"{sum(len(v) for v in adjacency.values())} directed edges")
+
+    # --- Stage 1: PageRank for influence ranking ---
+    # Both stages live in the single Section 8 module; save it alongside
+    # this script as chapter8_graph_engine.py to run this project.
+    from chapter8_graph_engine import pagerank_power_iteration  # Section 8, Stage 1
+
+    rank_result = pagerank_power_iteration(adjacency, damping=0.85, tolerance=1e-10)
+    ranked_nodes = sorted(rank_result.ranks.items(), key=lambda kv: kv[1], reverse=True)
+    print("\nTop 5 most influential nodes overall (by PageRank):")
+    for node, score in ranked_nodes[:5]:
+        print(f"  node {node:&gt;3s} (true community {true_labels[int(node)]})  score={score:.5f}")
+
+    # --- Stage 2: Spectral clustering for community recovery ---
+    # The Stage 2 engine's high-level fit_predict() builds its own k-NN graph
+    # from raw feature vectors, but this project already *has* a graph (the
+    # social network itself) rather than points in space — so we drive its
+    # lower-level static pipeline stages directly on our own adjacency matrix
+    # instead of going through fit_predict().
+    from chapter8_graph_engine import SpectralClusteringEngine  # Section 8, Stage 2
+    import numpy as np
+    from scipy.sparse import csr_matrix
+
+    # Build a symmetric sparse adjacency from the directed social graph
+    # (treat any edge in either direction as a connection).
+    adjacency_matrix = np.zeros((n, n))
+    for i_str, neighbors in adjacency.items():
+        i = int(i_str)
+        for j_str in neighbors:
+            j = int(j_str)
+            adjacency_matrix[i, j] = 1.0
+            adjacency_matrix[j, i] = 1.0
+    sparse_adjacency = csr_matrix(adjacency_matrix)
+
+    n_clusters = 3
+    laplacian = SpectralClusteringEngine.normalized_laplacian(sparse_adjacency)
+    eigenvalues, eigenvectors = SpectralClusteringEngine.bottom_eigenvectors(laplacian, n_clusters)
+    embedding = SpectralClusteringEngine.row_normalize(eigenvectors)
+
+    engine = SpectralClusteringEngine(n_clusters=n_clusters)
+    kmeans_result = engine.kmeans(embedding, n_clusters)
+
+    accuracy = adjacency_rate(true_labels, list(kmeans_result.labels))
+    print(f"\nSpectral clustering pairwise agreement with ground truth: {accuracy:.3f}")
+    print(f"Spectral gap (lambda_3 - lambda_2): {eigenvalues[2] - eigenvalues[1]:.4f}")
+
+    assert accuracy &gt; 0.85, (
+        f"expected spectral clustering to recover the block structure with high "
+        f"pairwise agreement, got {accuracy:.3f}"
+    )
+    print("\nMini project passed: spectral clustering recovered the community structure.")
+    print("=" * 70)
+
+
+if __name__ == "__main__":
+    run_community_detection()
+</code></pre>
+<hr/>
+<h4 id="section-14-summary">Section 14: Summary</h4>
+<p>Chapter 8 extended machine learning beyond flat Euclidean feature vectors into the relational structure of a graph. Two algorithms, both derived from the same "eigenvectors of a structured matrix" principle of Section 7, address two different questions: PageRank asks "which nodes are most important?", answered by the stationary distribution of a random walk (the Perron-Frobenius theorem guaranteeing that answer is unique); spectral clustering asks "which nodes belong together?", answered by the low-frequency eigenvectors of the graph Laplacian (the Fiedler vector's RatioCut relaxation providing the theoretical bridge from an NP-hard discrete partition problem to tractable continuous linear algebra).</p>
+<p>Section 8 implemented both completely — a pure-Python sparse PageRank engine with explicit dangling-node handling, and a NumPy/SciPy spectral clustering engine built on ARPACK's Lanczos iteration — both verified against the exact theorems Section 7 proved. Section 9 showed the two algorithms have complementary cost profiles: PageRank's convergence rate is fixed by the damping factor regardless of graph structure, while spectral clustering's convergence depends entirely on the data's own spectral gap. Section 11 catalogued failure modes unique to graph algorithms that have no direct analogue in the earlier, non-graph chapters: dangling nodes, disconnected components producing degenerate eigenspaces, and the specific numerical fragility of degree normalization on power-law graphs.</p>
+<hr/>
+<h4 id="section-15-further-reading">Section 15: Further Reading</h4>
+<p><strong>[1] Lawrence Page and Sergey Brin — "The PageRank Citation Ranking: Bringing Order to the Web" (Stanford InfoLab Technical Report, 1998)</strong></p>
+<p>The original PageRank paper, introducing the random-surfer model and the damping factor derived in Section 7.1.</p>
+<p><strong>[2] Miroslav Fiedler — "Algebraic Connectivity of Graphs" (<em>Czechoslovak Mathematical Journal</em>, 23(2):298–305, 1973)</strong></p>
+<p>The paper introducing the eigenvalue now called algebraic connectivity and its eigenvector, the Fiedler vector (Section 7.3), decades before spectral clustering was formalized as a machine learning method.</p>
+<p><strong>[3] Jianbo Shi and Jitendra Malik — "Normalized Cuts and Image Segmentation" (<em>IEEE TPAMI</em>, 22(8):888–905, 2000)</strong></p>
+<p>Introduces the normalized cut criterion and connects it to the generalized eigenvalue problem for the random-walk Laplacian $\mathbf{L}_{\text{rw}}$ (Section 7.2.1), with image segmentation as the primary application.</p>
+<p><strong>[4] Andrew Ng, Michael Jordan, and Yair Weiss — "On Spectral Clustering: Analysis and an Algorithm" (<em>NeurIPS</em>, 2002)</strong></p>
+<p>Formalizes the spectral clustering algorithm implemented in Stage 2 — embed via the top/bottom-$k$ Laplacian eigenvectors, then run $k$-means in the embedded space — and provides the perturbation-theoretic analysis of when it succeeds.</p>
+<p><strong>[5] Ulrike von Luxburg — "A Tutorial on Spectral Clustering" (<em>Statistics and Computing</em>, 17(4):395–416, 2007)</strong></p>
+<p>The standard, highly readable reference tying together the graph Laplacian variants, RatioCut and normalized cut objectives, and the practical considerations (choice of affinity graph, choice of $k$) this chapter's Section 11 draws on directly.</p>
+<hr/>
+<h4 id="section-16-research-directions">Section 16: Research Directions</h4>
+<h5 id="161-graph-neural-networks-and-learned-message-passing">16.1 Graph Neural Networks and Learned Message Passing</h5>
+<p>Section 10.3 introduced GNNs as a learned generalization of the fixed spectral embedding. An active research question is understanding exactly when a learned aggregation function outperforms the closed-form Laplacian eigenvectors of Section 7.3 — and when it does not, since GNNs are also known to suffer from <strong>oversmoothing</strong> (node representations becoming indistinguishable after too many message-passing layers), a phenomenon with a direct mathematical connection to the same Laplacian smoothing quadratic form (Section 7.2.2) that spectral clustering exploits deliberately.</p>
+<h5 id="162-scalable-spectral-methods-for-billion-edge-graphs">16.2 Scalable Spectral Methods for Billion-Edge Graphs</h5>
+<p>Section 9.2's Lanczos-based eigensolver scales to graphs with $\mathcal{O}(10^5)$-$\mathcal{O}(10^6)$ nodes on a single machine; web-scale and social-network graphs exceed this by several orders of magnitude. Research on <strong>randomized and sketching-based spectral methods</strong> (extending the randomized <a class="cross-link" href="#chapter-7-dimensionality-reduction-latent-spaces" target="_blank">SVD (Chapter 7 SVD &amp; PCA)</a> ideas from Chapter 7's research directions to the graph Laplacian) trades exact eigenvectors for approximate ones computable via a small number of sparse matrix-vector products, extending spectral clustering's reach toward the scale PageRank's distributed implementation (Section 10.1) already operates at.</p>
+<h5 id="163-dynamic-and-temporal-graphs">16.3 Dynamic and Temporal Graphs</h5>
+<p>Section 11's Mistake 5 noted that PageRank scores are only valid for the graph snapshot they were computed on. Real-world graphs (social networks, citation networks, the web) change continuously. <strong>Temporal graph learning</strong> studies how to update a PageRank or spectral embedding incrementally as edges are added or removed, without recomputing the full power iteration or eigendecomposition from scratch — an active research area with direct production relevance given Section 10.1's cluster-scale recomputation cost.</p>
+<h5 id="164-beyond-simple-graphs-hypergraphs-and-multi-layer-networks">16.4 Beyond Simple Graphs: Hypergraphs and Multi-Layer Networks</h5>
+<p>Sections 7 and 8 assume a single graph with one edge type per pair of nodes. Many real systems are better modeled as <strong>hypergraphs</strong> (an edge can connect more than two nodes at once — a group email, a co-authored paper) or <strong>multi-layer networks</strong> (multiple distinct edge types between the same node set — a social network with both "follows" and "messages" relationships). Generalizing the Laplacian quadratic form and the Perron-Frobenius argument to these richer structures, while preserving the same tractability that makes spectral clustering and PageRank practical, is an active research frontier.</p><div class="box warn"><strong>Chapter 8 Practical Test:</strong><p>For a path graph with 3 nodes connected sequentially (1-2 and 2-3), construct the adjacency matrix A, degree matrix D, and unnormalized Laplacian matrix L.</p><details class="deep-dive"><summary>View Answer Key &amp; Explanation</summary><div class="deep-dive-body"><p><strong>Graph Matrices:</strong></p>
 <p>Adjacency Matrix A:</p>
 <div class="formula">A = \begin{bmatrix} 0 &amp; 1 &amp; 0 \\ 1 &amp; 0 &amp; 1 \\ 0 &amp; 1 &amp; 0 \end{bmatrix}</div>
 <p>Degree Matrix D:</p>
@@ -28987,7 +29979,216 @@ struct DenseLayer {
 </tr>
 </tbody>
 </table>
-<p><em>Section 11 addresses the three most common anti-patterns that corrupt neural network training: zero weight initialization (which prevents symmetry breaking and causes all neurons in a layer to compute identical representations), un-normalized inputs (which causes sigmoid and tanh to start in their saturated regime, producing vanishing gradients from the very first forward pass), and naive floating-point sigmoid without overflow guards (which produces NaN activations that silently corrupt the entire gradient signal through the network).</em></p><div class="box warn"><strong>Chapter 9 Practical Test:</strong><p>Write a python function <code>relu(x)</code> and its derivative function <code>relu_derivative(x)</code> for a float input x.</p><details class="deep-dive"><summary>View Answer Key &amp; Explanation</summary><div class="deep-dive-body"><p><strong>Python Implementation:</strong></p>
+<p><em>Section 11 addresses the three most common anti-patterns that corrupt neural network training: zero weight initialization (which prevents symmetry breaking and causes all neurons in a layer to compute identical representations), un-normalized inputs (which causes sigmoid and tanh to start in their saturated regime, producing vanishing gradients from the very first forward pass), and naive floating-point sigmoid without overflow guards (which produces NaN activations that silently corrupt the entire gradient signal through the network).</em></p>
+<h4 id="section-11-common-mistakes">Section 11: Common Mistakes</h4>
+<hr/>
+<h5 id="mistake-1-expecting-a-perceptron-to-converge-on-non-separable-data">Mistake 1: Expecting a Perceptron to Converge on Non-Separable Data</h5>
+<p><strong>Description.</strong> Section 7.2's Perceptron Convergence Theorem guarantees termination in at most $R^2/\gamma^2$ updates <em>if the data is linearly separable</em>. Running <code>SingleLayerPerceptron.fit</code> on XOR-style data (Section 7.3's Linear Stacking Collapse Theorem's namesake failure) with a large <code>max_epochs</code> does not raise an error — it simply oscillates, correcting one misclassified point only to misclassify another, forever.</p>
+<p><strong>Why it is insidious.</strong> Nothing crashes. <code>fit</code> returns a <code>PerceptronFitResult</code> with <code>converged=False</code> and a plausible-looking <code>final_predictions</code> list, but no amount of additional training will ever fix it — the problem is the data's geometry (Section 3.1), not an insufficient training budget.</p>
+<p><strong>Fix.</strong> Always check <code>result.converged</code> after fitting, and if it is <code>False</code> after a generous <code>max_epochs</code>, suspect non-separability before suspecting a bug — verify with the linear-stacking-collapse argument (Section 7.3) or by direct visual inspection for low-dimensional data.</p>
+<hr/>
+<h5 id="mistake-2-forgetting-the-bias-term">Mistake 2: Forgetting the Bias Term</h5>
+<p><strong>Description.</strong> Omitting the bias $b$ from the perceptron score $s = \mathbf{w}\cdot\mathbf{x} + b$ (or fixing it at zero) restricts the decision boundary to hyperplanes passing through the origin.</p>
+<p><strong>Why it is insidious.</strong> Many small, "obviously separable by eye" datasets are only separable by a hyperplane that does <em>not</em> pass through the origin (any AND/OR-style truth table where the class boundary is offset from zero — Section 12's exercises make this concrete). Without a bias term, the Perceptron Convergence Theorem's guarantee (Section 7.2.2's assumptions) simply does not apply to the restricted (bias-free) hypothesis class, and training can fail to converge on data that is genuinely separable once a bias is allowed.</p>
+<hr/>
+<h5 id="mistake-3-sigmoidtanh-saturation-silently-stalling-learning">Mistake 3: Sigmoid/Tanh Saturation Silently Stalling Learning</h5>
+<p><strong>Description.</strong> Section 7.4.1 and 7.4.2 derived the sigmoid and tanh derivatives: $\sigma'(z) = \sigma(z)(1-\sigma(z))$ and $\tanh'(z) = 1 - \tanh^2(z)$. Both derivatives approach exactly zero as $|z|$ grows large — the functions "saturate."</p>
+<p><strong>Why it is insidious.</strong> A <code>DenseActivationLayer</code> configured with <code>activation="sigmoid"</code> will happily compute forward passes for any input magnitude, including large ones that push every neuron into its saturated regime. Nothing about the forward pass signals this. It is only when a gradient is computed (Chapter 10) that the near-zero derivative silently kills the learning signal — the classic vanishing-gradient failure Section 7.5 derives analytically, and Section 4.5's historical account describes as the reason networks deeper than a couple of layers were considered untrainable for two decades.</p>
+<p><strong>Fix.</strong> Inspect the pre-activation values (<code>DenseForwardResult.pre_activation</code>, Section 8) for magnitudes that push <code>sigmoid</code>/<code>tanh</code> into their flat regions before assuming a training failure is a bug elsewhere; prefer ReLU-family activations for deep stacks precisely because Section 7.5.3 shows they do not saturate on the positive side.</p>
+<pre><code class="language-python"># BROKEN: unbounded pre-activations silently saturate sigmoid
+layer = DenseActivationLayer(weights=large_scale_weights, bias=b, activation="sigmoid")
+result = layer.forward(X)
+# result.pre_activation can easily contain values like +/- 40;
+# sigmoid(40) and sigmoid(-40) are both indistinguishable from 0 or 1
+# in float64, and their true derivative is effectively zero.
+
+# FIXED: check the pre-activation range before trusting a sigmoid/tanh layer
+import numpy as np
+if np.any(np.abs(result.pre_activation) &gt; 10):
+    print("Warning: pre-activations exceed +/-10; sigmoid/tanh are saturating.")
+</code></pre>
+<hr/>
+<h5 id="mistake-4-treating-dying-relu-as-a-contradiction-of-section-753">Mistake 4: Treating "Dying ReLU" as a Contradiction of Section 7.5.3</h5>
+<p><strong>Description.</strong> Section 7.5.3 shows ReLU's derivative is exactly 1 for $z&gt;0$, breaking the geometric vanishing-gradient decay that saturating activations suffer from. Some learners conclude ReLU therefore has <em>no</em> gradient pathology at all.</p>
+<p><strong>Why it is insidious.</strong> ReLU's derivative is exactly <strong>zero</strong> for $z \le 0$ — if a neuron's weights and inputs conspire to keep its pre-activation permanently negative (a large negative update, or a poor initialization), that neuron outputs zero forever and never receives a gradient signal to recover, since $\text{ReLU}'(z)=0$ there. This is a <em>different</em> failure mode than vanishing-gradient-through-depth, but it is still a real way for a ReLU network to stop learning, in individual neurons rather than across an entire deep stack.</p>
+<p><strong>Fix.</strong> This is why ReLU variants such as Leaky ReLU (a small non-zero slope for $z \le 0$) exist — the production algorithm-selection map (Section 10.4) lists several such variants precisely because "ReLU never saturates" is only half true.</p>
+<hr/>
+<h5 id="mistake-5-assuming-the-hidden-layer-transformation-diagram-requires-a-specific-activation">Mistake 5: Assuming the Hidden-Layer Transformation Diagram Requires a Specific Activation</h5>
+<p><strong>Description.</strong> Section 6.4's "folding the space" diagram illustrates <em>a</em> non-linear transformation making an inseparable problem separable — but the specific fold shown depends on the specific activation function and specific weights chosen. Assuming any non-linear activation, with any weights, will fold XOR-like data into separability given enough hidden units is only true asymptotically (the universal approximation results Section 16 touches on); a small, poorly initialized network can fail to find a good fold in practice even though one exists in principle.</p>
+<p><strong>Why it is insidious.</strong> This gap between "a solution exists" and "training finds it" is exactly what motivates Chapter 10's treatment of initialization schemes and optimization dynamics — a mistake worth naming here, before that chapter's tools are available, so it is not confused with a bug in the forward-pass code itself.</p>
+<hr/>
+<h4 id="section-12-exercises">Section 12: Exercises</h4>
+<p>This part turns Sections 7-11 into four graduated tiers of practice: <strong>Conceptual (C)</strong> -&gt; <strong>Derivation (D)</strong> -&gt; <strong>Pure-Python coding (P)</strong> -&gt; <strong>Library (L)</strong>.</p>
+<h5 id="conceptual-questions">Conceptual Questions</h5>
+<p><strong>The Perceptron</strong></p>
+<ul>
+<li><strong>C1.</strong> Why does the Perceptron Convergence Theorem's bound $R^2/\gamma^2$ (Section 7.2.3) grow without limit as the margin $\gamma$ shrinks, and what does this imply for nearly-inseparable data?</li>
+<li><strong>C2.</strong> Why is a decision threshold with no bias term a strictly weaker hypothesis class than one with a learnable bias (Section 11, Mistake 2)?</li>
+</ul>
+<p><strong>Linear Stacking and Activation Functions</strong></p>
+<ul>
+<li><strong>C3.</strong> Why does composing two linear layers with no activation between them collapse into a single linear layer (Section 7.3)?</li>
+<li><strong>C4.</strong> Why must an activation function be non-linear for a multi-layer network to represent more than a linear model could alone?</li>
+<li><strong>C5.</strong> Why does the sigmoid derivative's maximum value of exactly 0.25 (at $z=0$) matter for vanishing gradients in deep sigmoid networks (Section 7.5.2)?</li>
+</ul>
+<h5 id="derivation-exercises">Derivation Exercises</h5>
+<p><strong>The Perceptron</strong></p>
+<ul>
+<li><strong>D1.</strong> Complete the Perceptron Convergence Theorem's proof (Section 7.2.3): starting from the Rosenblatt update rule, derive the two inequalities (one growing linearly in the number of updates, one growing as its square root) whose combination bounds the total number of updates.</li>
+</ul>
+<p><strong>Linear Stacking Collapse</strong></p>
+<ul>
+<li><strong>D2.</strong> Prove the zero-bias case of the Linear Stacking Collapse Theorem (Section 7.3.2): show that $\mathbf{W}_2(\mathbf{W}_1\mathbf{x}) = (\mathbf{W}_2\mathbf{W}_1)\mathbf{x}$ for any two weight matrices, and state what single matrix an arbitrarily deep stack of linear-only layers collapses to.</li>
+<li><strong>D3.</strong> Extend the proof to the bias-inclusive case (Section 7.3.3) and show what happens to the combined bias term.</li>
+</ul>
+<p><strong>Activation Derivatives</strong></p>
+<ul>
+<li><strong>D4.</strong> Derive $\sigma'(z) = \sigma(z)(1-\sigma(z))$ from $\sigma(z) = 1/(1+e^{-z})$ using the quotient rule (Section 7.4.1).</li>
+<li><strong>D5.</strong> Derive $\tanh'(z) = 1 - \tanh^2(z)$ from the exponential definition of $\tanh$ (Section 7.4.2).</li>
+<li><strong>D6.</strong> Starting from the chain rule and the per-layer derivatives of D4/D5, derive the exponential decay bound for gradient magnitude as a function of depth $L$ for a sigmoid network (Section 7.5.2), and explain why the equivalent bound for ReLU does not decay geometrically (Section 7.5.3).</li>
+</ul>
+<h5 id="pure-python-coding-exercises">Pure-Python Coding Exercises</h5>
+<ul>
+<li><strong>P1.</strong> Extend <code>SingleLayerPerceptron</code> to record, at every update, the current margin $\min_i y_i(\mathbf{w}\cdot\mathbf{x}_i + b)/|\mathbf{w}|$, and verify empirically that it does not need to be monotonically increasing for the convergence theorem to still hold.</li>
+<li><strong>P2.</strong> Implement <code>logical_gate_training_data("XOR")</code> and confirm empirically (via <code>SingleLayerPerceptron.fit</code> with a large <code>max_epochs</code>) that <code>converged</code> never becomes <code>True</code>, connecting the empirical non-convergence to the Section 7.3 impossibility proof.</li>
+<li><strong>P3.</strong> Add a <code>"leaky_relu"</code> activation to <code>apply_activation_elementwise</code> (Section 8) with a configurable negative slope, and verify it never produces the exact-zero-gradient dead-neuron condition of Section 11, Mistake 4 for any non-zero pre-activation.</li>
+<li><strong>P4.</strong> Using only <code>DenseActivationLayer.forward</code> (no training — Chapter 10 introduces the backward pass), hand-derive and hard-code a set of weights for a 2-layer network that correctly computes XOR, and verify it on all four input combinations.</li>
+</ul>
+<h5 id="library-exercises">Library Exercises</h5>
+<ul>
+<li><strong>L1.</strong> Fit <code>sklearn.linear_model.Perceptron</code> on the AND, OR, and XOR truth tables and confirm it converges on the first two and fails to separate the third, matching Section 7.2/7.3's theorems.</li>
+<li><strong>L2.</strong> Plot the sigmoid, tanh, and ReLU functions and their derivatives side by side (using <code>matplotlib</code>) over $z \in [-10, 10]$ to visualize the saturation regions from Section 11, Mistakes 3 and 4.</li>
+<li><strong>L3.</strong> Build a small <code>torch.nn.Sequential</code> two-layer network with a sigmoid activation, initialize its weights to a large scale, and observe (via <code>.grad</code> after a single backward call) how small the gradient becomes — an empirical demonstration of Section 7.5's vanishing-gradient bound using a real <a class="cross-link" href="#chapter-4-the-core-optimization-engine-automatic-differentiation" target="_blank">autograd (Chapter 4 Autograd Engine)</a> engine.</li>
+</ul>
+<hr/>
+<h4 id="section-13-mini-project-from-perceptron-failure-to-a-hand-built-xor-solver">Section 13: Mini Project — From Perceptron Failure to a Hand-Built XOR Solver</h4>
+<h5 id="overview">Overview</h5>
+<p>This project makes Section 6.4's "folding the space" diagram concrete and runnable. It first confirms empirically that a single perceptron cannot learn XOR (Section 7.3's theorem in action), then hand-derives weights for a 2-layer <code>DenseActivationLayer</code> network that solves XOR exactly using only forward passes — since the backward pass (and therefore learning these weights automatically) is Chapter 10's subject, not this chapter's.</p>
+<h5 id="full-implementation">Full Implementation</h5>
+<pre><code class="language-python"># mini_project_xor_solver.py
+"""
+Mini Project: From perceptron failure to a hand-built XOR solver.
+
+Part 1: Confirms that SingleLayerPerceptron cannot converge on XOR, no
+         matter how many epochs it is given (Section 7.3's impossibility
+         theorem, observed empirically).
+Part 2: Hand-derives weights for a 2-layer DenseActivationLayer network
+         that computes XOR exactly via forward passes alone, demonstrating
+         Section 6.4's hidden-layer "folding" concretely.
+"""
+from __future__ import annotations
+
+import numpy as np
+
+from chapter9_neural_spaces import (
+    SingleLayerPerceptron,
+    DenseActivationLayer,
+)
+
+
+XOR_TABLE = [
+    ([0, 0], 0),
+    ([0, 1], 1),
+    ([1, 0], 1),
+    ([1, 1], 0),
+]
+
+
+def part1_perceptron_fails_xor() -&gt; None:
+    print("-" * 70)
+    print("Part 1: A single perceptron cannot learn XOR")
+    print("-" * 70)
+
+    perceptron = SingleLayerPerceptron(n_features=2, learning_rate=1.0, threshold=0.0)
+    result = perceptron.fit(XOR_TABLE, max_epochs=200)
+
+    print(f"Converged after up to 200 epochs: {result.converged}")
+    print(f"Final weights: {result.weights}, bias: {result.bias}")
+    print(f"Final predictions: {result.final_predictions}  (targets: {[t for _, t in XOR_TABLE]})")
+
+    assert not result.converged, (
+        "expected the perceptron to fail to converge on XOR — if this "
+        "assertion fails, something is wrong with the training data or "
+        "the perceptron implementation, not with the theory"
+    )
+    print("Confirmed: no linear decision boundary separates XOR (Section 7.3).")
+
+
+def part2_hand_built_xor_network() -&gt; None:
+    print("\n" + "-" * 70)
+    print("Part 2: A hand-built 2-layer network solves XOR exactly")
+    print("-" * 70)
+
+    # Hidden layer: two ReLU units.
+    #   h1 = ReLU(x1 + x2)       an OR-like unit: 0, 1, 1, 2 for the four inputs
+    #   h2 = ReLU(x1 + x2 - 1)   fires only once x1+x2 &gt;= 1: 0, 0, 0, 1
+    # XOR = h1 - 2*h2 gives: (0,0)-&gt;0, (0,1)-&gt;1, (1,0)-&gt;1, (1,1)-&gt; 2-2=0
+    hidden_weights = np.array([[1.0, 1.0], [1.0, 1.0]])  # shape (in=2, out=2)
+    hidden_bias = np.array([0.0, -1.0])
+    hidden_layer = DenseActivationLayer(hidden_weights, hidden_bias, activation="relu")
+
+    output_weights = np.array([[1.0], [-2.0]])  # shape (in=2, out=1)
+    output_bias = np.array([0.0])
+    output_layer = DenseActivationLayer(output_weights, output_bias, activation="linear")
+
+    X = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
+    targets = [t for _, t in XOR_TABLE]
+
+    hidden_result = hidden_layer.forward(X)
+    output_result = output_layer.forward(hidden_result.activation)
+    predictions = [1 if v &gt;= 0.5 else 0 for v in output_result.activation.ravel()]
+
+    print(f"Hidden activations (h1, h2) per input:\n{hidden_result.activation}")
+    print(f"Raw output scores: {output_result.activation.ravel()}")
+    print(f"Predictions: {predictions}  (targets: {targets})")
+
+    assert predictions == targets, (
+        f"hand-built network failed to reproduce XOR: got {predictions}, expected {targets}"
+    )
+    print("\nConfirmed: a single hidden layer with a non-linear activation solves XOR exactly —")
+    print("the fold that Section 6.4's diagram describes, made concrete with real numbers.")
+
+
+def run_xor_project() -&gt; None:
+    print("=" * 70)
+    print("Mini Project: From Perceptron Failure to a Hand-Built XOR Solver")
+    print("=" * 70)
+    part1_perceptron_fails_xor()
+    part2_hand_built_xor_network()
+    print("=" * 70)
+    print("Mini project passed.")
+    print("=" * 70)
+
+
+if __name__ == "__main__":
+    run_xor_project()
+</code></pre>
+<hr/>
+<h4 id="section-14-summary">Section 14: Summary</h4>
+<p>Chapter 9 established why the flat, linear world of every preceding chapter is insufficient, and built the minimal machinery needed to escape it. The Perceptron Convergence Theorem (Section 7.2) proved that a single linear decision boundary, fit by Rosenblatt's simple mistake-driven update rule, is <em>guaranteed</em> to be found whenever the data is linearly separable — one of the earliest and cleanest convergence guarantees in machine learning. The Linear Stacking Collapse Theorem (Section 7.3) then proved the necessity of everything that follows: without a non-linear activation function between layers, no amount of depth adds any representational power at all. Section 7.4's derivative derivations for sigmoid, tanh, and ReLU, and Section 7.5's vanishing-gradient analysis, explained both why early networks were hard to train deep and why ReLU's adoption was a turning point in the field's history (Section 4.5).</p>
+<p>Section 8 implemented both halves of this chapter completely: a pure-Python <code>SingleLayerPerceptron</code> with the exact Rosenblatt update rule, and a NumPy-backed <code>DenseActivationLayer</code> computing forward passes with four activation engines — deliberately stopping short of a backward pass, which Chapter 10 builds properly as the deep feedforward network's centerpiece. Section 11 catalogued the failure modes specific to this material: non-convergence on inseparable data, missing bias terms restricting the hypothesis class, and the saturation and dead-neuron pathologies that Section 7.4's own derivative formulas predict exactly.</p>
+<hr/>
+<h4 id="section-15-further-reading">Section 15: Further Reading</h4>
+<p><strong>[1] Warren S. McCulloch and Walter Pitts — "A Logical Calculus of the Ideas Immanent in Nervous Activity" (<em>Bulletin of Mathematical Biophysics</em>, 5(4):115–133, 1943)</strong></p>
+<p>The founding paper proposing a mathematical, all-or-none model of a neuron — the direct ancestor of the perceptron's threshold decision rule (Section 4.1).</p>
+<p><strong>[2] Frank Rosenblatt — "The Perceptron: A Probabilistic Model for Information Storage and Organization in the Brain" (<em>Psychological Review</em>, 65(6):386–408, 1958)</strong></p>
+<p>Introduces the perceptron and its learning rule, implemented exactly as Stage 1's <code>SingleLayerPerceptron</code> (Section 4.2).</p>
+<p><strong>[3] Marvin Minsky and Seymour Papert — <em>Perceptrons: An Introduction to Computational Geometry</em> (MIT Press, 1969)</strong></p>
+<p>The rigorous proof that a single-layer perceptron cannot represent XOR (Section 4.3 and Section 7.3), historically credited with triggering the first "AI winter" — required reading for understanding why the linear stacking collapse theorem was not a minor technical footnote but a field-altering result.</p>
+<p><strong>[4] David Rumelhart, Geoffrey Hinton, and Ronald Williams — "Learning Representations by Back-Propagating Errors" (<em>Nature</em>, 323(6088):533–536, 1986)</strong></p>
+<p>Popularized <a class="cross-link" href="#chapter-4-the-core-optimization-engine-automatic-differentiation" target="_blank">backpropagation (Chapter 4 Autograd Engine)</a> as the mechanism for training multi-layer networks — the algorithm Chapter 10 builds from scratch, resolving the impossibility Minsky and Papert identified by adding a hidden layer and a way to train it.</p>
+<p><strong>[5] Xavier Glorot, Antoine Bordes, and Yoshua Bengio — "Deep Sparse Rectifier Neural Networks" (<em>AISTATS</em>, 2011)</strong></p>
+<p>The paper establishing ReLU as a practical, widely adopted activation function, directly motivated by the vanishing-gradient analysis of Section 7.5 — required reading for the historical transition described in Section 4.5.</p>
+<hr/>
+<h4 id="section-16-research-directions">Section 16: Research Directions</h4>
+<h5 id="161-the-universal-approximation-theorem">16.1 The Universal Approximation Theorem</h5>
+<p>Section 6.4's "folding" diagram and this chapter's mini project (Section 13) show <em>a</em> hand-built solution to XOR with one hidden layer. The <strong>Universal Approximation Theorem</strong> (Cybenko, 1989; Hornik, 1991) proves something far stronger: a feedforward network with a single hidden layer of sufficient width, using almost any non-constant, bounded activation function, can approximate <em>any</em> continuous function on a compact domain to arbitrary accuracy. The theorem is non-constructive — it proves such a network exists, but says nothing about how many hidden units are needed in practice, or whether gradient-based training (Chapter 10) will actually find good weights, a gap Section 11's Mistake 5 already previewed.</p>
+<h5 id="162-modern-activation-functions-gelu-swish-and-beyond">16.2 Modern Activation Functions: GELU, Swish, and Beyond</h5>
+<p>Section 7.4 derived sigmoid, tanh, and ReLU by hand — the three foundational activation functions. Section 10.4's production selection map lists GELU and Swish as the modern defaults for large-scale networks. Both are smooth approximations to ReLU designed to combine ReLU's non-saturating positive-side gradient (Section 7.5.3) with a smooth (rather than kinked) transition at zero, an active area of empirical research into which specific smoothness properties matter most for optimization.</p>
+<h5 id="163-beyond-the-single-neuron-why-depth-not-just-width">16.3 Beyond the Single Neuron: Why Depth, Not Just Width</h5>
+<p>The Universal Approximation Theorem (Section 16.1) technically only requires <em>one</em> wide hidden layer, yet every modern successful architecture is deep (many narrow-ish layers) rather than shallow-and-wide. Research on the <strong>expressivity of depth</strong> shows that certain functions require exponentially more hidden units to represent with a single layer than with several stacked layers — a formal argument for why the "folding" intuition of Section 6.4, applied repeatedly across many layers, is fundamentally more efficient than one enormous fold, even though a single fold is theoretically sufficient.</p>
+<h5 id="164-biological-plausibility-and-alternatives-to-backpropagation">16.4 Biological Plausibility and Alternatives to Backpropagation</h5>
+<p>Section 4.1's McCulloch-Pitts neuron and Rosenblatt's perceptron were both explicitly motivated by neuroscience, yet the <a class="cross-link" href="#chapter-4-the-core-optimization-engine-automatic-differentiation" target="_blank">backpropagation (Chapter 4 Autograd Engine)</a> algorithm that trains modern deep networks (Chapter 10) has no well-established biological mechanism — real neurons do not appear to run reverse-mode <a class="cross-link" href="#chapter-4-the-core-optimization-engine-automatic-differentiation" target="_blank">automatic differentiation (Chapter 4 Autograd Engine)</a>. Research on <strong>biologically plausible learning rules</strong> (predictive coding, feedback alignment, equilibrium propagation) explores whether the same representational power this chapter's theorems establish can be achieved through learning mechanisms more compatible with known neuroscience, an open question connecting this chapter's founding neurobiological metaphor (Section 4.1) back to current research.</p><div class="box warn"><strong>Chapter 9 Practical Test:</strong><p>Write a python function <code>relu(x)</code> and its derivative function <code>relu_derivative(x)</code> for a float input x.</p><details class="deep-dive"><summary>View Answer Key &amp; Explanation</summary><div class="deep-dive-body"><p><strong>Python Implementation:</strong></p>
 <pre><code class="language-python">def relu(x):
     return max(0.0, x)
 

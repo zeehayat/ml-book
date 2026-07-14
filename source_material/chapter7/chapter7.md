@@ -2352,3 +2352,276 @@ Every mathematical index $(i, j, k)$ has a unique and consistent flat-array addr
 | LLM prefill (long context) | SwiGLU | Fused SwiGLU kernel; FlashAttention for attention layers | Activation offloading to CPU; NVLink for tensor parallelism |
 
 *Section 11 addresses the three most common anti-patterns that corrupt neural network training: zero weight initialization (which prevents symmetry breaking and causes all neurons in a layer to compute identical representations), un-normalized inputs (which causes sigmoid and tanh to start in their saturated regime, producing vanishing gradients from the very first forward pass), and naive floating-point sigmoid without overflow guards (which produces NaN activations that silently corrupt the entire gradient signal through the network).*
+
+## Section 11: Common Mistakes
+
+---
+
+### Mistake 1: Expecting a Perceptron to Converge on Non-Separable Data
+
+**Description.** Section 7.2's Perceptron Convergence Theorem guarantees termination in at most $R^2/\gamma^2$ updates *if the data is linearly separable*. Running `SingleLayerPerceptron.fit` on XOR-style data (Section 7.3's Linear Stacking Collapse Theorem's namesake failure) with a large `max_epochs` does not raise an error — it simply oscillates, correcting one misclassified point only to misclassify another, forever.
+
+**Why it is insidious.** Nothing crashes. `fit` returns a `PerceptronFitResult` with `converged=False` and a plausible-looking `final_predictions` list, but no amount of additional training will ever fix it — the problem is the data's geometry (Section 3.1), not an insufficient training budget.
+
+**Fix.** Always check `result.converged` after fitting, and if it is `False` after a generous `max_epochs`, suspect non-separability before suspecting a bug — verify with the linear-stacking-collapse argument (Section 7.3) or by direct visual inspection for low-dimensional data.
+
+---
+
+### Mistake 2: Forgetting the Bias Term
+
+**Description.** Omitting the bias $b$ from the perceptron score $s = \mathbf{w}\cdot\mathbf{x} + b$ (or fixing it at zero) restricts the decision boundary to hyperplanes passing through the origin.
+
+**Why it is insidious.** Many small, "obviously separable by eye" datasets are only separable by a hyperplane that does *not* pass through the origin (any AND/OR-style truth table where the class boundary is offset from zero — Section 12's exercises make this concrete). Without a bias term, the Perceptron Convergence Theorem's guarantee (Section 7.2.2's assumptions) simply does not apply to the restricted (bias-free) hypothesis class, and training can fail to converge on data that is genuinely separable once a bias is allowed.
+
+---
+
+### Mistake 3: Sigmoid/Tanh Saturation Silently Stalling Learning
+
+**Description.** Section 7.4.1 and 7.4.2 derived the sigmoid and tanh derivatives: $\sigma'(z) = \sigma(z)(1-\sigma(z))$ and $\tanh'(z) = 1 - \tanh^2(z)$. Both derivatives approach exactly zero as $|z|$ grows large — the functions "saturate."
+
+**Why it is insidious.** A `DenseActivationLayer` configured with `activation="sigmoid"` will happily compute forward passes for any input magnitude, including large ones that push every neuron into its saturated regime. Nothing about the forward pass signals this. It is only when a gradient is computed (Chapter 8) that the near-zero derivative silently kills the learning signal — the classic vanishing-gradient failure Section 7.5 derives analytically, and Section 4.5's historical account describes as the reason networks deeper than a couple of layers were considered untrainable for two decades.
+
+**Fix.** Inspect the pre-activation values (`DenseForwardResult.pre_activation`, Section 8) for magnitudes that push `sigmoid`/`tanh` into their flat regions before assuming a training failure is a bug elsewhere; prefer ReLU-family activations for deep stacks precisely because Section 7.5.3 shows they do not saturate on the positive side.
+
+```python
+# BROKEN: unbounded pre-activations silently saturate sigmoid
+layer = DenseActivationLayer(weights=large_scale_weights, bias=b, activation="sigmoid")
+result = layer.forward(X)
+# result.pre_activation can easily contain values like +/- 40;
+# sigmoid(40) and sigmoid(-40) are both indistinguishable from 0 or 1
+# in float64, and their true derivative is effectively zero.
+
+# FIXED: check the pre-activation range before trusting a sigmoid/tanh layer
+import numpy as np
+if np.any(np.abs(result.pre_activation) > 10):
+    print("Warning: pre-activations exceed +/-10; sigmoid/tanh are saturating.")
+```
+
+---
+
+### Mistake 4: Treating "Dying ReLU" as a Contradiction of Section 7.5.3
+
+**Description.** Section 7.5.3 shows ReLU's derivative is exactly 1 for $z>0$, breaking the geometric vanishing-gradient decay that saturating activations suffer from. Some learners conclude ReLU therefore has *no* gradient pathology at all.
+
+**Why it is insidious.** ReLU's derivative is exactly **zero** for $z \le 0$ — if a neuron's weights and inputs conspire to keep its pre-activation permanently negative (a large negative update, or a poor initialization), that neuron outputs zero forever and never receives a gradient signal to recover, since $\text{ReLU}'(z)=0$ there. This is a *different* failure mode than vanishing-gradient-through-depth, but it is still a real way for a ReLU network to stop learning, in individual neurons rather than across an entire deep stack.
+
+**Fix.** This is why ReLU variants such as Leaky ReLU (a small non-zero slope for $z \le 0$) exist — the production algorithm-selection map (Section 10.4) lists several such variants precisely because "ReLU never saturates" is only half true.
+
+---
+
+### Mistake 5: Assuming the Hidden-Layer Transformation Diagram Requires a Specific Activation
+
+**Description.** Section 6.4's "folding the space" diagram illustrates *a* non-linear transformation making an inseparable problem separable — but the specific fold shown depends on the specific activation function and specific weights chosen. Assuming any non-linear activation, with any weights, will fold XOR-like data into separability given enough hidden units is only true asymptotically (the universal approximation results Section 16 touches on); a small, poorly initialized network can fail to find a good fold in practice even though one exists in principle.
+
+**Why it is insidious.** This gap between "a solution exists" and "training finds it" is exactly what motivates Chapter 8's treatment of initialization schemes and optimization dynamics — a mistake worth naming here, before that chapter's tools are available, so it is not confused with a bug in the forward-pass code itself.
+
+---
+
+## Section 12: Exercises
+
+This part turns Sections 7-11 into four graduated tiers of practice: **Conceptual (C)** -> **Derivation (D)** -> **Pure-Python coding (P)** -> **Library (L)**.
+
+### Conceptual Questions
+
+**The Perceptron**
+
+- **C1.** Why does the Perceptron Convergence Theorem's bound $R^2/\gamma^2$ (Section 7.2.3) grow without limit as the margin $\gamma$ shrinks, and what does this imply for nearly-inseparable data?
+- **C2.** Why is a decision threshold with no bias term a strictly weaker hypothesis class than one with a learnable bias (Section 11, Mistake 2)?
+
+**Linear Stacking and Activation Functions**
+
+- **C3.** Why does composing two linear layers with no activation between them collapse into a single linear layer (Section 7.3)?
+- **C4.** Why must an activation function be non-linear for a multi-layer network to represent more than a linear model could alone?
+- **C5.** Why does the sigmoid derivative's maximum value of exactly 0.25 (at $z=0$) matter for vanishing gradients in deep sigmoid networks (Section 7.5.2)?
+
+### Derivation Exercises
+
+**The Perceptron**
+
+- **D1.** Complete the Perceptron Convergence Theorem's proof (Section 7.2.3): starting from the Rosenblatt update rule, derive the two inequalities (one growing linearly in the number of updates, one growing as its square root) whose combination bounds the total number of updates.
+
+**Linear Stacking Collapse**
+
+- **D2.** Prove the zero-bias case of the Linear Stacking Collapse Theorem (Section 7.3.2): show that $\mathbf{W}_2(\mathbf{W}_1\mathbf{x}) = (\mathbf{W}_2\mathbf{W}_1)\mathbf{x}$ for any two weight matrices, and state what single matrix an arbitrarily deep stack of linear-only layers collapses to.
+- **D3.** Extend the proof to the bias-inclusive case (Section 7.3.3) and show what happens to the combined bias term.
+
+**Activation Derivatives**
+
+- **D4.** Derive $\sigma'(z) = \sigma(z)(1-\sigma(z))$ from $\sigma(z) = 1/(1+e^{-z})$ using the quotient rule (Section 7.4.1).
+- **D5.** Derive $\tanh'(z) = 1 - \tanh^2(z)$ from the exponential definition of $\tanh$ (Section 7.4.2).
+- **D6.** Starting from the chain rule and the per-layer derivatives of D4/D5, derive the exponential decay bound for gradient magnitude as a function of depth $L$ for a sigmoid network (Section 7.5.2), and explain why the equivalent bound for ReLU does not decay geometrically (Section 7.5.3).
+
+### Pure-Python Coding Exercises
+
+- **P1.** Extend `SingleLayerPerceptron` to record, at every update, the current margin $\min_i y_i(\mathbf{w}\cdot\mathbf{x}_i + b)/\|\mathbf{w}\|$, and verify empirically that it does not need to be monotonically increasing for the convergence theorem to still hold.
+- **P2.** Implement `logical_gate_training_data("XOR")` and confirm empirically (via `SingleLayerPerceptron.fit` with a large `max_epochs`) that `converged` never becomes `True`, connecting the empirical non-convergence to the Section 7.3 impossibility proof.
+- **P3.** Add a `"leaky_relu"` activation to `apply_activation_elementwise` (Section 8) with a configurable negative slope, and verify it never produces the exact-zero-gradient dead-neuron condition of Section 11, Mistake 4 for any non-zero pre-activation.
+- **P4.** Using only `DenseActivationLayer.forward` (no training — Chapter 8 introduces the backward pass), hand-derive and hard-code a set of weights for a 2-layer network that correctly computes XOR, and verify it on all four input combinations.
+
+### Library Exercises
+
+- **L1.** Fit `sklearn.linear_model.Perceptron` on the AND, OR, and XOR truth tables and confirm it converges on the first two and fails to separate the third, matching Section 7.2/7.3's theorems.
+- **L2.** Plot the sigmoid, tanh, and ReLU functions and their derivatives side by side (using `matplotlib`) over $z \in [-10, 10]$ to visualize the saturation regions from Section 11, Mistakes 3 and 4.
+- **L3.** Build a small `torch.nn.Sequential` two-layer network with a sigmoid activation, initialize its weights to a large scale, and observe (via `.grad` after a single backward call) how small the gradient becomes — an empirical demonstration of Section 7.5's vanishing-gradient bound using a real autograd engine.
+
+---
+
+## Section 13: Mini Project — From Perceptron Failure to a Hand-Built XOR Solver
+
+### Overview
+
+This project makes Section 6.4's "folding the space" diagram concrete and runnable. It first confirms empirically that a single perceptron cannot learn XOR (Section 7.3's theorem in action), then hand-derives weights for a 2-layer `DenseActivationLayer` network that solves XOR exactly using only forward passes — since the backward pass (and therefore learning these weights automatically) is Chapter 8's subject, not this chapter's.
+
+### Full Implementation
+
+```python
+# mini_project_xor_solver.py
+"""
+Mini Project: From perceptron failure to a hand-built XOR solver.
+
+Part 1: Confirms that SingleLayerPerceptron cannot converge on XOR, no
+         matter how many epochs it is given (Section 7.3's impossibility
+         theorem, observed empirically).
+Part 2: Hand-derives weights for a 2-layer DenseActivationLayer network
+         that computes XOR exactly via forward passes alone, demonstrating
+         Section 6.4's hidden-layer "folding" concretely.
+"""
+from __future__ import annotations
+
+import numpy as np
+
+from chapter9_neural_spaces import (
+    SingleLayerPerceptron,
+    DenseActivationLayer,
+)
+
+
+XOR_TABLE = [
+    ([0, 0], 0),
+    ([0, 1], 1),
+    ([1, 0], 1),
+    ([1, 1], 0),
+]
+
+
+def part1_perceptron_fails_xor() -> None:
+    print("-" * 70)
+    print("Part 1: A single perceptron cannot learn XOR")
+    print("-" * 70)
+
+    perceptron = SingleLayerPerceptron(n_features=2, learning_rate=1.0, threshold=0.0)
+    result = perceptron.fit(XOR_TABLE, max_epochs=200)
+
+    print(f"Converged after up to 200 epochs: {result.converged}")
+    print(f"Final weights: {result.weights}, bias: {result.bias}")
+    print(f"Final predictions: {result.final_predictions}  (targets: {[t for _, t in XOR_TABLE]})")
+
+    assert not result.converged, (
+        "expected the perceptron to fail to converge on XOR — if this "
+        "assertion fails, something is wrong with the training data or "
+        "the perceptron implementation, not with the theory"
+    )
+    print("Confirmed: no linear decision boundary separates XOR (Section 7.3).")
+
+
+def part2_hand_built_xor_network() -> None:
+    print("\n" + "-" * 70)
+    print("Part 2: A hand-built 2-layer network solves XOR exactly")
+    print("-" * 70)
+
+    # Hidden layer: two ReLU units.
+    #   h1 = ReLU(x1 + x2)       an OR-like unit: 0, 1, 1, 2 for the four inputs
+    #   h2 = ReLU(x1 + x2 - 1)   fires only once x1+x2 >= 1: 0, 0, 0, 1
+    # XOR = h1 - 2*h2 gives: (0,0)->0, (0,1)->1, (1,0)->1, (1,1)-> 2-2=0
+    hidden_weights = np.array([[1.0, 1.0], [1.0, 1.0]])  # shape (in=2, out=2)
+    hidden_bias = np.array([0.0, -1.0])
+    hidden_layer = DenseActivationLayer(hidden_weights, hidden_bias, activation="relu")
+
+    output_weights = np.array([[1.0], [-2.0]])  # shape (in=2, out=1)
+    output_bias = np.array([0.0])
+    output_layer = DenseActivationLayer(output_weights, output_bias, activation="linear")
+
+    X = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
+    targets = [t for _, t in XOR_TABLE]
+
+    hidden_result = hidden_layer.forward(X)
+    output_result = output_layer.forward(hidden_result.activation)
+    predictions = [1 if v >= 0.5 else 0 for v in output_result.activation.ravel()]
+
+    print(f"Hidden activations (h1, h2) per input:\n{hidden_result.activation}")
+    print(f"Raw output scores: {output_result.activation.ravel()}")
+    print(f"Predictions: {predictions}  (targets: {targets})")
+
+    assert predictions == targets, (
+        f"hand-built network failed to reproduce XOR: got {predictions}, expected {targets}"
+    )
+    print("\nConfirmed: a single hidden layer with a non-linear activation solves XOR exactly —")
+    print("the fold that Section 6.4's diagram describes, made concrete with real numbers.")
+
+
+def run_xor_project() -> None:
+    print("=" * 70)
+    print("Mini Project: From Perceptron Failure to a Hand-Built XOR Solver")
+    print("=" * 70)
+    part1_perceptron_fails_xor()
+    part2_hand_built_xor_network()
+    print("=" * 70)
+    print("Mini project passed.")
+    print("=" * 70)
+
+
+if __name__ == "__main__":
+    run_xor_project()
+```
+
+---
+
+## Section 14: Summary
+
+Chapter 7 established why the flat, linear world of every preceding chapter is insufficient, and built the minimal machinery needed to escape it. The Perceptron Convergence Theorem (Section 7.2) proved that a single linear decision boundary, fit by Rosenblatt's simple mistake-driven update rule, is *guaranteed* to be found whenever the data is linearly separable — one of the earliest and cleanest convergence guarantees in machine learning. The Linear Stacking Collapse Theorem (Section 7.3) then proved the necessity of everything that follows: without a non-linear activation function between layers, no amount of depth adds any representational power at all. Section 7.4's derivative derivations for sigmoid, tanh, and ReLU, and Section 7.5's vanishing-gradient analysis, explained both why early networks were hard to train deep and why ReLU's adoption was a turning point in the field's history (Section 4.5).
+
+Section 8 implemented both halves of this chapter completely: a pure-Python `SingleLayerPerceptron` with the exact Rosenblatt update rule, and a NumPy-backed `DenseActivationLayer` computing forward passes with four activation engines — deliberately stopping short of a backward pass, which Chapter 8 builds properly as the deep feedforward network's centerpiece. Section 11 catalogued the failure modes specific to this material: non-convergence on inseparable data, missing bias terms restricting the hypothesis class, and the saturation and dead-neuron pathologies that Section 7.4's own derivative formulas predict exactly.
+
+---
+
+## Section 15: Further Reading
+
+**[1] Warren S. McCulloch and Walter Pitts — "A Logical Calculus of the Ideas Immanent in Nervous Activity" (*Bulletin of Mathematical Biophysics*, 5(4):115–133, 1943)**
+
+The founding paper proposing a mathematical, all-or-none model of a neuron — the direct ancestor of the perceptron's threshold decision rule (Section 4.1).
+
+**[2] Frank Rosenblatt — "The Perceptron: A Probabilistic Model for Information Storage and Organization in the Brain" (*Psychological Review*, 65(6):386–408, 1958)**
+
+Introduces the perceptron and its learning rule, implemented exactly as Stage 1's `SingleLayerPerceptron` (Section 4.2).
+
+**[3] Marvin Minsky and Seymour Papert — *Perceptrons: An Introduction to Computational Geometry* (MIT Press, 1969)**
+
+The rigorous proof that a single-layer perceptron cannot represent XOR (Section 4.3 and Section 7.3), historically credited with triggering the first "AI winter" — required reading for understanding why the linear stacking collapse theorem was not a minor technical footnote but a field-altering result.
+
+**[4] David Rumelhart, Geoffrey Hinton, and Ronald Williams — "Learning Representations by Back-Propagating Errors" (*Nature*, 323(6088):533–536, 1986)**
+
+Popularized backpropagation as the mechanism for training multi-layer networks — the algorithm Chapter 8 builds from scratch, resolving the impossibility Minsky and Papert identified by adding a hidden layer and a way to train it.
+
+**[5] Xavier Glorot, Antoine Bordes, and Yoshua Bengio — "Deep Sparse Rectifier Neural Networks" (*AISTATS*, 2011)**
+
+The paper establishing ReLU as a practical, widely adopted activation function, directly motivated by the vanishing-gradient analysis of Section 7.5 — required reading for the historical transition described in Section 4.5.
+
+---
+
+## Section 16: Research Directions
+
+### 16.1 The Universal Approximation Theorem
+
+Section 6.4's "folding" diagram and this chapter's mini project (Section 13) show *a* hand-built solution to XOR with one hidden layer. The **Universal Approximation Theorem** (Cybenko, 1989; Hornik, 1991) proves something far stronger: a feedforward network with a single hidden layer of sufficient width, using almost any non-constant, bounded activation function, can approximate *any* continuous function on a compact domain to arbitrary accuracy. The theorem is non-constructive — it proves such a network exists, but says nothing about how many hidden units are needed in practice, or whether gradient-based training (Chapter 8) will actually find good weights, a gap Section 11's Mistake 5 already previewed.
+
+### 16.2 Modern Activation Functions: GELU, Swish, and Beyond
+
+Section 7.4 derived sigmoid, tanh, and ReLU by hand — the three foundational activation functions. Section 10.4's production selection map lists GELU and Swish as the modern defaults for large-scale networks. Both are smooth approximations to ReLU designed to combine ReLU's non-saturating positive-side gradient (Section 7.5.3) with a smooth (rather than kinked) transition at zero, an active area of empirical research into which specific smoothness properties matter most for optimization.
+
+### 16.3 Beyond the Single Neuron: Why Depth, Not Just Width
+
+The Universal Approximation Theorem (Section 16.1) technically only requires *one* wide hidden layer, yet every modern successful architecture is deep (many narrow-ish layers) rather than shallow-and-wide. Research on the **expressivity of depth** shows that certain functions require exponentially more hidden units to represent with a single layer than with several stacked layers — a formal argument for why the "folding" intuition of Section 6.4, applied repeatedly across many layers, is fundamentally more efficient than one enormous fold, even though a single fold is theoretically sufficient.
+
+### 16.4 Biological Plausibility and Alternatives to Backpropagation
+
+Section 4.1's McCulloch-Pitts neuron and Rosenblatt's perceptron were both explicitly motivated by neuroscience, yet the backpropagation algorithm that trains modern deep networks (Chapter 8) has no well-established biological mechanism — real neurons do not appear to run reverse-mode automatic differentiation. Research on **biologically plausible learning rules** (predictive coding, feedback alignment, equilibrium propagation) explores whether the same representational power this chapter's theorems establish can be achieved through learning mechanisms more compatible with known neuroscience, an open question connecting this chapter's founding neurobiological metaphor (Section 4.1) back to current research.
