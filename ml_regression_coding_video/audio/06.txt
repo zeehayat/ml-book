@@ -1,0 +1,1 @@
+Before training, split data into training and test sets. The training set teaches the model. The test set estimates how well it might work on new data. Do not tune your model using the final test answers.

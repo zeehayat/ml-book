@@ -1,0 +1,1 @@
+We will use a synthetic house price dataset. Features include size, bedrooms, age, and region. The target is price in thousands. Synthetic data is useful for teaching because everyone gets the same result.

@@ -1,0 +1,1 @@
+Always start with a baseline. For regression, a simple baseline predicts the average training target for every example. If your advanced model cannot beat this, something is wrong.

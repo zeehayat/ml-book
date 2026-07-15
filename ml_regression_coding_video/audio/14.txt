@@ -1,0 +1,1 @@
+Pure Python teaches the mechanics. For real projects, use libraries. NumPy handles arrays, pandas handles tables, scikit-learn handles ML workflows, and matplotlib handles plots.

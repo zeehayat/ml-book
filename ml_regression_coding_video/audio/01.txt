@@ -1,0 +1,1 @@
+Welcome. In this beginner video, we will learn machine learning regression by coding. We will not focus on mathematical proofs or statistical theory today. We will build models, make predictions, evaluate errors, and then move from pure Python to practical Python libraries.

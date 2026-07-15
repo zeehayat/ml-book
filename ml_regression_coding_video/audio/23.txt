@@ -1,0 +1,1 @@
+Regression is used anywhere the target is numeric: house prices, demand forecasts, energy consumption, healthcare costs, manufacturing outputs, and finance forecasts.

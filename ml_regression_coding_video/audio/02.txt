@@ -1,0 +1,1 @@
+Regression predicts a number. The input is a row of features, and the output is a numeric prediction. In code, a model is just a function or object that maps inputs to predictions. Training means changing model settings until the predictions are less wrong.

@@ -1527,6 +1527,7 @@ Read the original or standard references listed below and answer:
 1. What training problem did the paper identify?
 2. What mathematical explanation did it provide?
 3. What empirical evidence supported the claim?
+4. How did subsequent research validate, extend, or challenge the claim?
 5. Which parts have been superseded?
 
 ### 16.6 Heavy-Hitting Research-Grade Exercises

@@ -1,0 +1,1 @@
+The simplest regression uses one feature, such as house size. The training function returns an intercept and a slope. Prediction is then just intercept plus slope times the feature.

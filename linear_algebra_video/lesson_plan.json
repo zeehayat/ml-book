@@ -1,0 +1,134 @@
+[
+  {
+    "title": "Just Enough Linear Algebra for ML",
+    "kicker": "MATHEMATICAL PRIMER  •  BEGINNER LEVEL",
+    "subtitle": "The foundational vector and matrix operations that power machine learning models",
+    "kind": "title",
+    "narration": "Welcome to Just Enough Linear Algebra for Machine Learning. This tutorial is designed for absolute beginners. We will skip the abstract proofs and focus entirely on the load-bearing concepts—vectors, matrices, multiplication rules, transformations, and factorization—that you need to understand how data moves through machine learning models."
+  },
+  {
+    "title": "01. Vectors: The Coordinates of Data",
+    "kicker": "CORE MATHEMATICAL OBJECTS",
+    "kind": "formula",
+    "formula": "v = [v₁, v₂, ..., v_d]ᵀ",
+    "example": "Geometric: An arrow in space pointing to coordinates.\nAlgebraic: An ordered list of numbers.\n\nOperations:\nAddition: [1, 2] + [3, 4] = [4, 6]\nScalar Mult: 2 · [1, 3] = [2, 6]",
+    "narration": "Let us start with vectors. Algebraically, a vector is simply an ordered list of numbers representing features of an observation, such as an house's price and size. Geometrically, it is an arrow in space pointing to specific coordinates. We can add vectors element-wise to combine features, or scale them to adjust magnitudes."
+  },
+  {
+    "title": "02. Matrices: Grids & Datasets",
+    "kicker": "MULTIDIMENSIONAL STORAGE",
+    "kind": "pointers",
+    "bullets": [
+      "A matrix is a 2D grid of numbers with shape Row × Column",
+      "A row vector represents a single observation (example)",
+      "A column vector represents a single feature across observations",
+      "Design Matrix X: Stacks all examples (n rows, d columns)"
+    ],
+    "narration": "A matrix is a two-dimensional grid of numbers, organized in rows and columns. In machine learning, we stack our data in a design matrix X, where each row represents a single example or observation, and each column represents a single feature or measurement across all examples."
+  },
+  {
+    "title": "03. Matrix Multiplication (GEMM)",
+    "kicker": "THE PRIMARY COMPUTATIONAL WORKHORSE",
+    "kind": "formula",
+    "formula": "(n × k) · (k × p)  =  (n × p)",
+    "example": "Rule: Output cell (i, j) is the dot product of Row i of A and Column j of B.\n\nConstraint:\nInner dimensions must match (k = k).\nNon-commutative: A · B is not equal to B · A.",
+    "narration": "Matrix multiplication is the core compute operation in machine learning. To multiply matrix A and B, the number of columns in A must equal the number of rows in B. The resulting cell at row i, column j is the dot product of A's i-th row and B's j-th column. Crucially, matrix multiplication is not commutative: changing the order changes the result."
+  },
+  {
+    "title": "04. Special Matrices: Transpose & Identity",
+    "kicker": "METADATA AND ALGEBRAIC ANCHORS",
+    "kind": "components",
+    "items": [
+      [
+        "TRANSPOSE (Xᵀ)",
+        "Flips rows and columns: shape (n x d) becomes (d x n)",
+        "#5bc0be"
+      ],
+      [
+        "IDENTITY (I)",
+        "Diagonal of ones, zeros elsewhere: A · I = A",
+        "#f97316"
+      ],
+      [
+        "DOT PRODUCT (uᵀv)",
+        "Measures alignment: uᵀv = 0 means orthogonal",
+        "#4ade80"
+      ],
+      [
+        "DIAGONAL MATRIX",
+        "Scaling elements on the diagonal only",
+        "#f43f5e"
+      ]
+    ],
+    "narration": "There are several special matrix operations. The transpose, written as X transpose, flips the rows and columns, turning a row-major matrix into a column-major layout. The identity matrix acts like the number one in scalar math: multiplying any matrix by the identity leaves it unchanged. The dot product of two vectors measures their geometric alignment."
+  },
+  {
+    "title": "05. Invertibility & Rank",
+    "kicker": "SOLVABILITY CONDITIONS",
+    "kind": "pointers",
+    "bullets": [
+      "Inverse Matrix A⁻¹ satisfies: A · A⁻¹ = I",
+      "Only square matrices can have an inverse",
+      "Rank: Number of linearly independent row or column directions",
+      "Full Rank: Matrix contains no redundant information (invertible)"
+    ],
+    "narration": "To solve systems of equations, we use the inverse of a matrix, written as A inverse, which satisfies A times A inverse equals the identity matrix. An inverse exists only for square, full-rank matrices—meaning they have no redundant column directions. If a matrix lacks full rank, it is singular and cannot be inverted."
+  },
+  {
+    "title": "06. Linear Transformations",
+    "kicker": "GEOMETRIC PERSPECTIVE",
+    "kind": "formula",
+    "formula": "A · x = b",
+    "example": "A acts as a function: warping, rotating, or scaling space.\nx is the input vector in the domain.\nb is the output vector in the codomain.\n\nSolving Ax = b is finding the input x that maps to target b.",
+    "narration": "We can view matrix multiplication geometrically as a linear transformation. A matrix A acts as a function that warps, rotates, or scales space. When we write A times x equals b, we are asking: what input vector x in our domain gets mapped to the target vector b in our codomain? Solving this system is equivalent to inverting the transformation."
+  },
+  {
+    "title": "07. Eigenvectors & Eigenvalues",
+    "kicker": "DIRECTIONS OF PURE SCALING",
+    "kind": "formula",
+    "formula": "A · v = λ · v",
+    "example": "v is the Eigenvector (direction remains unchanged by A).\nλ is the Eigenvalue (scalar scale factor of stretch or shrink).\n\nApplication in ML:\nLeading eigenvectors of covariance matrices define Principal Components.",
+    "narration": "An eigenvector of a matrix A is a special direction that does not change its orientation when transformed by A; it only gets stretched or shrunk. The scale factor is called the eigenvalue. In machine learning, the leading eigenvectors of a dataset's covariance matrix point in the directions of maximum variance, forming the basis of Principal Component Analysis."
+  },
+  {
+    "title": "08. Singular Value Decomposition (SVD)",
+    "kicker": "MATRIX FACTORIZATION FOR DATA REDUCTION",
+    "kind": "components",
+    "items": [
+      [
+        "U (n x n)",
+        "Orthogonal columns: left singular vectors",
+        "#5bc0be"
+      ],
+      [
+        "Σ (n x d)",
+        "Diagonal matrix: singular values (magnitudes)",
+        "#f97316"
+      ],
+      [
+        "Vᵀ (d x d)",
+        "Orthogonal rows: right singular vectors",
+        "#4ade80"
+      ],
+      [
+        "LOW-RANK APPROX",
+        "Keep leading singular values to compress data",
+        "#f43f5e"
+      ]
+    ],
+    "narration": "Singular Value Decomposition, or SVD, factorizes any rectangular matrix A into three matrices: U, Sigma, and V transpose. U and V transpose contain orthogonal vectors, while Sigma is a diagonal matrix containing singular values that measure scaling magnitudes. By keeping only the largest singular values, we can perform low-rank approximations to compress high-dimensional data."
+  },
+  {
+    "title": "Linear Algebra Summary",
+    "kicker": "SUMMARY & NEXT STEPS",
+    "kind": "bullets",
+    "bullets": [
+      "Vectors represent data features; matrices represent grouped datasets",
+      "Matrix multiplication requires outer and inner dimension compatibility",
+      "Inverses require full column rank matrices to guarantee unique solutions",
+      "Eigenvalues and SVD isolate maximum variance and compress data spaces",
+      "With this math, linear regression and projections become intuitive"
+    ],
+    "narration": "Let us summarize. Vectors coordinate data features; matrices store datasets. Matrix multiplication computes combinations using row-by-column dot products. Inverting a matrix is solving a geometric projection, which requires full rank. And eigenvectors and SVD identify the principal directions of variance to compress data. With these essentials, you are ready for classical regression and deep learning."
+  }
+]

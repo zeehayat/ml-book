@@ -1,0 +1,1 @@
+With pandas, start by inspecting the data. Look at the first rows, column types, missing values, and category values. Then separate features X from target y.

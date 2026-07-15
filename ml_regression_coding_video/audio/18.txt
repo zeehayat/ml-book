@@ -1,0 +1,1 @@
+Most machine learning models need numeric inputs. One-hot encoding turns a text category like region into numeric columns. The handle unknown option protects the model when new categories appear later.

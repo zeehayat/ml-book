@@ -1,0 +1,1 @@
+Feature engineering means creating useful input columns. Polynomial features let a simple model fit curved patterns. If you add many features, regularization helps prevent overfitting.

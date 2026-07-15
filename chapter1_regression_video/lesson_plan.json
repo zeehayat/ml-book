@@ -1,0 +1,144 @@
+[
+  {
+    "title": "Linear & Logistic Regression",
+    "kicker": "CHAPTER 1  •  VIDEO TUTORIAL",
+    "subtitle": "Derivations, properties, diagnostics, regularizations, and implementation tracks",
+    "kind": "title",
+    "narration": "Welcome to Chapter One: Linear Regression and Logistic Models. In this video tutorial, we will walk through the mathematical foundations, statistical properties, diagnostic mitigations, and implementation ecosystems of classical regression analysis. We will start from simple ordinary least squares and build up to generalized linear boundaries and regularized optimization. Let us begin."
+  },
+  {
+    "title": "What you will be able to do",
+    "kicker": "LEARNING OBJECTIVES",
+    "kind": "bullets",
+    "bullets": [
+      "Derive OLS slope and intercept for simple linear regression",
+      "Solve multiple linear regression using matrix projection notation",
+      "Verify model assumptions and run diagnostic mitigations",
+      "Apply Ridge and Lasso regularization to control overfitting",
+      "Train binary logistic regression using gradient descent optimization"
+    ],
+    "narration": "By the end of this chapter, you will be able to derive the ordinary least squares slope and intercept by hand and express multiple regression using projection geometry. You will also be able to run model diagnostic tests, apply Ridge and Lasso regularizations, and train a binary logistic regression classifier from scratch using gradient descent."
+  },
+  {
+    "title": "Ordinary Least Squares (OLS) Math",
+    "kicker": "MATHEMATICAL FOUNDATIONS",
+    "kind": "formula",
+    "formula": "y = Xβ + ε   →   β̂ = (XᵀX)⁻¹Xᵀy",
+    "example": "Simple Regression:\nβ₁ = Cov(x, y) / Var(x)   and   β₀ = ȳ - β₁x̄\n\nMatrix Objective:\nMinimize SSR(β) = ||y - Xβ||²",
+    "narration": "Let us start with Ordinary Least Squares. For a single predictor, the slope is the covariance of x and y divided by the variance of x, and the intercept shifts the line to pass through the sample means. In multiple regression with several predictors, we write the system in matrix form as y equals X beta plus epsilon. Minimizing the sum of squared residuals yields the famous closed-form solution: beta hat equals X transpose X inverse times X transpose y."
+  },
+  {
+    "title": "OLS Geometric Projection",
+    "kicker": "PROJECTION GEOMETRY",
+    "kind": "pointers",
+    "bullets": [
+      "Outcome vector y is projected onto the column space of X",
+      "Projected fitted values: ŷ = H y  where  H = X(XᵀX)⁻¹Xᵀ",
+      "Residual vector e = y - ŷ is orthogonal to the column space",
+      "Orthogonality condition: Xᵀe = 0"
+    ],
+    "narration": "Geometrically, ordinary least squares is an orthogonal projection. The outcome vector y lives in an n-dimensional space, while the columns of the design matrix X span a lower-dimensional subspace. The hat matrix H projects y orthogonally onto this subspace to yield the fitted values y hat. The residual vector e represents the projection error, which is mathematically orthogonal to the column space of X, meaning X transpose times e equals zero."
+  },
+  {
+    "title": "The Gauss-Markov Theorem",
+    "kicker": "ESTIMATOR PROPERTIES",
+    "kind": "bullets",
+    "bullets": [
+      "Strict Exogeneity: E[ε | X] = 0 (no confounding)",
+      "Spherical Errors: Constant variance & zero correlation across errors",
+      "No Multicollinearity: X has full column rank",
+      "Under these conditions, OLS is BLUE",
+      "BLUE: Best Linear Unbiased Estimator (minimum variance)"
+    ],
+    "narration": "The Gauss-Markov Theorem defines the optimal properties of the OLS estimator. If the relationship is linear, predictors are strictly exogenous, the design matrix has full column rank, and the errors are spherical, meaning homoskedastic and uncorrelated, then OLS is the Best Linear Unbiased Estimator, or BLUE. This means no other linear unbiased estimator can achieve a lower variance."
+  },
+  {
+    "title": "Uncertainty & Inference",
+    "kicker": "STATISTICAL SIGNIFICANCE",
+    "kind": "components",
+    "items": [
+      [
+        "RESIDUAL VARIANCE",
+        "s² = eᵀe / (n - k - 1)",
+        "#5bc0be"
+      ],
+      [
+        "COVARIANCE MATRIX",
+        "Var(β̂|X) = s²(XᵀX)⁻¹",
+        "#f97316"
+      ],
+      [
+        "t-STATISTIC",
+        "t = β̂ⱼ / SE(β̂ⱼ)  ~ t_{n-k-1}",
+        "#4ade80"
+      ],
+      [
+        "F-STATISTIC",
+        "Joint linear hypothesis testing",
+        "#f43f5e"
+      ]
+    ],
+    "narration": "To conduct statistical inference, we must quantify our uncertainty. We estimate the residual variance s squared by dividing the sum of squared residuals by the degrees of freedom. This variance scale determines the covariance matrix of our coefficients. We can then test individual coefficient significance using t-statistics and evaluate joint linear restrictions using F-statistics."
+  },
+  {
+    "title": "Model Diagnostics & Mitigations",
+    "kicker": "DEBUGGING ASSUMPTIONS",
+    "kind": "pointers",
+    "bullets": [
+      "Heteroskedasticity: Non-constant variance (White robust SEs)",
+      "Multicollinearity: VIF > 10 (Variable deletion or regularization)",
+      "Non-Normality: Saturated errors (Log transforms / bootstrap)",
+      "High Leverage: Cook's distance > 1 (Outlier inspection)"
+    ],
+    "narration": "Before trusting our inference, we must run diagnostics to check for violations of OLS assumptions. If the errors are heteroskedastic, standard errors are biased and must be corrected using White robust standard errors. Multicollinearity is detected when the Variance Inflation Factor exceeds ten. Outliers with high leverage are identified using Cook's distance."
+  },
+  {
+    "title": "Regularization: Ridge vs. Lasso",
+    "kicker": "SHRINKAGE TECHNIQUES",
+    "kind": "formula",
+    "formula": "Ridge: Objective + λ||β||₂²   vs.   Lasso: Objective + λ||β||₁",
+    "example": "Ridge (L2): Shrinks coefficients close to zero (dense representation)\nLasso (L1): Shrinks coefficients to exactly zero (sparse feature selection)",
+    "narration": "When multicollinearity is present or parameters exceed observations, OLS variance explodes. Regularization introduces a bias to reduce variance. Ridge regression adds an L2 penalty, shrinking coefficients close to zero. Lasso regression adds an L1 penalty, which drives redundant coefficients to exactly zero, performing automatic feature selection."
+  },
+  {
+    "title": "Logistic Regression Mechanics",
+    "kicker": "BINARY CLASSIFICATION",
+    "kind": "formula",
+    "formula": "p = σ(Xβ) = 1 / (1 + e⁻ˣᵝ)",
+    "example": "Link function: Log-odds (logit link) is linear\nlog(p / (1 - p)) = Xβ",
+    "narration": "For binary outcomes, linear regression fails because it can predict values outside zero and one. Logistic regression models the probability of success using the Sigmoid activation function. This maps the linear predictor to a probability between zero and one. The link function is the log-odds, also called the logit link, which remains linear."
+  },
+  {
+    "title": "Log-Likelihood & Optimization",
+    "kicker": "MAXIMUM LIKELIHOOD ESTIMATION",
+    "kind": "formula",
+    "formula": "β ← β - η ∇ J   where  ∇ J = Xᵀ(p - y) / n",
+    "example": "BCE Loss:\nJ(β) = -1/n * Σ [y log(p) + (1-y) log(1-p)]",
+    "narration": "We estimate logistic coefficients by maximizing the Bernoulli likelihood, which is equivalent to minimizing the Binary Cross-Entropy loss. Since no analytical closed-form solution exists, we optimize the convex loss function iteratively using Gradient Descent. The gradient simplifies beautifully to X transpose times the probability difference vector, divided by sample size."
+  },
+  {
+    "title": "Implementation Ecosystem",
+    "kicker": "SCRATCH VS. LIBRARIES",
+    "kind": "pointers",
+    "bullets": [
+      "Scratch Track: Exposes transposes, LU solvers, and gradient updates in pure Python",
+      "statsmodels: Used for detailed inference summaries and hypothesis tests",
+      "scikit-learn: High-performance training, cross-validation, and pipelines",
+      "Verification: Always check custom solvers against statsmodels and scikit-learn"
+    ],
+    "narration": "Our curriculum maintains two tracks. The scratch track builds linear solvers and gradient descent from first principles in pure Python to expose the raw mechanics. The library track uses statsmodels for detailed statistical diagnostics and scikit-learn for high-performance predictive pipelines. We always verify our scratch solvers against these mature libraries."
+  },
+  {
+    "title": "Chapter 1 Summary",
+    "kicker": "KEY TAKEAWAYS",
+    "kind": "bullets",
+    "bullets": [
+      "OLS minimizes residual sum of squares and projects y onto X",
+      "Inference depends on strict exogeneity and spherical error properties",
+      "Diagnostics identify heteroskedasticity, multicollinearity, and leverage",
+      "Regularization (L1/L2) trades small bias for reduced variance",
+      "Logistic regression models log-odds and is optimized via gradient descent"
+    ],
+    "narration": "Let us summarize Chapter One. Ordinary Least Squares projects y orthogonally onto the design space. Statistical inference is valid only when exogeneity and spherical error properties hold. Diagnostics are necessary to check for heteroskedasticity and collinearity. Regularizations introduce minor bias to stabilize variance. And logistic regression models binary probabilities, requiring gradient descent optimization."
+  }
+]

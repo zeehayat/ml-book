@@ -1,0 +1,1 @@
+Metrics tell us how wrong predictions are. Mean absolute error is easy to explain. RMSE punishes larger mistakes more strongly. Always evaluate on data the model did not train on.

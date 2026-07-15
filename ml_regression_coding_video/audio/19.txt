@@ -1,0 +1,1 @@
+Once the workflow is ready, try several models. Linear regression is a strong baseline. Ridge and Lasso add regularization. Random forests can capture nonlinear patterns without manually creating polynomial features.

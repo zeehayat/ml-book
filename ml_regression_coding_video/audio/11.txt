@@ -1,0 +1,1 @@
+Scaling turns features into comparable units. Fit the scaling values on the training set only. Then apply those same values to the test set. This prevents data leakage.

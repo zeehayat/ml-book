@@ -1,0 +1,1 @@
+Scikit-learn gives us a tested train-test split function. It is the same idea as our pure Python version, but shorter and safer. Use random state to make the split reproducible.

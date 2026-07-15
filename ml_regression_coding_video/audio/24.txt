@@ -1,0 +1,1 @@
+Here are exercises. Add a new metric from scratch. Add more features and compare test RMSE. In the library version, try gradient boosting and cross-validated Ridge tuning. Finally, build a small rent-price predictor from your own CSV.

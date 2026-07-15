@@ -1,0 +1,415 @@
+[
+  {
+    "title": "ML Regression for Beginners",
+    "kicker": "CODING-FOCUSED VIDEO",
+    "kind": "title",
+    "duration": 8,
+    "subtitle": "Build regression models first in pure Python, then with Python libraries.",
+    "narration": "Welcome. In this beginner video, we will learn machine learning regression by coding. We will not focus on mathematical proofs or statistical theory today. We will build models, make predictions, evaluate errors, and then move from pure Python to practical Python libraries."
+  },
+  {
+    "title": "What Regression Does in Code",
+    "kicker": "MENTAL MODEL",
+    "kind": "scatter",
+    "duration": 9,
+    "bullets": [
+      "Input: rows of features such as size, bedrooms, and age.",
+      "Output: a number, such as house price.",
+      "Model: a Python object or function that maps features to predictions.",
+      "Training: adjust model settings so predictions become less wrong."
+    ],
+    "narration": "Regression predicts a number. The input is a row of features, and the output is a numeric prediction. In code, a model is just a function or object that maps inputs to predictions. Training means changing model settings until the predictions are less wrong."
+  },
+  {
+    "title": "Video Roadmap",
+    "kicker": "WHAT WE WILL BUILD",
+    "kind": "pipeline",
+    "duration": 8,
+    "steps": [
+      "Data",
+      "Split",
+      "Baseline",
+      "Train",
+      "Evaluate",
+      "Improve"
+    ],
+    "bullets": [
+      "Part 1: Pure Python, no external ML packages.",
+      "Part 2: NumPy, pandas, scikit-learn, matplotlib, optional statsmodels.",
+      "End: advanced topics, use cases, and exercises."
+    ],
+    "narration": "The workflow is simple: create data, split it, build a baseline, train a model, evaluate it, and improve it. We will do this twice: first from scratch in pure Python, then with the Python library ecosystem."
+  },
+  {
+    "title": "Our Example Dataset",
+    "kicker": "HOUSE PRICE REGRESSION",
+    "kind": "table",
+    "duration": 8,
+    "headers": [
+      "size_sqft",
+      "bedrooms",
+      "age_years",
+      "region",
+      "price_k"
+    ],
+    "rows": [
+      [
+        "850",
+        "2",
+        "18",
+        "Central",
+        "183"
+      ],
+      [
+        "1450",
+        "3",
+        "8",
+        "North",
+        "321"
+      ],
+      [
+        "2100",
+        "4",
+        "12",
+        "South",
+        "401"
+      ],
+      [
+        "2900",
+        "5",
+        "3",
+        "North",
+        "594"
+      ]
+    ],
+    "bullets": [
+      "Features are the columns used for prediction.",
+      "Target is the number we want to predict.",
+      "Synthetic data keeps the tutorial repeatable."
+    ],
+    "narration": "We will use a synthetic house price dataset. Features include size, bedrooms, age, and region. The target is price in thousands. Synthetic data is useful for teaching because everyone gets the same result."
+  },
+  {
+    "title": "Pure Python: Store the Data",
+    "kicker": "NO NUMPY, NO PANDAS",
+    "kind": "code",
+    "duration": 10,
+    "code": "X = [\n    [850.0, 2.0, 18.0],\n    [1450.0, 3.0, 8.0],\n    [2100.0, 4.0, 12.0],\n]\ny = [183.0, 321.0, 401.0]",
+    "bullets": [
+      "Each row is one example.",
+      "Each number inside a row is one feature.",
+      "The target list stores the answer for each row."
+    ],
+    "narration": "In pure Python, we can store features as a list of rows and targets as a separate list. Each row is one example. Each number inside the row is a feature. This is enough to understand how regression works."
+  },
+  {
+    "title": "Pure Python: Train/Test Split",
+    "kicker": "EVALUATION DISCIPLINE",
+    "kind": "code",
+    "duration": 10,
+    "code": "def train_test_split(X, y, test_fraction=0.25, seed=42):\n    rng = random.Random(seed)\n    indices = list(range(len(X)))\n    rng.shuffle(indices)\n    test_size = int(len(X) * test_fraction)\n    test_idx = set(indices[:test_size])\n    # rows in test_idx go to test; the rest go to train",
+    "bullets": [
+      "Train set: fit the model.",
+      "Test set: estimate future performance.",
+      "Never tune choices using the final test answers."
+    ],
+    "narration": "Before training, split data into training and test sets. The training set teaches the model. The test set estimates how well it might work on new data. Do not tune your model using the final test answers."
+  },
+  {
+    "title": "Pure Python: Baseline Model",
+    "kicker": "FIRST MODEL TO BEAT",
+    "kind": "code",
+    "duration": 8,
+    "code": "def mean(values):\n    return sum(values) / len(values)\n\nbaseline_prediction = mean(y_train)\npredictions = [baseline_prediction] * len(y_test)",
+    "bullets": [
+      "A baseline is a simple reference model.",
+      "For regression, predicting the training mean is a useful start.",
+      "A real model should beat the baseline."
+    ],
+    "narration": "Always start with a baseline. For regression, a simple baseline predicts the average training target for every example. If your advanced model cannot beat this, something is wrong."
+  },
+  {
+    "title": "Pure Python: Simple Regression",
+    "kicker": "ONE FEATURE",
+    "kind": "code",
+    "duration": 11,
+    "code": "def simple_linear_regression(x, y):\n    x_bar = mean(x)\n    y_bar = mean(y)\n    top = sum((xi-x_bar)*(yi-y_bar) for xi, yi in zip(x, y))\n    bottom = sum((xi-x_bar)**2 for xi in x)\n    slope = top / bottom\n    intercept = y_bar - slope * x_bar\n    return intercept, slope",
+    "bullets": [
+      "Use one feature, such as size_sqft.",
+      "Fit an intercept and slope.",
+      "Predict with intercept + slope * feature."
+    ],
+    "narration": "The simplest regression uses one feature, such as house size. The training function returns an intercept and a slope. Prediction is then just intercept plus slope times the feature."
+  },
+  {
+    "title": "Pure Python: Metrics",
+    "kicker": "HOW WRONG ARE WE?",
+    "kind": "code",
+    "duration": 10,
+    "code": "def mae(y_true, y_pred):\n    return mean([abs(a - p) for a, p in zip(y_true, y_pred)])\n\ndef rmse(y_true, y_pred):\n    return math.sqrt(mean([(a - p)**2\n                          for a, p in zip(y_true, y_pred)]))",
+    "bullets": [
+      "MAE: average absolute error.",
+      "RMSE: punishes large errors more.",
+      "Use metrics on test data, not just training data."
+    ],
+    "narration": "Metrics tell us how wrong predictions are. Mean absolute error is easy to explain. RMSE punishes larger mistakes more strongly. Always evaluate on data the model did not train on."
+  },
+  {
+    "title": "Pure Python: Multiple Features",
+    "kicker": "GRADIENT DESCENT",
+    "kind": "code",
+    "duration": 11,
+    "code": "def predict_matrix(X, weights):\n    return [sum(x*w for x, w in zip(row, weights)) for row in X]\n\nfor epoch in range(epochs):\n    pred = predict_matrix(X_design, weights)\n    errors = [p - actual for p, actual in zip(pred, y)]\n    # compute gradients\n    # update each weight: weight -= learning_rate * gradient",
+    "bullets": [
+      "Multiple features need multiple weights.",
+      "Gradient descent improves weights step by step.",
+      "Feature scaling makes training much easier."
+    ],
+    "narration": "With multiple features, we need multiple weights. Gradient descent improves those weights in many small steps. It works best when features are scaled to similar ranges."
+  },
+  {
+    "title": "Pure Python: Scaling Features",
+    "kicker": "MAKE TRAINING EASIER",
+    "kind": "code",
+    "duration": 9,
+    "code": "means, stds = standardize_fit(X_train)\nX_train_scaled = standardize_transform(X_train, means, stds)\nX_test_scaled = standardize_transform(X_test, means, stds)",
+    "bullets": [
+      "Fit scaling values on training data only.",
+      "Apply the same scaling to test data.",
+      "Avoid leakage from test data into training."
+    ],
+    "narration": "Scaling turns features into comparable units. Fit the scaling values on the training set only. Then apply those same values to the test set. This prevents data leakage."
+  },
+  {
+    "title": "Pure Python: Improve the Model",
+    "kicker": "FEATURE ENGINEERING",
+    "kind": "code",
+    "duration": 10,
+    "code": "def polynomial_features_one_column(x, degree=2):\n    return [[value ** power\n             for power in range(1, degree + 1)]\n            for value in x]\n\n# Example row: [size] -> [size, size**2]",
+    "bullets": [
+      "Feature engineering creates better input columns.",
+      "Polynomial features let simple models fit curves.",
+      "Regularization helps control overfitting."
+    ],
+    "narration": "Feature engineering means creating useful input columns. Polynomial features let a simple model fit curved patterns. If you add many features, regularization helps prevent overfitting."
+  },
+  {
+    "title": "Pure Python: Ridge-Style Regularization",
+    "kicker": "ADVANCED BUT PRACTICAL",
+    "kind": "code",
+    "duration": 10,
+    "code": "if j > 0:\n    gradient += 2.0 * l2 * weights[j]\n\nweights[j] = weights[j] - learning_rate * gradient",
+    "bullets": [
+      "Ridge discourages very large weights.",
+      "It often improves stability with many features.",
+      "Do not regularize the intercept in beginner examples."
+    ],
+    "narration": "Ridge-style regularization adds a small extra push that discourages huge weights. This often improves stability when features are noisy or correlated. In beginner examples, leave the intercept unregularized."
+  },
+  {
+    "title": "Move to Python Libraries",
+    "kicker": "REAL WORKFLOW",
+    "kind": "cards",
+    "duration": 8,
+    "cards": [
+      [
+        "NumPy",
+        "fast arrays and linear algebra"
+      ],
+      [
+        "pandas",
+        "tables, cleaning, categories"
+      ],
+      [
+        "scikit-learn",
+        "pipelines, validation, ML models"
+      ],
+      [
+        "matplotlib",
+        "plots and model checks"
+      ]
+    ],
+    "narration": "Pure Python teaches the mechanics. For real projects, use libraries. NumPy handles arrays, pandas handles tables, scikit-learn handles ML workflows, and matplotlib handles plots."
+  },
+  {
+    "title": "pandas: Create and Inspect Data",
+    "kicker": "LIBRARY TRACK",
+    "kind": "code",
+    "duration": 9,
+    "code": "df = make_house_dataframe()\nprint(df.head())\nprint(df.info())\nprint(df.isna().sum())\n\nX = df[[\"size_sqft\", \"bedrooms\", \"age_years\", \"region\"]]\ny = df[\"price_k\"]",
+    "bullets": [
+      "Inspect before modeling.",
+      "Separate features X from target y.",
+      "Check missing values and categories."
+    ],
+    "narration": "With pandas, start by inspecting the data. Look at the first rows, column types, missing values, and category values. Then separate features X from target y."
+  },
+  {
+    "title": "scikit-learn: Train/Test Split",
+    "kicker": "LIBRARY TRACK",
+    "kind": "code",
+    "duration": 8,
+    "code": "from sklearn.model_selection import train_test_split\n\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.25, random_state=42\n)",
+    "bullets": [
+      "Same idea as pure Python.",
+      "Library version is tested and convenient.",
+      "Set random_state for reproducibility."
+    ],
+    "narration": "Scikit-learn gives us a tested train-test split function. It is the same idea as our pure Python version, but shorter and safer. Use random state to make the split reproducible."
+  },
+  {
+    "title": "Pipelines Prevent Leakage",
+    "kicker": "PREPROCESSING",
+    "kind": "pipeline",
+    "duration": 10,
+    "steps": [
+      "Impute",
+      "Scale",
+      "One-Hot",
+      "Model",
+      "Predict"
+    ],
+    "code": "pipeline = Pipeline([\n    (\"preprocess\", preprocess),\n    (\"model\", RidgeCV(alphas=np.logspace(-3, 3, 40))),\n])",
+    "narration": "A pipeline bundles preprocessing and the model into one object. This prevents leakage because imputation, scaling, and one-hot encoding are fitted only on training data inside each fit."
+  },
+  {
+    "title": "Categorical Features",
+    "kicker": "ONE-HOT ENCODING",
+    "kind": "code",
+    "duration": 9,
+    "code": "categorical_pipeline = Pipeline([\n    (\"imputer\", SimpleImputer(strategy=\"most_frequent\")),\n    (\"onehot\", OneHotEncoder(handle_unknown=\"ignore\",\n                              drop=\"first\")),\n])",
+    "bullets": [
+      "Models need numbers, not text labels.",
+      "One-hot encoding turns categories into columns.",
+      "handle_unknown='ignore' protects future predictions."
+    ],
+    "narration": "Most machine learning models need numeric inputs. One-hot encoding turns a text category like region into numeric columns. The handle unknown option protects the model when new categories appear later."
+  },
+  {
+    "title": "Train Several Models",
+    "kicker": "MODEL COMPARISON",
+    "kind": "code",
+    "duration": 11,
+    "code": "models = {\n    \"LinearRegression\": LinearRegression(),\n    \"RidgeCV\": RidgeCV(alphas=np.logspace(-3, 3, 40)),\n    \"LassoCV\": LassoCV(max_iter=20000),\n    \"RandomForestRegressor\": RandomForestRegressor(),\n}",
+    "bullets": [
+      "Linear regression is the baseline ML regressor.",
+      "Ridge and Lasso add regularization.",
+      "Random forest captures nonlinear patterns."
+    ],
+    "narration": "Once the workflow is ready, try several models. Linear regression is a strong baseline. Ridge and Lasso add regularization. Random forests can capture nonlinear patterns without manually creating polynomial features."
+  },
+  {
+    "title": "Evaluate Library Models",
+    "kicker": "TEST METRICS",
+    "kind": "code",
+    "duration": 9,
+    "code": "pred = pipeline.predict(X_test)\nprint(\"MAE\", mean_absolute_error(y_test, pred))\nprint(\"RMSE\", mean_squared_error(y_test, pred) ** 0.5)\nprint(\"R2\", r2_score(y_test, pred))",
+    "bullets": [
+      "Use the same metrics as pure Python.",
+      "Compare models on the same test split.",
+      "Prefer clear metrics over impressive-looking output."
+    ],
+    "narration": "Evaluation is the same idea as pure Python. Predict on the test set, then compute metrics. Compare models on the same split so the comparison is fair."
+  },
+  {
+    "title": "Cross-Validation",
+    "kicker": "BETTER EVALUATION",
+    "kind": "pipeline",
+    "duration": 10,
+    "steps": [
+      "Fold 1",
+      "Fold 2",
+      "Fold 3",
+      "Fold 4",
+      "Fold 5"
+    ],
+    "code": "results = cross_validate(\n    pipeline, X, y, cv=5,\n    scoring={\"rmse\": \"neg_root_mean_squared_error\"}\n)",
+    "narration": "Cross-validation repeats training and evaluation across several splits. It gives a more stable estimate than a single split, especially when the dataset is not huge."
+  },
+  {
+    "title": "Advanced Topics to Explore",
+    "kicker": "AFTER THE BASICS",
+    "kind": "cards",
+    "duration": 10,
+    "cards": [
+      [
+        "Regularization",
+        "Ridge, Lasso, ElasticNet"
+      ],
+      [
+        "Feature engineering",
+        "polynomials, interactions, domain features"
+      ],
+      [
+        "Tree models",
+        "RandomForest, GradientBoosting, XGBoost-style tools"
+      ],
+      [
+        "Deployment",
+        "save model, monitor drift, retrain safely"
+      ]
+    ],
+    "narration": "After the basics, explore regularization, feature engineering, tree-based regressors, and deployment. Real machine learning also includes monitoring model drift and retraining safely."
+  },
+  {
+    "title": "Regression Use Cases",
+    "kicker": "WHERE THIS APPLIES",
+    "kind": "cards",
+    "duration": 9,
+    "cards": [
+      [
+        "Real estate",
+        "estimate house prices"
+      ],
+      [
+        "Retail",
+        "forecast demand or sales"
+      ],
+      [
+        "Energy",
+        "predict consumption"
+      ],
+      [
+        "Healthcare",
+        "estimate risk scores or costs"
+      ],
+      [
+        "Manufacturing",
+        "predict defects or process output"
+      ],
+      [
+        "Finance",
+        "forecast numeric outcomes carefully"
+      ]
+    ],
+    "narration": "Regression is used anywhere the target is numeric: house prices, demand forecasts, energy consumption, healthcare costs, manufacturing outputs, and finance forecasts."
+  },
+  {
+    "title": "Exercises",
+    "kicker": "PRACTICE TASKS",
+    "kind": "bullets",
+    "duration": 10,
+    "bullets": [
+      "Pure Python: add median absolute error as a metric.",
+      "Pure Python: add one more feature and compare test RMSE.",
+      "Libraries: add a GradientBoostingRegressor and compare models.",
+      "Libraries: use cross-validation to tune Ridge alpha.",
+      "Project: build a rent-price predictor with your own CSV."
+    ],
+    "narration": "Here are exercises. Add a new metric from scratch. Add more features and compare test RMSE. In the library version, try gradient boosting and cross-validated Ridge tuning. Finally, build a small rent-price predictor from your own CSV."
+  },
+  {
+    "title": "Final Checklist",
+    "kicker": "WHAT TO REMEMBER",
+    "kind": "bullets",
+    "duration": 9,
+    "bullets": [
+      "Always start with a baseline.",
+      "Split data before evaluating model quality.",
+      "Fit preprocessing only on training data.",
+      "Use clear metrics: MAE, RMSE, and R2.",
+      "Move from pure Python understanding to library workflows."
+    ],
+    "narration": "Remember the workflow. Start with a baseline. Split data before evaluation. Fit preprocessing only on training data. Use clear metrics. Learn the pure Python mechanics, then use library workflows for real projects."
+  }
+]

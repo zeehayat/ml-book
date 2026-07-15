@@ -1,0 +1,1 @@
+A pipeline bundles preprocessing and the model into one object. This prevents leakage because imputation, scaling, and one-hot encoding are fitted only on training data inside each fit.

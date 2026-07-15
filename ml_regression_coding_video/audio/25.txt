@@ -1,0 +1,1 @@
+Remember the workflow. Start with a baseline. Split data before evaluation. Fit preprocessing only on training data. Use clear metrics. Learn the pure Python mechanics, then use library workflows for real projects.

@@ -1,0 +1,1 @@
+After the basics, explore regularization, feature engineering, tree-based regressors, and deployment. Real machine learning also includes monitoring model drift and retraining safely.

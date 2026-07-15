@@ -1,0 +1,1 @@
+Evaluation is the same idea as pure Python. Predict on the test set, then compute metrics. Compare models on the same split so the comparison is fair.

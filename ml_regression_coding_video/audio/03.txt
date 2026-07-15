@@ -1,0 +1,1 @@
+The workflow is simple: create data, split it, build a baseline, train a model, evaluate it, and improve it. We will do this twice: first from scratch in pure Python, then with the Python library ecosystem.

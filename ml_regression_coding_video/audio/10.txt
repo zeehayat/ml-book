@@ -1,0 +1,1 @@
+With multiple features, we need multiple weights. Gradient descent improves those weights in many small steps. It works best when features are scaled to similar ranges.

@@ -1,0 +1,1 @@
+Ridge-style regularization adds a small extra push that discourages huge weights. This often improves stability when features are noisy or correlated. In beginner examples, leave the intercept unregularized.

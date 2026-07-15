@@ -1,0 +1,1 @@
+In pure Python, we can store features as a list of rows and targets as a separate list. Each row is one example. Each number inside the row is a feature. This is enough to understand how regression works.
